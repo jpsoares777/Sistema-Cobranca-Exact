@@ -78,8 +78,8 @@ export function RelatorioFinanceiro({
       dot: "bg-emerald-500", accent: "#10b981",
       headerBg: "bg-emerald-50", headerText: "text-emerald-700",
       rows: [
-        { type: "row", label: "Cobrança Esperada",        value: `R$ ${fmt(cobrancaEsperada)}  (${cobrancaEsperada > 0 ? Math.round((cobrancaDiaria / cobrancaEsperada) * 100) : 0}%)` },
-        { type: "row", label: "Cobrança Diária",          value: `R$ ${fmt(cobrancaDiaria)}`, valueColor: "text-emerald-600" },
+        { type: "row", label: "Cobrança Esperada",        value: `R$ ${fmt(cobrancaEsperada)} (100%)` },
+        { type: "row", label: "Cobrança Diária",          value: `R$ ${fmt(cobrancaDiaria)} (${cobrancaEsperada > 0 ? (cobrancaDiaria / cobrancaEsperada * 100).toLocaleString("pt-BR", { maximumFractionDigits: 1 }) : 0}%)`, valueColor: "text-emerald-600" },
         { type: "row", label: "Dinheiro / Transferência", value: `R$ ${fmt(cobrancaDiaria)} / R$ 0,00` },
       ],
     },
