@@ -52,6 +52,7 @@ export function ParcelaCliente({ cliente, onBack, onSaved }: { cliente: Cliente;
   const [saveState, setSaveState] = useState<"idle" | "saving" | "success">("idle");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [saldoAtual, setSaldoAtual] = useState(cliente.saldo);
+  const [saldoModal, setSaldoModal] = useState<number | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const totalCredito = cliente.saldo + cliente.parcelasPagas * cliente.parcela;
@@ -78,8 +79,10 @@ export function ParcelaCliente({ cliente, onBack, onSaved }: { cliente: Cliente;
     setSaveState("saving");
     setTimeout(() => {
       setSaveState("success");
+      const saldoFinal = (paymentType === "parcela" || paymentType === "abono") ? Math.max(0, saldoAtual - valorParcela) : saldoAtual;
+      setSaldoModal(saldoFinal);
       setShowSuccessModal(true);
-      if (paymentType === "parcela" || paymentType === "abono") setSaldoAtual(novoSaldo);
+      if (paymentType === "parcela" || paymentType === "abono") setSaldoAtual(saldoFinal);
       setTimeout(() => { setSaveState("idle"); setShowSuccessModal(false); const metodo = paymentType === "sem" ? "Sem pagamento" : paymentType === "abono" ? "Abono" : "Parcela"; if (onSaved) onSaved(paymentType === "sem" ? 0 : valorParcela, metodo); else onBack(); }, 1500);
     }, 1400);
   }
@@ -104,7 +107,7 @@ export function ParcelaCliente({ cliente, onBack, onSaved }: { cliente: Cliente;
             </div>
             <h3 className="font-bold text-[#1B2236] text-sm mb-1">Parcela Registrada!</h3>
             <p className="text-[11px] text-gray-500 mb-0.5">Parcela nº {numeroParcela} de <span className="font-semibold">{nomeExibicao}</span></p>
-            <p className="text-[11px] text-gray-500">Novo saldo: <span className="font-bold text-green-600">R$ {novoSaldo.toFixed(2)}</span></p>
+            <p className="text-[11px] text-gray-500">Novo saldo: <span className="font-bold text-green-600">R$ {(saldoModal ?? novoSaldo).toFixed(2)}</span></p>
           </div>
         </div>
       )}
