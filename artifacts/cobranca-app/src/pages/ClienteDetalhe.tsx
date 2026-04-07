@@ -3,14 +3,14 @@ import "./ClienteDetalhe.css";
 
 type StatusType = "pago" | "pendente" | "atrasado";
 type AbaAtiva = "detalhes" | "pagamentos" | "fotos" | "agendar";
-type Metodo = "Parcela" | "Abono" | "Sem pagamento";
+export type MetodoPagamento = "Parcela" | "Abono" | "Sem pagamento";
 
-interface Pagamento {
+export interface Pagamento {
   id: number;
   data: string;
   parcela: number;
   valor: number;
-  metodo: Metodo;
+  metodo: MetodoPagamento;
 }
 
 export interface ClienteItem {
@@ -24,6 +24,7 @@ export interface ClienteItem {
   totalParcelas: number;
   telefone: string;
   frequencia?: string;
+  pagamentos?: Pagamento[];
 }
 
 function StatusBadge({ status, onClick, ativo }: { status: StatusType; onClick?: () => void; ativo?: boolean }) {
@@ -518,20 +519,7 @@ export function ClienteDetalhe({ cliente, onClose, onAddAgendamento }: { cliente
 
   const pendentes = cliente.totalParcelas - cliente.parcelasPagas;
 
-  const pagamentos: Pagamento[] = Array.from({ length: Math.min(cliente.parcelasPagas, 7) }, (_, i) => {
-    const data = new Date(2026, 2, 30 - i * 7);
-    const dd = String(data.getDate()).padStart(2, "0");
-    const mm = String(data.getMonth() + 1).padStart(2, "0");
-    const yyyy = data.getFullYear();
-    const metodo: Metodo = i === 3 || i === 6 ? "Sem pagamento" : i % 3 === 2 ? "Abono" : "Parcela";
-    return {
-      id: i + 1,
-      data: `${yyyy}-${mm}-${dd}`,
-      parcela: i + 1,
-      valor: metodo === "Sem pagamento" ? 0 : metodo === "Abono" ? cliente.parcela / 2 : cliente.parcela,
-      metodo,
-    };
-  });
+  const pagamentos: Pagamento[] = cliente.pagamentos ?? [];
 
   return (
     <div className="cd-card" style={{ borderRadius: 0, boxShadow: "none", border: "none", maxWidth: "none" }}>

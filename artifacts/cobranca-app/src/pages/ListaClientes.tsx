@@ -5,7 +5,7 @@ import { CadastroCliente } from "./CadastroCliente";
 import { LancamentoFinanceiro } from "./LancamentoFinanceiro";
 import { RelatorioFinanceiro } from "./RelatorioFinanceiro";
 import { EmprestimosDoDia, Emprestimo, emprestimentosIniciais } from "./EmprestimosDoDia";
-import { ClienteDetalhe, ClienteDetalheRenovacao, ClienteItem, Agendamento } from "./ClienteDetalhe";
+import { ClienteDetalhe, ClienteDetalheRenovacao, ClienteItem, Agendamento, Pagamento, MetodoPagamento } from "./ClienteDetalhe";
 
 const clientesData = [
   { id: 1, nome: "ANDREIA DE JESUS COSTA ARAÚJO", parcela: 80.0, saldo: 720.0, status: "emdia", endereco: "Rua das Flores, 123", parcelasPagas: 5, totalParcelas: 14, telefone: "(98) 98985-0143" },
@@ -117,7 +117,7 @@ function TrashIcon() {
   );
 }
 
-function TelaLista({ busca, setBusca, vrf, setVrf, onSelectCliente, onAddAgendamento, ausentes, onAusentar, cobrados, onRemoverCobrado, clientesAdicionais = [], cobradosExtras = [], cobradosValores = [] }: {
+function TelaLista({ busca, setBusca, vrf, setVrf, onSelectCliente, onAddAgendamento, ausentes, onAusentar, cobrados, onRemoverCobrado, clientesAdicionais = [], cobradosExtras = [], cobradosValores = [], pagamentosRegistro = {} }: {
   busca: string; setBusca: (v: string) => void;
   vrf: boolean; setVrf: (v: boolean) => void;
   onSelectCliente: (c: typeof clientesData[0]) => void;
@@ -129,6 +129,7 @@ function TelaLista({ busca, setBusca, vrf, setVrf, onSelectCliente, onAddAgendam
   clientesAdicionais?: ClienteItem[];
   cobradosExtras?: ClienteItem[];
   cobradosValores?: {id: number, valor: number}[];
+  pagamentosRegistro?: Record<number, Pagamento[]>;
 }) {
   const [clienteDetalhe, setClienteDetalhe] = useState<ClienteItem | null>(null);
   const [vrfRemovidos, setVrfRemovidos] = useState<number[]>([]);
@@ -167,7 +168,7 @@ function TelaLista({ busca, setBusca, vrf, setVrf, onSelectCliente, onAddAgendam
             const valorCobrado = cobradosValores.find(x => x.id === c.id)?.valor ?? c.parcela;
             const saldoApos = c.saldo - valorCobrado;
             const sc = statusBorderColor(c.status);
-            const clienteAtualizado = { ...c, saldo: saldoApos, parcelasPagas: c.parcelasPagas + 1 };
+            const clienteAtualizado = { ...c, saldo: saldoApos, parcelasPagas: c.parcelasPagas + 1, pagamentos: pagamentosRegistro[c.id] ?? [] };
             const expandido = clienteDetalhe?.id === c.id;
 
             const rowContent = (
@@ -1409,6 +1410,7 @@ export function ListaClientes() {
   const [ausentes, setAusentes] = useState<number[]>([]);
   const [cobrados, setCobrados] = useState<number[]>([]);
   const [cobradosValores, setCobradosValores] = useState<{id: number, valor: number}[]>([]);
+  const [registroPagamentos, setRegistroPagamentos] = useState<Record<number, Pagamento[]>>({});
   const [cobradosExtras, setCobradosExtras] = useState<ClienteItem[]>([]);
   const [clienteParaAusentar, setClienteParaAusentar] = useState<ClienteItem | null>(null);
   const [salvoSinc, setSalvoSinc] = useState(false);
@@ -1430,7 +1432,7 @@ export function ListaClientes() {
     setRendimentos(prev => [...prev, { id: Date.now(), data: hoje, categoria, valor, observacao: observacao || undefined }]);
 
   if (clienteSelecionado) {
-    return <ParcelaCliente cliente={clienteSelecionado} onBack={() => setClienteSelecionado(null)} onSaved={(valor) => {
+    return <ParcelaCliente cliente={clienteSelecionado} onBack={() => setClienteSelecionado(null)} onSaved={(valor, metodo) => {
       const id = clienteSelecionado!.id;
       setCobrados(prev => prev.includes(id) ? prev : [id, ...prev]);
       setCobradosValores(prev => { const existing = prev.find(x => x.id === id); return existing ? prev.map(x => x.id === id ? { id, valor: x.valor + valor } : x) : [{ id, valor }, ...prev]; });
@@ -1439,6 +1441,10 @@ export function ListaClientes() {
       if (deOutrasDatas) {
         setCobradosExtras(prev => prev.find(c => c.id === id) ? prev : [clienteSelecionado!, ...prev]);
       }
+      const hoje = new Date();
+      const dataStr = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,"0")}-${String(hoje.getDate()).padStart(2,"0")}`;
+      const novoPag: Pagamento = { id: Date.now(), data: dataStr, parcela: (clienteSelecionado!.parcelasPagas ?? 0) + 1, valor, metodo };
+      setRegistroPagamentos(prev => ({ ...prev, [id]: [novoPag, ...(prev[id] ?? [])] }));
       setClienteSelecionado(null);
       setVerOutrasDatas(false);
       setActiveNav(0);
@@ -1681,7 +1687,7 @@ export function ListaClientes() {
           />
         : verRenovacao
         ? <RenovacaoClientes onBack={() => setVerRenovacao(false)} onAddAgendamento={addAgendamento} onRenovar={setClienteParaRenovar} />
-        : activeNav === 0 ? <TelaLista busca={busca} setBusca={setBusca} vrf={vrf} setVrf={setVrf} onSelectCliente={setClienteSelecionado} onAddAgendamento={addAgendamento} ausentes={ausentes} onAusentar={setClienteParaAusentar} cobrados={cobrados} onRemoverCobrado={(id) => { setCobrados(prev => prev.filter(x => x !== id)); setCobradosExtras(prev => prev.filter(x => x.id !== id)); setCobradosValores(prev => prev.filter(x => x.id !== id)); }} clientesAdicionais={clientesAdicionaisHoje} cobradosExtras={cobradosExtras} cobradosValores={cobradosValores} />
+        : activeNav === 0 ? <TelaLista busca={busca} setBusca={setBusca} vrf={vrf} setVrf={setVrf} onSelectCliente={setClienteSelecionado} onAddAgendamento={addAgendamento} ausentes={ausentes} onAusentar={setClienteParaAusentar} cobrados={cobrados} onRemoverCobrado={(id) => { setCobrados(prev => prev.filter(x => x !== id)); setCobradosExtras(prev => prev.filter(x => x.id !== id)); setCobradosValores(prev => prev.filter(x => x.id !== id)); }} clientesAdicionais={clientesAdicionaisHoje} cobradosExtras={cobradosExtras} cobradosValores={cobradosValores} pagamentosRegistro={registroPagamentos} />
         : activeNav === 1 ? <CadastroCliente onBack={() => setActiveNav(0)} onSalvar={(emp) => {
             setEmprestimentos(prev => [emp, ...prev]);
             setNovosClientesIds(prev => new Set([...prev, emp.id]));

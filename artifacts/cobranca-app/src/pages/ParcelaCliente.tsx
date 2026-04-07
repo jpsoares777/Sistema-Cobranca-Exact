@@ -41,7 +41,7 @@ function ValueBox({ label, value, highlight, bold }: {
   );
 }
 
-export function ParcelaCliente({ cliente, onBack, onSaved }: { cliente: Cliente; onBack: () => void; onSaved?: (valor: number) => void }) {
+export function ParcelaCliente({ cliente, onBack, onSaved }: { cliente: Cliente; onBack: () => void; onSaved?: (valor: number, metodo: "Parcela" | "Abono" | "Sem pagamento") => void }) {
   const [paymentType, setPaymentType] = useState<"parcela" | "abono" | "sem">("parcela");
   const [valorParcela, setValorParcela] = useState(cliente.parcela);
   const [valorParcelaStr, setValorParcelaStr] = useState(String(cliente.parcela));
@@ -80,7 +80,7 @@ export function ParcelaCliente({ cliente, onBack, onSaved }: { cliente: Cliente;
       setSaveState("success");
       setShowSuccessModal(true);
       if (paymentType === "parcela" || paymentType === "abono") setSaldoAtual(novoSaldo);
-      setTimeout(() => { setSaveState("idle"); setShowSuccessModal(false); if (onSaved) onSaved(paymentType === "sem" ? 0 : valorParcela); else onBack(); }, 1500);
+      setTimeout(() => { setSaveState("idle"); setShowSuccessModal(false); const metodo = paymentType === "sem" ? "Sem pagamento" : paymentType === "abono" ? "Abono" : "Parcela"; if (onSaved) onSaved(paymentType === "sem" ? 0 : valorParcela, metodo); else onBack(); }, 1500);
     }, 1400);
   }
 
