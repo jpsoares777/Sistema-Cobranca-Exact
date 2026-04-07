@@ -25,14 +25,14 @@ function SectionHeader({ title, icon, color }: {
   );
 }
 
-function Field({ label, required, type = "text", value, onChange }: {
+function Field({ label, required, type = "text", value, onChange, error }: {
   label: string; required?: boolean; type?: string;
-  value?: string; onChange?: (v: string) => void;
+  value?: string; onChange?: (v: string) => void; error?: boolean;
 }) {
   return (
     <div>
-      <div className="text-[9px] text-gray-400 uppercase tracking-wide font-semibold mb-0.5 ml-0.5">
-        {label}{required && <span className="text-red-400 ml-0.5">*</span>}
+      <div className="text-[9px] uppercase tracking-wide font-semibold mb-0.5 ml-0.5" style={{ color: error ? "#ef4444" : "#9ca3af" }}>
+        {label}{required && <span className="ml-0.5" style={{ color: "#ef4444" }}>*</span>}
       </div>
       <input
         type={type}
@@ -40,8 +40,14 @@ function Field({ label, required, type = "text", value, onChange }: {
           ? { value, onChange: e => onChange?.(e.target.value) }
           : {}
         )}
-        className="block w-full px-2 py-1.5 text-xs text-gray-900 bg-[#f5f5f5] rounded-md border border-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-400 focus:border-blue-400 transition-all"
+        className="block w-full px-2 py-1.5 text-xs text-gray-900 rounded-md focus:outline-none focus:ring-1 transition-all"
+        style={{
+          background: error ? "#fff5f5" : "#f5f5f5",
+          border: error ? "1.5px solid #ef4444" : "1px solid #e5e7eb",
+          boxShadow: error ? "0 0 0 2px rgba(239,68,68,0.1)" : "none",
+        }}
       />
+      {error && <p className="text-[9px] text-red-400 mt-0.5 ml-0.5">Campo obrigatório</p>}
     </div>
   );
 }
@@ -91,9 +97,15 @@ export function CadastroCliente({ onBack, onSalvar, initialData }: {
   const [showConfirmacao, setShowConfirmacao] = useState(false);
   const [formKey, setFormKey] = useState(0);
 
+  const [submitted, setSubmitted] = useState(false);
   const [cpfField, setCpfField] = useState(initialData?.cpf ?? "");
   const [telefoneField, setTelefoneField] = useState(initialData?.telefone ?? "");
+  const [cepField, setCepField] = useState("");
   const [enderecoField, setEnderecoField] = useState(initialData?.endereco ?? "");
+  const [numeroField, setNumeroField] = useState("");
+  const [bairroField, setBairroField] = useState("");
+  const [cidadeField, setCidadeField] = useState("");
+  const [ufField, setUfField] = useState("");
 
   const [loanForm, setLoanForm] = useState({
     nome: initialData?.nome ?? "",
@@ -133,11 +145,23 @@ export function CadastroCliente({ onBack, onSalvar, initialData }: {
     setPagamentoAdiantado(false);
     setIsDocsOpen(false);
     setDocFiles([null, null, null]);
+    setSubmitted(false);
+    setCpfField(""); setTelefoneField("");
+    setCepField(""); setEnderecoField(""); setNumeroField("");
+    setBairroField(""); setCidadeField(""); setUfField("");
     setLoanForm({ nome: "", sobrenome: "", valorEmprestado: "", valorParcela: "", juros: "", parcelas: "1", frequencia: "Diário" });
     setFormKey(k => k + 1);
   };
 
+  const isValid = () =>
+    cpfField.trim() && telefoneField.trim() && loanForm.nome.trim() &&
+    cepField.trim() && enderecoField.trim() && numeroField.trim() &&
+    bairroField.trim() && cidadeField.trim() && ufField.trim() &&
+    loanForm.valorEmprestado.trim() && loanForm.valorParcela.trim() && loanForm.juros.trim();
+
   const handleSalvar = () => {
+    setSubmitted(true);
+    if (!isValid()) return;
     setSalvo(true);
     setShowConfirmacao(true);
 
@@ -231,12 +255,12 @@ export function CadastroCliente({ onBack, onSalvar, initialData }: {
             <div className="bg-white rounded-lg shadow-sm border-l-4 border-blue-500 overflow-hidden">
               <div className="p-3 space-y-2">
                 <div className="flex gap-2">
-                  <div className="flex-1"><Field label="CPF" required value={cpfField} onChange={setCpfField} /></div>
-                  <div className="flex-1"><Field label="Telefone" required type="tel" value={telefoneField} onChange={setTelefoneField} /></div>
+                  <div className="flex-1"><Field label="CPF" required value={cpfField} onChange={setCpfField} error={submitted && !cpfField.trim()} /></div>
+                  <div className="flex-1"><Field label="Telefone" required type="tel" value={telefoneField} onChange={setTelefoneField} error={submitted && !telefoneField.trim()} /></div>
                 </div>
                 <div className="flex gap-2">
                   <div className="flex-1">
-                    <Field label="Nome" required value={loanForm.nome} onChange={setL("nome")} />
+                    <Field label="Nome" required value={loanForm.nome} onChange={setL("nome")} error={submitted && !loanForm.nome.trim()} />
                   </div>
                   <div className="flex-1">
                     <Field label="Sobrenome" value={loanForm.sobrenome} onChange={setL("sobrenome")} />
@@ -252,14 +276,14 @@ export function CadastroCliente({ onBack, onSalvar, initialData }: {
             <div className="bg-white rounded-lg shadow-sm border-l-4 border-indigo-500 overflow-hidden">
               <div className="p-3 space-y-2">
                 <div className="flex gap-2">
-                  <div className="w-24"><Field label="CEP" /></div>
-                  <div className="flex-1"><Field label="Rua / Avenida" value={enderecoField} onChange={setEnderecoField} /></div>
-                  <div className="w-16"><Field label="Nº" /></div>
+                  <div className="w-24"><Field label="CEP" required value={cepField} onChange={setCepField} error={submitted && !cepField.trim()} /></div>
+                  <div className="flex-1"><Field label="Rua / Avenida" required value={enderecoField} onChange={setEnderecoField} error={submitted && !enderecoField.trim()} /></div>
+                  <div className="w-16"><Field label="Nº" required value={numeroField} onChange={setNumeroField} error={submitted && !numeroField.trim()} /></div>
                 </div>
                 <div className="flex gap-2">
-                  <div className="flex-1"><Field label="Bairro" /></div>
-                  <div className="flex-1"><Field label="Cidade" /></div>
-                  <div className="w-12"><Field label="UF" /></div>
+                  <div className="flex-1"><Field label="Bairro" required value={bairroField} onChange={setBairroField} error={submitted && !bairroField.trim()} /></div>
+                  <div className="flex-1"><Field label="Cidade" required value={cidadeField} onChange={setCidadeField} error={submitted && !cidadeField.trim()} /></div>
+                  <div className="w-12"><Field label="UF" required value={ufField} onChange={setUfField} error={submitted && !ufField.trim()} /></div>
                 </div>
               </div>
             </div>
@@ -313,11 +337,13 @@ export function CadastroCliente({ onBack, onSalvar, initialData }: {
                 <div className="flex gap-2">
                   <div className="flex-1">
                     <Field label="Valor do Empréstimo" required type="number"
-                      value={loanForm.valorEmprestado} onChange={setL("valorEmprestado")} />
+                      value={loanForm.valorEmprestado} onChange={setL("valorEmprestado")}
+                      error={submitted && !loanForm.valorEmprestado.trim()} />
                   </div>
                   <div className="flex-1">
                     <Field label="Valor da Parcela" required type="number"
-                      value={loanForm.valorParcela} onChange={setL("valorParcela")} />
+                      value={loanForm.valorParcela} onChange={setL("valorParcela")}
+                      error={submitted && !loanForm.valorParcela.trim()} />
                   </div>
                 </div>
                 <div className="flex gap-2">
@@ -328,7 +354,8 @@ export function CadastroCliente({ onBack, onSalvar, initialData }: {
                   </div>
                   <div className="flex-1">
                     <Field label="Juros (%)" required type="number"
-                      value={loanForm.juros} onChange={setL("juros")} />
+                      value={loanForm.juros} onChange={setL("juros")}
+                      error={submitted && !loanForm.juros.trim()} />
                   </div>
                   <div className="flex-1">
                     <SelectField label="Frequência"
