@@ -138,7 +138,6 @@ function TelaLista({ busca, setBusca, vrf, setVrf, onSelectCliente, onAddAgendam
   );
   const vrfLista = [...new Set(cobradosIds)]
     .filter(id => !vrfRemovidos.includes(id))
-    .reverse()
     .map(id => clientesData.find(c => c.id === id)!)
     .filter(Boolean);
 
@@ -1398,8 +1397,7 @@ export function ListaClientes() {
   const [verOutrasDatas, setVerOutrasDatas] = useState(false);
   const [verAusentes, setVerAusentes] = useState(false);
   const [ausentes, setAusentes] = useState<number[]>([]);
-  const [cobradosSet, setCobradosSet] = useState<Set<number>>(new Set());
-  const cobrados = [...cobradosSet];
+  const [cobrados, setCobrados] = useState<number[]>([]);
   const [clienteParaAusentar, setClienteParaAusentar] = useState<ClienteItem | null>(null);
   const [salvoSinc, setSalvoSinc] = useState(false);
   const salvarSinc = () => { setSalvoSinc(true); setTimeout(() => setSalvoSinc(false), 2000); };
@@ -1416,7 +1414,7 @@ export function ListaClientes() {
     setRendimentos(prev => [...prev, { id: Date.now(), data: hoje, categoria, valor, observacao: observacao || undefined }]);
 
   if (clienteSelecionado) {
-    return <ParcelaCliente cliente={clienteSelecionado} onBack={() => setClienteSelecionado(null)} onSaved={() => { setCobradosSet(prev => { const next = new Set(prev); next.add(clienteSelecionado!.id); return next; }); setAusentes(prev => prev.filter(x => x !== clienteSelecionado!.id)); setClienteSelecionado(null); }} />;
+    return <ParcelaCliente cliente={clienteSelecionado} onBack={() => setClienteSelecionado(null)} onSaved={() => { setCobrados(prev => prev.includes(clienteSelecionado!.id) ? prev : [clienteSelecionado!.id, ...prev]); setAusentes(prev => prev.filter(x => x !== clienteSelecionado!.id)); setClienteSelecionado(null); }} />;
   }
 
   if (clienteParaRenovar) {
