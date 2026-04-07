@@ -1416,7 +1416,7 @@ export function ListaClientes() {
     setRendimentos(prev => [...prev, { id: Date.now(), data: hoje, categoria, valor, observacao: observacao || undefined }]);
 
   if (clienteSelecionado) {
-    return <ParcelaCliente cliente={clienteSelecionado} onBack={() => setClienteSelecionado(null)} onSaved={() => { setCobradosSet(prev => { const next = new Set(prev); next.add(clienteSelecionado!.id); return next; }); setClienteSelecionado(null); }} />;
+    return <ParcelaCliente cliente={clienteSelecionado} onBack={() => setClienteSelecionado(null)} onSaved={() => { setCobradosSet(prev => { const next = new Set(prev); next.add(clienteSelecionado!.id); return next; }); setAusentes(prev => prev.filter(x => x !== clienteSelecionado!.id)); setClienteSelecionado(null); }} />;
   }
 
   if (clienteParaRenovar) {
