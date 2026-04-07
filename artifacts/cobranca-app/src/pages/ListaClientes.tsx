@@ -1406,6 +1406,7 @@ export function ListaClientes() {
   const [verAusentes, setVerAusentes] = useState(false);
   const [ausentes, setAusentes] = useState<number[]>([]);
   const [cobrados, setCobrados] = useState<number[]>([]);
+  const [cobradosValores, setCobradosValores] = useState<{id: number, valor: number}[]>([]);
   const [cobradosExtras, setCobradosExtras] = useState<ClienteItem[]>([]);
   const [clienteParaAusentar, setClienteParaAusentar] = useState<ClienteItem | null>(null);
   const [salvoSinc, setSalvoSinc] = useState(false);
@@ -1427,9 +1428,10 @@ export function ListaClientes() {
     setRendimentos(prev => [...prev, { id: Date.now(), data: hoje, categoria, valor, observacao: observacao || undefined }]);
 
   if (clienteSelecionado) {
-    return <ParcelaCliente cliente={clienteSelecionado} onBack={() => setClienteSelecionado(null)} onSaved={() => {
+    return <ParcelaCliente cliente={clienteSelecionado} onBack={() => setClienteSelecionado(null)} onSaved={(valor) => {
       const id = clienteSelecionado!.id;
       setCobrados(prev => prev.includes(id) ? prev : [id, ...prev]);
+      setCobradosValores(prev => { const existing = prev.find(x => x.id === id); return existing ? prev.map(x => x.id === id ? { id, valor: x.valor + valor } : x) : [{ id, valor }, ...prev]; });
       setAusentes(prev => prev.filter(x => x !== id));
       const deOutrasDatas = outrasDatasData.some(c => c.id === id) || novosClientesOutras.some(c => c.id === id);
       if (deOutrasDatas) {
@@ -1671,13 +1673,13 @@ export function ListaClientes() {
             ausentesCount={ausentes.length}
             novosCount={novosClientesIds.size}
             renovacoesCount={renovacoesIds.size}
-            cobrancaDiaria={cobrados.reduce((s, id) => { const c = clientesData.find(x => x.id === id) ?? clientesAdicionaisHoje.find(x => x.id === id); return s + (c?.parcela ?? 0); }, 0)}
+            cobrancaDiaria={cobradosValores.reduce((s, x) => s + x.valor, 0)}
             cobrancaEsperada={clientesData.reduce((s, c) => s + c.parcela, 0) + clientesAdicionaisHoje.reduce((s, c) => s + c.parcela, 0)}
             novosEmprestimos={emprestimentos.reduce((s, e) => s + (e.valorEmprestado ?? 0), 0)}
           />
         : verRenovacao
         ? <RenovacaoClientes onBack={() => setVerRenovacao(false)} onAddAgendamento={addAgendamento} onRenovar={setClienteParaRenovar} />
-        : activeNav === 0 ? <TelaLista busca={busca} setBusca={setBusca} vrf={vrf} setVrf={setVrf} onSelectCliente={setClienteSelecionado} onAddAgendamento={addAgendamento} ausentes={ausentes} onAusentar={setClienteParaAusentar} cobrados={cobrados} onRemoverCobrado={(id) => { setCobrados(prev => prev.filter(x => x !== id)); setCobradosExtras(prev => prev.filter(x => x.id !== id)); }} clientesAdicionais={clientesAdicionaisHoje} cobradosExtras={cobradosExtras} />
+        : activeNav === 0 ? <TelaLista busca={busca} setBusca={setBusca} vrf={vrf} setVrf={setVrf} onSelectCliente={setClienteSelecionado} onAddAgendamento={addAgendamento} ausentes={ausentes} onAusentar={setClienteParaAusentar} cobrados={cobrados} onRemoverCobrado={(id) => { setCobrados(prev => prev.filter(x => x !== id)); setCobradosExtras(prev => prev.filter(x => x.id !== id)); setCobradosValores(prev => prev.filter(x => x.id !== id)); }} clientesAdicionais={clientesAdicionaisHoje} cobradosExtras={cobradosExtras} />
         : activeNav === 1 ? <CadastroCliente onBack={() => setActiveNav(0)} onSalvar={(emp) => {
             setEmprestimentos(prev => [emp, ...prev]);
             setNovosClientesIds(prev => new Set([...prev, emp.id]));
