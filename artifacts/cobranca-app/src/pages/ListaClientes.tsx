@@ -272,7 +272,7 @@ function TelaLista({ busca, setBusca, vrf, setVrf, onSelectCliente, onAddAgendam
                   Cancelar
                 </button>
                 <button
-                  onClick={() => { onRemoverCobrado(clienteParaRemover.id); setVrfRemovidos(prev => [...prev, clienteParaRemover.id]); setClienteParaRemover(null); setVrf(false); }}
+                  onClick={() => { onRemoverCobrado(clienteParaRemover.id); setVrfRemovidos(prev => [...prev, clienteParaRemover.id]); setClienteParaRemover(null); setClienteDetalhe(null); setVrf(false); }}
                   style={{ flex: 1, padding: "8px 0", borderRadius: 9, border: "1.5px solid #fca5a5", background: "#fff1f2", fontSize: 12, fontWeight: 600, color: "#dc2626", cursor: "pointer" }}
                 >
                   Remover
