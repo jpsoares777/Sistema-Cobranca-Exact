@@ -1500,10 +1500,15 @@ export function ListaClientes() {
                 <div style={{ fontSize: 15, fontWeight: 800, color: "#FFFFFF", letterSpacing: 0.5, lineHeight: 1.2 }}>Clientes Ausentes</div>
                 <div style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", fontWeight: 500, marginTop: 2 }}>{ausentes.length} ausente{ausentes.length !== 1 ? "s" : ""}</div>
               </div>
-            ) : !verRenovacao && (
+            ) : verRenovacao ? (
+              <div>
+                <div style={{ fontSize: 15, fontWeight: 800, color: "#FFFFFF", letterSpacing: 0.5, lineHeight: 1.2 }}>Lista de Clientes</div>
+                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", fontWeight: 500, marginTop: 2 }}>Renovação de empréstimos</div>
+              </div>
+            ) : (
               <div>
                 <div style={{ fontSize: 15, fontWeight: 800, color: "#FFFFFF", letterSpacing: 0.5, lineHeight: 1.2 }}>
-                  {activeNav === 0 ? "SystemPay" : tituloTela}
+                  {activeNav === 0 ? "Lista de Clientes" : tituloTela}
                 </div>
                 <div style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", fontWeight: 500, marginTop: 2 }}>
                   Sistema de Cobrança
