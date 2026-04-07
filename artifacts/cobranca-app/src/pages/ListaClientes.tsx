@@ -1641,7 +1641,7 @@ export function ListaClientes() {
             totalClientes={clientesData.length}
             cobradosCount={cobrados.length}
             ausentesCount={ausentes.length}
-            novosCount={clientesData.filter(c => c.status === "novo").length + novosClientesHoje}
+            novosCount={emprestimentos.length}
             cobrancaDiaria={cobrados.reduce((s, id) => { const c = clientesData.find(x => x.id === id); return s + (c?.parcela ?? 0); }, 0)}
             novosEmprestimos={emprestimentos.reduce((s, e) => s + (e.valorEmprestado ?? 0), 0)}
           />
