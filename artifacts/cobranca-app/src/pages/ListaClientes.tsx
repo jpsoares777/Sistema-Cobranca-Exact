@@ -1642,7 +1642,7 @@ export function ListaClientes() {
             ausentesCount={ausentes.length}
             novosCount={clientesData.filter(c => c.status === "novo").length}
             cobrancaDiaria={cobrados.reduce((s, id) => { const c = clientesData.find(x => x.id === id); return s + (c?.parcela ?? 0); }, 0)}
-            novosEmprestimos={emprestimentos.reduce((s, e) => s + e.valor, 0)}
+            novosEmprestimos={emprestimentos.reduce((s, e) => s + (e.valorEmprestado ?? 0), 0)}
           />
         : verRenovacao
         ? <RenovacaoClientes onBack={() => setVerRenovacao(false)} onAddAgendamento={addAgendamento} onRenovar={setClienteParaRenovar} />
