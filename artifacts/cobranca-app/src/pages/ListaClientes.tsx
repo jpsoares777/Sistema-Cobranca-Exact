@@ -1420,7 +1420,7 @@ export function ListaClientes() {
     setRendimentos(prev => [...prev, { id: Date.now(), data: hoje, categoria, valor, observacao: observacao || undefined }]);
 
   if (clienteSelecionado) {
-    return <ParcelaCliente cliente={clienteSelecionado} onBack={() => setClienteSelecionado(null)} onSaved={() => { setCobrados(prev => prev.includes(clienteSelecionado!.id) ? prev : [clienteSelecionado!.id, ...prev]); setAusentes(prev => prev.filter(x => x !== clienteSelecionado!.id)); setClienteSelecionado(null); }} />;
+    return <ParcelaCliente cliente={clienteSelecionado} onBack={() => setClienteSelecionado(null)} onSaved={() => { setCobrados(prev => prev.includes(clienteSelecionado!.id) ? prev : [clienteSelecionado!.id, ...prev]); setAusentes(prev => prev.filter(x => x !== clienteSelecionado!.id)); setClienteSelecionado(null); setVerOutrasDatas(false); setActiveNav(0); }} />;
   }
 
   if (clienteParaRenovar) {
