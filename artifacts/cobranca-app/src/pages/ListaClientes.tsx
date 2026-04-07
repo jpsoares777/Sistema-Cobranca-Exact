@@ -1426,7 +1426,7 @@ export function ListaClientes() {
     return (
       <CadastroCliente
         onBack={() => setClienteParaRenovar(null)}
-        onSalvar={(emp) => { setEmprestimentos(prev => [emp, ...prev]); setClienteParaRenovar(null); setVerRenovacao(false); }}
+        onSalvar={(emp) => { setEmprestimentos(prev => [emp, ...prev]); setTimeout(() => { setClienteParaRenovar(null); setVerRenovacao(false); }, 1600); }}
         initialData={{
           nome: primeiroNome,
           sobrenome,
