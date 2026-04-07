@@ -117,7 +117,7 @@ function TrashIcon() {
   );
 }
 
-function TelaLista({ busca, setBusca, vrf, setVrf, onSelectCliente, onAddAgendamento, ausentes, onAusentar, cobrados, onRemoverCobrado, clientesAdicionais = [], cobradosExtras = [] }: {
+function TelaLista({ busca, setBusca, vrf, setVrf, onSelectCliente, onAddAgendamento, ausentes, onAusentar, cobrados, onRemoverCobrado, clientesAdicionais = [], cobradosExtras = [], cobradosValores = [] }: {
   busca: string; setBusca: (v: string) => void;
   vrf: boolean; setVrf: (v: boolean) => void;
   onSelectCliente: (c: typeof clientesData[0]) => void;
@@ -128,6 +128,7 @@ function TelaLista({ busca, setBusca, vrf, setVrf, onSelectCliente, onAddAgendam
   onRemoverCobrado: (id: number) => void;
   clientesAdicionais?: ClienteItem[];
   cobradosExtras?: ClienteItem[];
+  cobradosValores?: {id: number, valor: number}[];
 }) {
   const [clienteDetalhe, setClienteDetalhe] = useState<ClienteItem | null>(null);
   const [vrfRemovidos, setVrfRemovidos] = useState<number[]>([]);
