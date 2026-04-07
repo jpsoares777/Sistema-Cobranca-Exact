@@ -1508,7 +1508,7 @@ export function ListaClientes() {
             ) : (
               <div>
                 <div style={{ fontSize: 15, fontWeight: 800, color: "#FFFFFF", letterSpacing: 0.5, lineHeight: 1.2 }}>
-                  {activeNav === 0 ? "Lista de Clientes" : tituloTela}
+                  {activeNav === 0 ? "SystemPay" : tituloTela}
                 </div>
                 <div style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", fontWeight: 500, marginTop: 2 }}>
                   Sistema de Cobrança
