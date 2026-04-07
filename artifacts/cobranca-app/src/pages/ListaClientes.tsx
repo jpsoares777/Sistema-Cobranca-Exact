@@ -117,7 +117,7 @@ function TrashIcon() {
   );
 }
 
-function TelaLista({ busca, setBusca, vrf, setVrf, onSelectCliente, onAddAgendamento, ausentes, onAusentar, cobrados }: {
+function TelaLista({ busca, setBusca, vrf, setVrf, onSelectCliente, onAddAgendamento, ausentes, onAusentar, cobrados, onRemoverCobrado }: {
   busca: string; setBusca: (v: string) => void;
   vrf: boolean; setVrf: (v: boolean) => void;
   onSelectCliente: (c: typeof clientesData[0]) => void;
@@ -125,6 +125,7 @@ function TelaLista({ busca, setBusca, vrf, setVrf, onSelectCliente, onAddAgendam
   ausentes?: number[];
   onAusentar: (c: ClienteItem) => void;
   cobrados?: number[];
+  onRemoverCobrado: (id: number) => void;
 }) {
   const [clienteDetalhe, setClienteDetalhe] = useState<ClienteItem | null>(null);
   const [vrfRemovidos, setVrfRemovidos] = useState<number[]>([]);
@@ -265,7 +266,7 @@ function TelaLista({ busca, setBusca, vrf, setVrf, onSelectCliente, onAddAgendam
                   Cancelar
                 </button>
                 <button
-                  onClick={() => { setVrfRemovidos(prev => [...prev, clienteParaRemover.id]); setClienteParaRemover(null); setVrf(false); }}
+                  onClick={() => { onRemoverCobrado(clienteParaRemover.id); setVrfRemovidos(prev => [...prev, clienteParaRemover.id]); setClienteParaRemover(null); setVrf(false); }}
                   style={{ flex: 1, padding: "8px 0", borderRadius: 9, border: "1.5px solid #fca5a5", background: "#fff1f2", fontSize: 12, fontWeight: 600, color: "#dc2626", cursor: "pointer" }}
                 >
                   Remover
@@ -1647,7 +1648,7 @@ export function ListaClientes() {
           />
         : verRenovacao
         ? <RenovacaoClientes onBack={() => setVerRenovacao(false)} onAddAgendamento={addAgendamento} onRenovar={setClienteParaRenovar} />
-        : activeNav === 0 ? <TelaLista busca={busca} setBusca={setBusca} vrf={vrf} setVrf={setVrf} onSelectCliente={setClienteSelecionado} onAddAgendamento={addAgendamento} ausentes={ausentes} onAusentar={setClienteParaAusentar} cobrados={cobrados} />
+        : activeNav === 0 ? <TelaLista busca={busca} setBusca={setBusca} vrf={vrf} setVrf={setVrf} onSelectCliente={setClienteSelecionado} onAddAgendamento={addAgendamento} ausentes={ausentes} onAusentar={setClienteParaAusentar} cobrados={cobrados} onRemoverCobrado={(id) => setCobrados(prev => prev.filter(x => x !== id))} />
         : activeNav === 1 ? <CadastroCliente onBack={() => setActiveNav(0)} onSalvar={(emp) => { setEmprestimentos(prev => [emp, ...prev]); setNovosClientesHoje(prev => prev + 1); }} />
         : activeNav === 2 ? <LancamentoFinanceiro onAddDespesa={addDespesa} onAddRendimento={addRendimento} />
         : <TelaCalendario agendamentos={agendamentos} />
