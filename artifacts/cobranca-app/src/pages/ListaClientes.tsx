@@ -1634,7 +1634,17 @@ export function ListaClientes() {
             onBack={() => setVerEmprestimentos(false)}
           />
         : verRelatorio
-        ? <RelatorioFinanceiro onBack={() => setVerRelatorio(false)} totalDespesas={despesas.reduce((s, d) => s + d.valor, 0)} totalRendimentos={rendimentos.reduce((s, r) => s + r.valor, 0)} />
+        ? <RelatorioFinanceiro
+            onBack={() => setVerRelatorio(false)}
+            totalDespesas={despesas.reduce((s, d) => s + d.valor, 0)}
+            totalRendimentos={rendimentos.reduce((s, r) => s + r.valor, 0)}
+            totalClientes={clientesData.length}
+            cobradosCount={cobrados.length}
+            ausentesCount={ausentes.length}
+            novosCount={clientesData.filter(c => c.status === "novo").length + novosClientesHoje}
+            cobrancaDiaria={cobrados.reduce((s, id) => { const c = clientesData.find(x => x.id === id); return s + (c?.parcela ?? 0); }, 0)}
+            novosEmprestimos={emprestimentos.reduce((s, e) => s + (e.valorEmprestado ?? 0), 0)}
+          />
         : verRenovacao
         ? <RenovacaoClientes onBack={() => setVerRenovacao(false)} onAddAgendamento={addAgendamento} onRenovar={setClienteParaRenovar} />
         : activeNav === 0 ? <TelaLista busca={busca} setBusca={setBusca} vrf={vrf} setVrf={setVrf} onSelectCliente={setClienteSelecionado} onAddAgendamento={addAgendamento} ausentes={ausentes} onAusentar={setClienteParaAusentar} cobrados={cobrados} />

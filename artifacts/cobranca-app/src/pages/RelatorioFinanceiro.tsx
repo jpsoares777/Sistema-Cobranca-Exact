@@ -16,9 +16,7 @@ type Section = {
 const fmt = (v: number) => v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 const CAIXA_INICIAL = 3000;
-const NOVOS_EMPRESTIMOS = 600;
 const RETIRADA = 0;
-const COBRANCA_DIARIA = 160;
 
 function ToggleSwitch({ on }: { on: boolean }) {
   const [active, setActive] = useState(on);
@@ -33,8 +31,29 @@ function ToggleSwitch({ on }: { on: boolean }) {
   );
 }
 
-export function RelatorioFinanceiro({ onBack, totalDespesas = 0, totalRendimentos = 0 }: { onBack: () => void; totalDespesas?: number; totalRendimentos?: number }) {
-  const saldo = CAIXA_INICIAL + COBRANCA_DIARIA + totalRendimentos - NOVOS_EMPRESTIMOS - RETIRADA - totalDespesas;
+export function RelatorioFinanceiro({
+  onBack,
+  totalDespesas = 0,
+  totalRendimentos = 0,
+  totalClientes = 0,
+  cobradosCount = 0,
+  ausentesCount = 0,
+  novosCount = 0,
+  cobrancaDiaria = 0,
+  novosEmprestimos = 0,
+}: {
+  onBack: () => void;
+  totalDespesas?: number;
+  totalRendimentos?: number;
+  totalClientes?: number;
+  cobradosCount?: number;
+  ausentesCount?: number;
+  novosCount?: number;
+  cobrancaDiaria?: number;
+  novosEmprestimos?: number;
+}) {
+  const clientesAtivos = totalClientes - novosCount;
+  const saldo = CAIXA_INICIAL + cobrancaDiaria + totalRendimentos - novosEmprestimos - RETIRADA - totalDespesas;
 
   const sections: Section[] = [
     {
@@ -42,11 +61,11 @@ export function RelatorioFinanceiro({ onBack, totalDespesas = 0, totalRendimento
       dot: "bg-indigo-500", accent: "#6366f1",
       headerBg: "bg-indigo-50", headerText: "text-indigo-700",
       rows: [
-        { type: "row", label: "Número de Clientes",  value: "20" },
-        { type: "row", label: "Clientes Novos",       value: "1",  valueColor: "text-emerald-600" },
-        { type: "row", label: "Clientes Ausentes",    value: "0" },
+        { type: "row", label: "Número de Clientes",  value: String(totalClientes) },
+        { type: "row", label: "Clientes Novos",       value: String(novosCount),  valueColor: "text-emerald-600" },
+        { type: "row", label: "Clientes Ausentes",    value: String(ausentesCount) },
         { type: "row", label: "Renovação de Cliente", value: "0" },
-        { type: "row", label: "Cobranças Feitas",     value: "1 / 19  —  Adicionais: 0" },
+        { type: "row", label: "Cobranças Feitas",     value: `${cobradosCount} / ${clientesAtivos}  —  Adicionais: 0` },
       ],
     },
     {
@@ -54,9 +73,9 @@ export function RelatorioFinanceiro({ onBack, totalDespesas = 0, totalRendimento
       dot: "bg-emerald-500", accent: "#10b981",
       headerBg: "bg-emerald-50", headerText: "text-emerald-700",
       rows: [
-        { type: "row", label: "Cobrança Esperada",        value: "R$ 1.110,00  (100%)" },
-        { type: "row", label: "Cobrança Diária",          value: "R$ 160,00  (14,4%)", valueColor: "text-emerald-600" },
-        { type: "row", label: "Dinheiro / Transferência", value: "R$ 160,00 / R$ 0,00" },
+        { type: "row", label: "Cobrança Esperada",        value: "R$ 0,00  (0%)" },
+        { type: "row", label: "Cobrança Diária",          value: `R$ ${fmt(cobrancaDiaria)}`, valueColor: "text-emerald-600" },
+        { type: "row", label: "Dinheiro / Transferência", value: `R$ ${fmt(cobrancaDiaria)} / R$ 0,00` },
       ],
     },
     {
@@ -65,7 +84,7 @@ export function RelatorioFinanceiro({ onBack, totalDespesas = 0, totalRendimento
       headerBg: "bg-blue-50", headerText: "text-blue-700",
       rows: [
         { type: "row", label: "Caixa Inicial",      value: `R$ ${fmt(CAIXA_INICIAL)}` },
-        { type: "row", label: "Novos Empréstimos",   value: `R$ ${fmt(NOVOS_EMPRESTIMOS)}` },
+        { type: "row", label: "Novos Empréstimos",   value: `R$ ${fmt(novosEmprestimos)}` },
         { type: "row", label: "Retirada de Caixa",  value: `R$ ${fmt(RETIRADA)}` },
         { type: "row", label: "Despesas",            value: `R$ ${fmt(totalDespesas)}`, valueColor: "text-red-500" },
         { type: "row", label: "Rendimento",          value: `R$ ${fmt(totalRendimentos)}`, valueColor: "text-emerald-600" },
@@ -82,21 +101,14 @@ export function RelatorioFinanceiro({ onBack, totalDespesas = 0, totalRendimento
 
   return (
     <div className="flex flex-col bg-slate-100" style={{ flex: 1, overflowY: "auto", paddingBottom: 80, fontFamily: "'Inter','Segoe UI',sans-serif" }}>
-
-
-      {/* Seções */}
       <div className="px-3 pt-3 space-y-2">
         {sections.map((section) => (
           <div key={section.title} className="bg-white rounded-lg overflow-hidden shadow-sm border border-slate-100">
-            {/* Linha colorida topo */}
             <div className="h-[2px]" style={{ background: section.accent }} />
-            {/* Header da seção */}
             <div className={`${section.headerBg} px-3 py-1.5 flex items-center gap-1.5 border-b border-slate-100`}>
               <div className={`w-2 h-2 rounded-full ${section.dot}`} />
               <span className={`text-[9px] font-bold uppercase tracking-widest ${section.headerText}`}>{section.title}</span>
             </div>
-
-            {/* Linhas */}
             {section.rows.map((row, ri) => {
               if (row.type === "toggle") {
                 return (
@@ -118,8 +130,6 @@ export function RelatorioFinanceiro({ onBack, totalDespesas = 0, totalRendimento
             })}
           </div>
         ))}
-
-        {/* Botões de ação */}
         <div className="grid grid-cols-2 gap-2 pt-0.5">
           <button className="bg-slate-900 text-white rounded-lg py-1.5 text-[10px] font-semibold shadow-sm flex items-center justify-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" />
