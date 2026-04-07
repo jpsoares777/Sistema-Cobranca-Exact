@@ -45,7 +45,7 @@ export function ParcelaCliente({ cliente, onBack, onSaved }: { cliente: Cliente;
   const [paymentType, setPaymentType] = useState<"parcela" | "abono" | "sem">("parcela");
   const [valorParcela, setValorParcela] = useState(cliente.parcela);
   const [valorParcelaStr, setValorParcelaStr] = useState(String(cliente.parcela));
-  const [numeroParcela, setNumeroParcela] = useState(cliente.parcelasPagas + 1);
+  const [numeroParcela, setNumeroParcela] = useState(1);
   const [observacao, setObservacao] = useState("");
   const [selectedMethod, setSelectedMethod] = useState(PAYMENT_METHODS[0]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -262,9 +262,11 @@ export function ParcelaCliente({ cliente, onBack, onSaved }: { cliente: Cliente;
                 <select
                   value={numeroParcela}
                   onChange={(e) => {
-                    setNumeroParcela(parseInt(e.target.value));
-                    setValorParcela(cliente.parcela);
-                    setValorParcelaStr(String(cliente.parcela));
+                    const n = parseInt(e.target.value);
+                    const total = parseFloat((n * cliente.parcela).toFixed(2));
+                    setNumeroParcela(n);
+                    setValorParcela(total);
+                    setValorParcelaStr(String(total));
                   }}
                   className="w-full appearance-none bg-transparent px-2 py-1.5 text-xs font-medium text-[#1B2236] focus:outline-none"
                 >
