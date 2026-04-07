@@ -1430,7 +1430,7 @@ export function ListaClientes() {
     return (
       <CadastroCliente
         onBack={() => setClienteParaRenovar(null)}
-        onSalvar={(emp) => { setEmprestimentos(prev => [emp, ...prev]); setRenovacoesIds(prev => new Set([...prev, emp.id])); setTimeout(() => { setClienteParaRenovar(null); setVerRenovacao(false); }, 1600); }}
+        onSalvar={(emp) => { setEmprestimentos(prev => [emp, ...prev]); setRenovacoesIds(prev => new Set([...prev, emp.id])); setTimeout(() => { setClienteParaRenovar(null); setVerRenovacao(false); setActiveNav(0); }, 1600); }}
         initialData={{
           nome: primeiroNome,
           sobrenome,
@@ -1676,6 +1676,7 @@ export function ListaClientes() {
               };
               setClientesAdicionaisHoje(prev => [novoCliente, ...prev]);
             }
+            setTimeout(() => setActiveNav(0), 1600);
           }} />
         : activeNav === 2 ? <LancamentoFinanceiro onAddDespesa={addDespesa} onAddRendimento={addRendimento} />
         : <TelaCalendario agendamentos={agendamentos} />
