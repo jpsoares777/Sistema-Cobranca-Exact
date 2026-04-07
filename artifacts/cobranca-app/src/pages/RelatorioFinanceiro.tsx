@@ -52,7 +52,6 @@ export function RelatorioFinanceiro({
   cobrancaDiaria?: number;
   novosEmprestimos?: number;
 }) {
-  const clientesAtivos = totalClientes - novosCount;
   const saldo = CAIXA_INICIAL + cobrancaDiaria + totalRendimentos - novosEmprestimos - RETIRADA - totalDespesas;
 
   const sections: Section[] = [
@@ -65,7 +64,7 @@ export function RelatorioFinanceiro({
         { type: "row", label: "Clientes Novos",       value: String(novosCount),  valueColor: "text-emerald-600" },
         { type: "row", label: "Clientes Ausentes",    value: String(ausentesCount) },
         { type: "row", label: "Renovação de Cliente", value: "0" },
-        { type: "row", label: "Cobranças Feitas",     value: `${cobradosCount} / ${clientesAtivos}  —  Adicionais: 0` },
+        { type: "row", label: "Cobranças Feitas",     value: `${cobradosCount} / ${totalClientes}  —  Adicionais: 0` },
       ],
     },
     {
