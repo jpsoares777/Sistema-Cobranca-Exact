@@ -164,7 +164,8 @@ function TelaLista({ busca, setBusca, vrf, setVrf, onSelectCliente, onAddAgendam
         </div>
         <div style={{ flex: 1, overflowY: "auto", paddingBottom: 70, paddingTop: 4, paddingLeft: 10, paddingRight: 10 }}>
           {vrfLista.map((c) => {
-            const saldoApos = c.saldo - c.parcela;
+            const valorCobrado = cobradosValores.find(x => x.id === c.id)?.valor ?? c.parcela;
+            const saldoApos = c.saldo - valorCobrado;
             const sc = statusBorderColor(c.status);
             const clienteAtualizado = { ...c, saldo: saldoApos, parcelasPagas: c.parcelasPagas + 1 };
             const expandido = clienteDetalhe?.id === c.id;
@@ -190,7 +191,7 @@ function TelaLista({ busca, setBusca, vrf, setVrf, onSelectCliente, onAddAgendam
                   </div>
                   <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
                     <span style={{ fontSize: 11, color: P.textSecondary }}>
-                      Parcela: <strong style={{ color: P.green, fontWeight: 700 }}>R$ {c.parcela.toFixed(2)}</strong>
+                      Parcela: <strong style={{ color: P.green, fontWeight: 700 }}>R$ {valorCobrado.toFixed(2)}</strong>
                     </span>
                     <span style={{ fontSize: 11, color: P.textSecondary }}>
                       Saldo: <strong style={{ color: P.accent, fontWeight: 700 }}>R$ {saldoApos.toFixed(2)}</strong>
@@ -1680,7 +1681,7 @@ export function ListaClientes() {
           />
         : verRenovacao
         ? <RenovacaoClientes onBack={() => setVerRenovacao(false)} onAddAgendamento={addAgendamento} onRenovar={setClienteParaRenovar} />
-        : activeNav === 0 ? <TelaLista busca={busca} setBusca={setBusca} vrf={vrf} setVrf={setVrf} onSelectCliente={setClienteSelecionado} onAddAgendamento={addAgendamento} ausentes={ausentes} onAusentar={setClienteParaAusentar} cobrados={cobrados} onRemoverCobrado={(id) => { setCobrados(prev => prev.filter(x => x !== id)); setCobradosExtras(prev => prev.filter(x => x.id !== id)); setCobradosValores(prev => prev.filter(x => x.id !== id)); }} clientesAdicionais={clientesAdicionaisHoje} cobradosExtras={cobradosExtras} />
+        : activeNav === 0 ? <TelaLista busca={busca} setBusca={setBusca} vrf={vrf} setVrf={setVrf} onSelectCliente={setClienteSelecionado} onAddAgendamento={addAgendamento} ausentes={ausentes} onAusentar={setClienteParaAusentar} cobrados={cobrados} onRemoverCobrado={(id) => { setCobrados(prev => prev.filter(x => x !== id)); setCobradosExtras(prev => prev.filter(x => x.id !== id)); setCobradosValores(prev => prev.filter(x => x.id !== id)); }} clientesAdicionais={clientesAdicionaisHoje} cobradosExtras={cobradosExtras} cobradosValores={cobradosValores} />
         : activeNav === 1 ? <CadastroCliente onBack={() => setActiveNav(0)} onSalvar={(emp) => {
             setEmprestimentos(prev => [emp, ...prev]);
             setNovosClientesIds(prev => new Set([...prev, emp.id]));
