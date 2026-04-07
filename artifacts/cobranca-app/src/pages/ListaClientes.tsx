@@ -1113,10 +1113,14 @@ const outrasDatasData = clientesData.map((c, i) => ({
   saldoOutra: parseFloat((c.saldo * 1.1).toFixed(2)),
 }));
 
-function EmprestimosOutrasDatas({ onAddAgendamento, onSelectCliente }: { onAddAgendamento: (a: Agendamento) => void; onSelectCliente: (c: ClienteItem) => void }) {
+function EmprestimosOutrasDatas({ onAddAgendamento, onSelectCliente, novosClientes = [] }: { onAddAgendamento: (a: Agendamento) => void; onSelectCliente: (c: ClienteItem) => void; novosClientes?: ClienteItem[] }) {
   const [busca, setBusca] = useState("");
   const [clienteDetalhe, setClienteDetalhe] = useState<ClienteItem | null>(null);
-  const filtrados = outrasDatasData.filter(c =>
+  const todosOutras = [
+    ...novosClientes.map(c => ({ ...c, frequencia: "Semanal" as const, parcelaOutra: c.parcela, saldoOutra: c.saldo })),
+    ...outrasDatasData,
+  ];
+  const filtrados = todosOutras.filter(c =>
     c.nome.toLowerCase().includes(busca.toLowerCase())
   );
 
@@ -1410,6 +1414,7 @@ export function ListaClientes() {
   const [novosClientesIds, setNovosClientesIds] = useState<Set<number>>(new Set());
   const [renovacoesIds, setRenovacoesIds] = useState<Set<number>>(new Set());
   const [clientesAdicionaisHoje, setClientesAdicionaisHoje] = useState<ClienteItem[]>([]);
+  const [novosClientesOutras, setNovosClientesOutras] = useState<ClienteItem[]>([]);
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
   const addAgendamento = (a: Agendamento) => setAgendamentos(prev => [...prev, a]);
   const [clienteParaRenovar, setClienteParaRenovar] = useState<ClienteItem | null>(null);
@@ -1426,7 +1431,7 @@ export function ListaClientes() {
       const id = clienteSelecionado!.id;
       setCobrados(prev => prev.includes(id) ? prev : [id, ...prev]);
       setAusentes(prev => prev.filter(x => x !== id));
-      const deOutrasDatas = outrasDatasData.some(c => c.id === id);
+      const deOutrasDatas = outrasDatasData.some(c => c.id === id) || novosClientesOutras.some(c => c.id === id);
       if (deOutrasDatas) {
         setCobradosExtras(prev => prev.find(c => c.id === id) ? prev : [clienteSelecionado!, ...prev]);
       }
@@ -1638,7 +1643,7 @@ export function ListaClientes() {
       {verAusentes
         ? <ClientesAusentes ausentes={ausentes} onReativar={(id) => setAusentes(prev => prev.filter(x => x !== id))} onAddAgendamento={addAgendamento} onSelectCliente={setClienteSelecionado} />
         : verOutrasDatas
-        ? <EmprestimosOutrasDatas onAddAgendamento={addAgendamento} onSelectCliente={setClienteSelecionado} />
+        ? <EmprestimosOutrasDatas onAddAgendamento={addAgendamento} onSelectCliente={setClienteSelecionado} novosClientes={novosClientesOutras} />
         : verSincronizar
         ? <SincronizarClientes onBack={() => setVerSincronizar(false)} salvo={salvoSinc} />
         : verEmprestimentos
@@ -1650,6 +1655,7 @@ export function ListaClientes() {
                 setNovosClientesIds(prev => { const s = new Set(prev); s.delete(id); return s; });
                 setRenovacoesIds(prev => { const s = new Set(prev); s.delete(id); return s; });
                 setClientesAdicionaisHoje(prev => prev.filter(c => c.id !== id));
+                setNovosClientesOutras(prev => prev.filter(c => c.id !== id));
               }
             }}
             onBack={() => setVerEmprestimentos(false)}
@@ -1675,19 +1681,21 @@ export function ListaClientes() {
         : activeNav === 1 ? <CadastroCliente onBack={() => setActiveNav(0)} onSalvar={(emp) => {
             setEmprestimentos(prev => [emp, ...prev]);
             setNovosClientesIds(prev => new Set([...prev, emp.id]));
+            const novoCliente: ClienteItem = {
+              id: emp.id,
+              nome: emp.nomeCliente,
+              parcela: emp.valorParcela,
+              saldo: emp.valorEmprestado,
+              status: "novo",
+              endereco: "",
+              parcelasPagas: 0,
+              totalParcelas: emp.quantidadeParcelas,
+              telefone: "",
+            };
             if (emp.pagamentoAdiantado) {
-              const novoCliente: ClienteItem = {
-                id: emp.id,
-                nome: emp.nomeCliente,
-                parcela: emp.valorParcela,
-                saldo: emp.valorEmprestado,
-                status: "novo",
-                endereco: "",
-                parcelasPagas: 0,
-                totalParcelas: emp.quantidadeParcelas,
-                telefone: "",
-              };
               setClientesAdicionaisHoje(prev => [novoCliente, ...prev]);
+            } else if (!emp.diario) {
+              setNovosClientesOutras(prev => [novoCliente, ...prev]);
             }
             setTimeout(() => setActiveNav(0), 1600);
           }} />
