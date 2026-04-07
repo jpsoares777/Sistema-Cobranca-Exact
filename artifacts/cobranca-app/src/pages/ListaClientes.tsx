@@ -1640,7 +1640,7 @@ export function ListaClientes() {
             onBack={() => setVerRelatorio(false)}
             totalDespesas={despesas.reduce((s, d) => s + d.valor, 0)}
             totalRendimentos={rendimentos.reduce((s, r) => s + r.valor, 0)}
-            totalClientes={clientesData.length + novosClientesHoje + renovacoesHoje}
+            totalClientes={clientesData.length + Math.max(0, emprestimentos.length - emprestimentosIniciais.length)}
             clientesParaCobranca={clientesData.length}
             cobradosCount={cobrados.length}
             ausentesCount={ausentes.length}
