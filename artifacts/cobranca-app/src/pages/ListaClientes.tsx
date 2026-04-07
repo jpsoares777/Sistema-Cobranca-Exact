@@ -1649,6 +1649,7 @@ export function ListaClientes() {
             novosCount={novosClientesIds.size}
             renovacoesCount={renovacoesIds.size}
             cobrancaDiaria={cobrados.reduce((s, id) => { const c = clientesData.find(x => x.id === id); return s + (c?.parcela ?? 0); }, 0)}
+            cobrancaEsperada={clientesData.reduce((s, c) => s + c.parcela, 0)}
             novosEmprestimos={emprestimentos.reduce((s, e) => s + (e.valorEmprestado ?? 0), 0)}
           />
         : verRenovacao

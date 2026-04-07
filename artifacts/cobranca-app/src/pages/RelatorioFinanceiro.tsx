@@ -42,6 +42,7 @@ export function RelatorioFinanceiro({
   novosCount = 0,
   renovacoesCount = 0,
   cobrancaDiaria = 0,
+  cobrancaEsperada = 0,
   novosEmprestimos = 0,
 }: {
   onBack: () => void;
@@ -54,6 +55,7 @@ export function RelatorioFinanceiro({
   novosCount?: number;
   renovacoesCount?: number;
   cobrancaDiaria?: number;
+  cobrancaEsperada?: number;
   novosEmprestimos?: number;
 }) {
   const saldo = CAIXA_INICIAL + cobrancaDiaria + totalRendimentos - novosEmprestimos - RETIRADA - totalDespesas;
@@ -76,7 +78,7 @@ export function RelatorioFinanceiro({
       dot: "bg-emerald-500", accent: "#10b981",
       headerBg: "bg-emerald-50", headerText: "text-emerald-700",
       rows: [
-        { type: "row", label: "Cobrança Esperada",        value: "R$ 0,00  (0%)" },
+        { type: "row", label: "Cobrança Esperada",        value: `R$ ${fmt(cobrancaEsperada)}  (${cobrancaEsperada > 0 ? Math.round((cobrancaDiaria / cobrancaEsperada) * 100) : 0}%)` },
         { type: "row", label: "Cobrança Diária",          value: `R$ ${fmt(cobrancaDiaria)}`, valueColor: "text-emerald-600" },
         { type: "row", label: "Dinheiro / Transferência", value: `R$ ${fmt(cobrancaDiaria)} / R$ 0,00` },
       ],
