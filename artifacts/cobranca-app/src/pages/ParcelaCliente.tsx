@@ -208,7 +208,7 @@ export function ParcelaCliente({ cliente, onBack, onSaved }: { cliente: Cliente;
               { val: "abono", label: "Abono" },
               { val: "sem", label: "Sem Pagamento" },
             ] as const).map(({ val, label }) => (
-              <button key={val} onClick={() => { setPaymentType(val); if (val === "abono") { setValorParcela(0); setValorParcelaStr(""); } else if (val === "parcela") { setValorParcela(numeroParcela * cliente.parcela); setValorParcelaStr(String(parseFloat((numeroParcela * cliente.parcela).toFixed(2)))); } else if (val === "sem") { setValorParcela(0); setValorParcelaStr("0"); setNumeroParcela(1); } }}
+              <button key={val} onClick={() => { setPaymentType(val); if (val === "abono") { setValorParcela(0); setValorParcelaStr(""); } else if (val === "parcela") { const n = numeroParcela === 0 ? 1 : numeroParcela; setNumeroParcela(n); setValorParcela(n * cliente.parcela); setValorParcelaStr(String(parseFloat((n * cliente.parcela).toFixed(2)))); } else if (val === "sem") { setValorParcela(0); setValorParcelaStr("0"); setNumeroParcela(0); } }}
                 className={`flex-1 py-1.5 px-1 rounded-lg text-[10px] font-semibold transition-all border active:scale-95 ${
                   paymentType === val
                     ? "bg-[#1B2236] text-white border-[#1B2236] shadow"
@@ -268,7 +268,7 @@ export function ParcelaCliente({ cliente, onBack, onSaved }: { cliente: Cliente;
                   }}
                   className="w-full appearance-none bg-transparent px-2 py-1.5 text-xs font-medium text-[#1B2236] focus:outline-none"
                 >
-                  <option value="" disabled>selecione</option>
+                  <option value={0}>0</option>
                   {Array.from({ length: Math.max(cliente.totalParcelas, numeroParcela, 60) }, (_, i) => i + 1).map((n) => (
                     <option key={n} value={n}>{n}</option>
                   ))}
