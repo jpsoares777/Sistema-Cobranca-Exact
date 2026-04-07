@@ -57,8 +57,7 @@ export function ParcelaCliente({ cliente, onBack, onSaved }: { cliente: Cliente;
   const totalCredito = cliente.saldo + cliente.parcelasPagas * cliente.parcela;
   const penalidade = 0;
   const novoSaldo =
-    paymentType === "parcela" ? Math.max(0, saldoAtual - valorParcela)
-    : paymentType === "abono" ? 0
+    paymentType === "parcela" || paymentType === "abono" ? Math.max(0, saldoAtual - valorParcela)
     : saldoAtual;
   const progresso = Math.round((cliente.parcelasPagas / cliente.totalParcelas) * 100);
   const parcelasPendentes = cliente.totalParcelas - cliente.parcelasPagas;
@@ -80,8 +79,7 @@ export function ParcelaCliente({ cliente, onBack, onSaved }: { cliente: Cliente;
     setTimeout(() => {
       setSaveState("success");
       setShowSuccessModal(true);
-      if (paymentType === "parcela") setSaldoAtual(novoSaldo);
-      if (paymentType === "abono") setSaldoAtual(0);
+      if (paymentType === "parcela" || paymentType === "abono") setSaldoAtual(novoSaldo);
       setTimeout(() => { setSaveState("idle"); setShowSuccessModal(false); if (onSaved) onSaved(); else onBack(); }, 1500);
     }, 1400);
   }
