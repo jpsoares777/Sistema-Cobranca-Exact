@@ -9,6 +9,7 @@ export interface Emprestimo {
   valorParcela: number;
   taxaJuros: number;
   quantidadeParcelas: number;
+  pagamentoAdiantado?: boolean;
 }
 
 export const emprestimentosIniciais: Emprestimo[] = [

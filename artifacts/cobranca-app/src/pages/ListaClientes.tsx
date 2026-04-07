@@ -117,7 +117,7 @@ function TrashIcon() {
   );
 }
 
-function TelaLista({ busca, setBusca, vrf, setVrf, onSelectCliente, onAddAgendamento, ausentes, onAusentar, cobrados, onRemoverCobrado }: {
+function TelaLista({ busca, setBusca, vrf, setVrf, onSelectCliente, onAddAgendamento, ausentes, onAusentar, cobrados, onRemoverCobrado, clientesAdicionais = [] }: {
   busca: string; setBusca: (v: string) => void;
   vrf: boolean; setVrf: (v: boolean) => void;
   onSelectCliente: (c: typeof clientesData[0]) => void;
@@ -126,20 +126,22 @@ function TelaLista({ busca, setBusca, vrf, setVrf, onSelectCliente, onAddAgendam
   onAusentar: (c: ClienteItem) => void;
   cobrados?: number[];
   onRemoverCobrado: (id: number) => void;
+  clientesAdicionais?: ClienteItem[];
 }) {
   const [clienteDetalhe, setClienteDetalhe] = useState<ClienteItem | null>(null);
   const [vrfRemovidos, setVrfRemovidos] = useState<number[]>([]);
   const [clienteParaRemover, setClienteParaRemover] = useState<ClienteItem | null>(null);
   const ausentesIds = ausentes ?? [];
   const cobradosIds = cobrados ?? [];
-  const filtrados = clientesData.filter((c) =>
+  const todosClientes: ClienteItem[] = [...clientesData, ...clientesAdicionais];
+  const filtrados = todosClientes.filter((c) =>
     !ausentesIds.includes(c.id) &&
     !(cobradosIds.includes(c.id) && !vrfRemovidos.includes(c.id)) &&
     c.nome.toLowerCase().includes(busca.toLowerCase())
   );
   const vrfLista = [...new Set(cobradosIds)]
     .filter(id => !vrfRemovidos.includes(id))
-    .map(id => clientesData.find(c => c.id === id)!)
+    .map(id => todosClientes.find(c => c.id === id)!)
     .filter(Boolean);
 
   /* ── MODO VRF ── */
@@ -1405,6 +1407,7 @@ export function ListaClientes() {
   const [emprestimentos, setEmprestimentos] = useState<Emprestimo[]>(emprestimentosIniciais);
   const [novosClientesIds, setNovosClientesIds] = useState<Set<number>>(new Set());
   const [renovacoesIds, setRenovacoesIds] = useState<Set<number>>(new Set());
+  const [clientesAdicionaisHoje, setClientesAdicionaisHoje] = useState<ClienteItem[]>([]);
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
   const addAgendamento = (a: Agendamento) => setAgendamentos(prev => [...prev, a]);
   const [clienteParaRenovar, setClienteParaRenovar] = useState<ClienteItem | null>(null);
@@ -1633,6 +1636,7 @@ export function ListaClientes() {
                 setEmprestimentos(prev => prev.filter(e => e.id !== id));
                 setNovosClientesIds(prev => { const s = new Set(prev); s.delete(id); return s; });
                 setRenovacoesIds(prev => { const s = new Set(prev); s.delete(id); return s; });
+                setClientesAdicionaisHoje(prev => prev.filter(c => c.id !== id));
               }
             }}
             onBack={() => setVerEmprestimentos(false)}
@@ -1648,14 +1652,31 @@ export function ListaClientes() {
             ausentesCount={ausentes.length}
             novosCount={novosClientesIds.size}
             renovacoesCount={renovacoesIds.size}
-            cobrancaDiaria={cobrados.reduce((s, id) => { const c = clientesData.find(x => x.id === id); return s + (c?.parcela ?? 0); }, 0)}
-            cobrancaEsperada={clientesData.reduce((s, c) => s + c.parcela, 0)}
+            cobrancaDiaria={cobrados.reduce((s, id) => { const c = clientesData.find(x => x.id === id) ?? clientesAdicionaisHoje.find(x => x.id === id); return s + (c?.parcela ?? 0); }, 0)}
+            cobrancaEsperada={clientesData.reduce((s, c) => s + c.parcela, 0) + clientesAdicionaisHoje.reduce((s, c) => s + c.parcela, 0)}
             novosEmprestimos={emprestimentos.reduce((s, e) => s + (e.valorEmprestado ?? 0), 0)}
           />
         : verRenovacao
         ? <RenovacaoClientes onBack={() => setVerRenovacao(false)} onAddAgendamento={addAgendamento} onRenovar={setClienteParaRenovar} />
-        : activeNav === 0 ? <TelaLista busca={busca} setBusca={setBusca} vrf={vrf} setVrf={setVrf} onSelectCliente={setClienteSelecionado} onAddAgendamento={addAgendamento} ausentes={ausentes} onAusentar={setClienteParaAusentar} cobrados={cobrados} onRemoverCobrado={(id) => setCobrados(prev => prev.filter(x => x !== id))} />
-        : activeNav === 1 ? <CadastroCliente onBack={() => setActiveNav(0)} onSalvar={(emp) => { setEmprestimentos(prev => [emp, ...prev]); setNovosClientesIds(prev => new Set([...prev, emp.id])); }} />
+        : activeNav === 0 ? <TelaLista busca={busca} setBusca={setBusca} vrf={vrf} setVrf={setVrf} onSelectCliente={setClienteSelecionado} onAddAgendamento={addAgendamento} ausentes={ausentes} onAusentar={setClienteParaAusentar} cobrados={cobrados} onRemoverCobrado={(id) => setCobrados(prev => prev.filter(x => x !== id))} clientesAdicionais={clientesAdicionaisHoje} />
+        : activeNav === 1 ? <CadastroCliente onBack={() => setActiveNav(0)} onSalvar={(emp) => {
+            setEmprestimentos(prev => [emp, ...prev]);
+            setNovosClientesIds(prev => new Set([...prev, emp.id]));
+            if (emp.pagamentoAdiantado) {
+              const novoCliente: ClienteItem = {
+                id: emp.id,
+                nome: emp.nomeCliente,
+                parcela: emp.valorParcela,
+                saldo: emp.valorEmprestado,
+                status: "novo",
+                endereco: "",
+                parcelasPagas: 0,
+                totalParcelas: emp.quantidadeParcelas,
+                telefone: "",
+              };
+              setClientesAdicionaisHoje(prev => [novoCliente, ...prev]);
+            }
+          }} />
         : activeNav === 2 ? <LancamentoFinanceiro onAddDespesa={addDespesa} onAddRendimento={addRendimento} />
         : <TelaCalendario agendamentos={agendamentos} />
       }

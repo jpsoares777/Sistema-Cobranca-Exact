@@ -151,6 +151,7 @@ export function CadastroCliente({ onBack, onSalvar, initialData }: {
         valorParcela: parseFloat(loanForm.valorParcela) || 0,
         taxaJuros: parseFloat(loanForm.juros) || 0,
         quantidadeParcelas: parseInt(loanForm.parcelas) || 1,
+        pagamentoAdiantado,
       });
     }
 
