@@ -208,7 +208,7 @@ export function ParcelaCliente({ cliente, onBack, onSaved }: { cliente: Cliente;
               { val: "abono", label: "Abono" },
               { val: "sem", label: "Sem Pagamento" },
             ] as const).map(({ val, label }) => (
-              <button key={val} onClick={() => setPaymentType(val)}
+              <button key={val} onClick={() => { setPaymentType(val); if (val === "abono") { setValorParcela(0); setValorParcelaStr(""); } }}
                 className={`flex-1 py-1.5 px-1 rounded-lg text-[10px] font-semibold transition-all border active:scale-95 ${
                   paymentType === val
                     ? "bg-[#1B2236] text-white border-[#1B2236] shadow"
