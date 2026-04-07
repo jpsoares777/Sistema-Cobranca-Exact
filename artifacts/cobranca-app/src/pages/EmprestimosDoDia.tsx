@@ -4,6 +4,7 @@ export interface Emprestimo {
   id: number;
   nomeCliente: string;
   diario: boolean;
+  frequencia?: string;
   criadoEm: string;
   valorEmprestado: number;
   valorParcela: number;
@@ -89,8 +90,8 @@ export function EmprestimosDoDia({ lista = [], onDelete, onBack }: Props) {
                     {emp.nomeCliente}
                   </p>
                 </div>
-                <span style={{ flexShrink: 0, fontSize: 9, fontWeight: 700, padding: "2px 8px", borderRadius: 999, background: emp.diario ? "#dbeafe" : "#ede9fe", color: emp.diario ? "#2563eb" : "#7c3aed" }}>
-                  {emp.diario ? "Diário" : "Mensal"}
+                <span style={{ flexShrink: 0, fontSize: 9, fontWeight: 700, padding: "2px 8px", borderRadius: 999, background: emp.diario ? "#dbeafe" : emp.frequencia === "Semanal" ? "#fef3c7" : "#ede9fe", color: emp.diario ? "#2563eb" : emp.frequencia === "Semanal" ? "#d97706" : "#7c3aed" }}>
+                  {emp.frequencia ?? (emp.diario ? "Diário" : "Mensal")}
                 </span>
                 <span style={{ fontSize: 9, color: "#9ca3af", flexShrink: 0 }}>{formatTime(emp.criadoEm)}</span>
                 <button onClick={() => onDelete(emp.id)} style={{ background: "none", border: "none", cursor: "pointer", padding: "3px 4px", borderRadius: 6, color: "#d1d5db", display: "flex", alignItems: "center", flexShrink: 0 }}>

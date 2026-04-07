@@ -146,6 +146,7 @@ export function CadastroCliente({ onBack, onSalvar, initialData }: {
         id: Date.now(),
         nomeCliente: [loanForm.nome, loanForm.sobrenome].filter(Boolean).join(" ").toUpperCase() || "CLIENTE",
         diario: loanForm.frequencia === "Diário",
+        frequencia: loanForm.frequencia,
         criadoEm: new Date().toISOString(),
         valorEmprestado: parseFloat(loanForm.valorEmprestado) || 0,
         valorParcela: parseFloat(loanForm.valorParcela) || 0,

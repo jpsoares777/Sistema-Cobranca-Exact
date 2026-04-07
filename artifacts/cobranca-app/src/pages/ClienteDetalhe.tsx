@@ -23,6 +23,7 @@ export interface ClienteItem {
   parcelasPagas: number;
   totalParcelas: number;
   telefone: string;
+  frequencia?: string;
 }
 
 function StatusBadge({ status, onClick, ativo }: { status: StatusType; onClick?: () => void; ativo?: boolean }) {

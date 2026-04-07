@@ -1117,7 +1117,7 @@ function EmprestimosOutrasDatas({ onAddAgendamento, onSelectCliente, novosClient
   const [busca, setBusca] = useState("");
   const [clienteDetalhe, setClienteDetalhe] = useState<ClienteItem | null>(null);
   const todosOutras = [
-    ...novosClientes.map(c => ({ ...c, frequencia: "Semanal" as const, parcelaOutra: c.parcela, saldoOutra: c.saldo })),
+    ...novosClientes.map(c => ({ ...c, frequencia: (c.frequencia ?? "Semanal") as "Semanal" | "Mensal", parcelaOutra: c.parcela, saldoOutra: c.saldo })),
     ...outrasDatasData,
   ];
   const filtrados = todosOutras.filter(c =>
@@ -1691,6 +1691,7 @@ export function ListaClientes() {
               parcelasPagas: 0,
               totalParcelas: emp.quantidadeParcelas,
               telefone: "",
+              frequencia: emp.frequencia,
             };
             if (emp.pagamentoAdiantado) {
               setClientesAdicionaisHoje(prev => [novoCliente, ...prev]);
