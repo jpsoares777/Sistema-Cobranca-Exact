@@ -16,7 +16,9 @@ type Section = {
 const fmt = (v: number) => v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 const CAIXA_INICIAL = 3000;
+const NOVOS_EMPRESTIMOS = 600;
 const RETIRADA = 0;
+const COBRANCA_DIARIA = 160;
 
 function ToggleSwitch({ on }: { on: boolean }) {
   const [active, setActive] = useState(on);
@@ -31,30 +33,8 @@ function ToggleSwitch({ on }: { on: boolean }) {
   );
 }
 
-export function RelatorioFinanceiro({
-  onBack,
-  totalDespesas = 0,
-  totalRendimentos = 0,
-  totalClientes = 0,
-  cobradosCount = 0,
-  ausentesCount = 0,
-  novosCount = 0,
-  cobrancaDiaria = 0,
-  novosEmprestimos = 0,
-}: {
-  onBack: () => void;
-  totalDespesas?: number;
-  totalRendimentos?: number;
-  totalClientes?: number;
-  cobradosCount?: number;
-  ausentesCount?: number;
-  novosCount?: number;
-  cobrancaDiaria?: number;
-  novosEmprestimos?: number;
-}) {
-  const clientesAtivos = totalClientes - novosCount;
-  const saldo = CAIXA_INICIAL + cobrancaDiaria + totalRendimentos - novosEmprestimos - RETIRADA - totalDespesas;
-  const cobrancaEsperada = 0;
+export function RelatorioFinanceiro({ onBack, totalDespesas = 0, totalRendimentos = 0 }: { onBack: () => void; totalDespesas?: number; totalRendimentos?: number }) {
+  const saldo = CAIXA_INICIAL + COBRANCA_DIARIA + totalRendimentos - NOVOS_EMPRESTIMOS - RETIRADA - totalDespesas;
 
   const sections: Section[] = [
     {
@@ -62,11 +42,11 @@ export function RelatorioFinanceiro({
       dot: "bg-indigo-500", accent: "#6366f1",
       headerBg: "bg-indigo-50", headerText: "text-indigo-700",
       rows: [
-        { type: "row", label: "Número de Clientes",  value: String(totalClientes) },
-        { type: "row", label: "Clientes Novos",       value: String(novosCount),  valueColor: "text-emerald-600" },
-        { type: "row", label: "Clientes Ausentes",    value: String(ausentesCount) },
+        { type: "row", label: "Número de Clientes",  value: "20" },
+        { type: "row", label: "Clientes Novos",       value: "1",  valueColor: "text-emerald-600" },
+        { type: "row", label: "Clientes Ausentes",    value: "0" },
         { type: "row", label: "Renovação de Cliente", value: "0" },
-        { type: "row", label: "Cobranças Feitas",     value: `${cobradosCount} / ${clientesAtivos}  —  Adicionais: 0` },
+        { type: "row", label: "Cobranças Feitas",     value: "1 / 19  —  Adicionais: 0" },
       ],
     },
     {
@@ -74,9 +54,9 @@ export function RelatorioFinanceiro({
       dot: "bg-emerald-500", accent: "#10b981",
       headerBg: "bg-emerald-50", headerText: "text-emerald-700",
       rows: [
-        { type: "row", label: "Cobrança Esperada",        value: cobrancaEsperada > 0 ? `R$ ${fmt(cobrancaEsperada)}  (100%)` : "R$ 0,00  (0%)" },
-        { type: "row", label: "Cobrança Diária",          value: `R$ ${fmt(cobrancaDiaria)}`, valueColor: "text-emerald-600" },
-        { type: "row", label: "Dinheiro / Transferência", value: `R$ ${fmt(cobrancaDiaria)} / R$ 0,00` },
+        { type: "row", label: "Cobrança Esperada",        value: "R$ 1.110,00  (100%)" },
+        { type: "row", label: "Cobrança Diária",          value: "R$ 160,00  (14,4%)", valueColor: "text-emerald-600" },
+        { type: "row", label: "Dinheiro / Transferência", value: "R$ 160,00 / R$ 0,00" },
       ],
     },
     {
@@ -85,7 +65,7 @@ export function RelatorioFinanceiro({
       headerBg: "bg-blue-50", headerText: "text-blue-700",
       rows: [
         { type: "row", label: "Caixa Inicial",      value: `R$ ${fmt(CAIXA_INICIAL)}` },
-        { type: "row", label: "Novos Empréstimos",   value: `R$ ${fmt(novosEmprestimos)}` },
+        { type: "row", label: "Novos Empréstimos",   value: `R$ ${fmt(NOVOS_EMPRESTIMOS)}` },
         { type: "row", label: "Retirada de Caixa",  value: `R$ ${fmt(RETIRADA)}` },
         { type: "row", label: "Despesas",            value: `R$ ${fmt(totalDespesas)}`, valueColor: "text-red-500" },
         { type: "row", label: "Rendimento",          value: `R$ ${fmt(totalRendimentos)}`, valueColor: "text-emerald-600" },
@@ -102,6 +82,7 @@ export function RelatorioFinanceiro({
 
   return (
     <div className="flex flex-col bg-slate-100" style={{ flex: 1, overflowY: "auto", paddingBottom: 80, fontFamily: "'Inter','Segoe UI',sans-serif" }}>
+
 
       {/* Seções */}
       <div className="px-3 pt-3 space-y-2">
