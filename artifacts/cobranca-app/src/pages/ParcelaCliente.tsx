@@ -256,27 +256,30 @@ export function ParcelaCliente({ cliente, onBack, onSaved }: { cliente: Cliente;
 
             <div className="flex flex-col gap-0.5">
               <MiniLabel>Número da Parcela</MiniLabel>
-              <div className="relative border border-gray-200 rounded-lg bg-gray-50 overflow-hidden focus-within:border-[#1B2236] transition-colors">
-                <select
-                  value={numeroParcela}
-                  onChange={(e) => {
-                    const n = parseInt(e.target.value);
-                    const total = parseFloat((n * cliente.parcela).toFixed(2));
-                    setNumeroParcela(n);
-                    setValorParcela(total);
-                    setValorParcelaStr(String(total));
-                  }}
-                  className="w-full appearance-none bg-transparent px-2 py-1.5 text-xs font-medium text-[#1B2236] focus:outline-none"
-                >
-                  <option value={0}>0</option>
-                  {Array.from({ length: Math.max(cliente.totalParcelas, numeroParcela, 60) }, (_, i) => i + 1).map((n) => (
-                    <option key={n} value={n}>{n}</option>
-                  ))}
-                </select>
-                <svg className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M6 9l6 6 6-6" />
-                </svg>
-              </div>
+              {paymentType === "sem" ? (
+                <div className="border border-gray-200 rounded-lg bg-gray-50 px-2 py-1.5 text-xs font-medium text-gray-400">0</div>
+              ) : (
+                <div className="relative border border-gray-200 rounded-lg bg-gray-50 overflow-hidden focus-within:border-[#1B2236] transition-colors">
+                  <select
+                    value={numeroParcela}
+                    onChange={(e) => {
+                      const n = parseInt(e.target.value);
+                      const total = parseFloat((n * cliente.parcela).toFixed(2));
+                      setNumeroParcela(n);
+                      setValorParcela(total);
+                      setValorParcelaStr(String(total));
+                    }}
+                    className="w-full appearance-none bg-transparent px-2 py-1.5 text-xs font-medium text-[#1B2236] focus:outline-none"
+                  >
+                    {Array.from({ length: Math.max(cliente.totalParcelas, numeroParcela, 60) }, (_, i) => i + 1).map((n) => (
+                      <option key={n} value={n}>{n}</option>
+                    ))}
+                  </select>
+                  <svg className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
+                </div>
+              )}
             </div>
 
             <ValueBox label="Novo Saldo" value={`R$ ${novoSaldo.toFixed(2)}`} highlight="green" bold />
