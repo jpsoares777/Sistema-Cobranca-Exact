@@ -1403,7 +1403,8 @@ export function ListaClientes() {
   const [salvoSinc, setSalvoSinc] = useState(false);
   const salvarSinc = () => { setSalvoSinc(true); setTimeout(() => setSalvoSinc(false), 2000); };
   const [emprestimentos, setEmprestimentos] = useState<Emprestimo[]>(emprestimentosIniciais);
-  const [novosEmprestimentoIds, setNovosEmprestimentoIds] = useState<Set<number>>(new Set());
+  const [novosClientesIds, setNovosClientesIds] = useState<Set<number>>(new Set());
+  const [renovacoesIds, setRenovacoesIds] = useState<Set<number>>(new Set());
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
   const addAgendamento = (a: Agendamento) => setAgendamentos(prev => [...prev, a]);
   const [clienteParaRenovar, setClienteParaRenovar] = useState<ClienteItem | null>(null);
@@ -1426,7 +1427,7 @@ export function ListaClientes() {
     return (
       <CadastroCliente
         onBack={() => setClienteParaRenovar(null)}
-        onSalvar={(emp) => { setEmprestimentos(prev => [emp, ...prev]); setNovosEmprestimentoIds(prev => new Set([...prev, emp.id])); setTimeout(() => { setClienteParaRenovar(null); setVerRenovacao(false); }, 1600); }}
+        onSalvar={(emp) => { setEmprestimentos(prev => [emp, ...prev]); setRenovacoesIds(prev => new Set([...prev, emp.id])); setTimeout(() => { setClienteParaRenovar(null); setVerRenovacao(false); }, 1600); }}
         initialData={{
           nome: primeiroNome,
           sobrenome,
@@ -1630,7 +1631,8 @@ export function ListaClientes() {
             onDelete={(id) => {
               if (confirm("Confirmar exclusão deste registro?")) {
                 setEmprestimentos(prev => prev.filter(e => e.id !== id));
-                setNovosEmprestimentoIds(prev => { const s = new Set(prev); s.delete(id); return s; });
+                setNovosClientesIds(prev => { const s = new Set(prev); s.delete(id); return s; });
+                setRenovacoesIds(prev => { const s = new Set(prev); s.delete(id); return s; });
               }
             }}
             onBack={() => setVerEmprestimentos(false)}
@@ -1640,18 +1642,19 @@ export function ListaClientes() {
             onBack={() => setVerRelatorio(false)}
             totalDespesas={despesas.reduce((s, d) => s + d.valor, 0)}
             totalRendimentos={rendimentos.reduce((s, r) => s + r.valor, 0)}
-            totalClientes={clientesData.length + novosEmprestimentoIds.size}
+            totalClientes={clientesData.length + novosClientesIds.size + renovacoesIds.size}
             clientesParaCobranca={clientesData.length}
             cobradosCount={cobrados.length}
             ausentesCount={ausentes.length}
-            novosCount={emprestimentos.length}
+            novosCount={novosClientesIds.size}
+            renovacoesCount={renovacoesIds.size}
             cobrancaDiaria={cobrados.reduce((s, id) => { const c = clientesData.find(x => x.id === id); return s + (c?.parcela ?? 0); }, 0)}
             novosEmprestimos={emprestimentos.reduce((s, e) => s + (e.valorEmprestado ?? 0), 0)}
           />
         : verRenovacao
         ? <RenovacaoClientes onBack={() => setVerRenovacao(false)} onAddAgendamento={addAgendamento} onRenovar={setClienteParaRenovar} />
         : activeNav === 0 ? <TelaLista busca={busca} setBusca={setBusca} vrf={vrf} setVrf={setVrf} onSelectCliente={setClienteSelecionado} onAddAgendamento={addAgendamento} ausentes={ausentes} onAusentar={setClienteParaAusentar} cobrados={cobrados} onRemoverCobrado={(id) => setCobrados(prev => prev.filter(x => x !== id))} />
-        : activeNav === 1 ? <CadastroCliente onBack={() => setActiveNav(0)} onSalvar={(emp) => { setEmprestimentos(prev => [emp, ...prev]); setNovosEmprestimentoIds(prev => new Set([...prev, emp.id])); }} />
+        : activeNav === 1 ? <CadastroCliente onBack={() => setActiveNav(0)} onSalvar={(emp) => { setEmprestimentos(prev => [emp, ...prev]); setNovosClientesIds(prev => new Set([...prev, emp.id])); }} />
         : activeNav === 2 ? <LancamentoFinanceiro onAddDespesa={addDespesa} onAddRendimento={addRendimento} />
         : <TelaCalendario agendamentos={agendamentos} />
       }
