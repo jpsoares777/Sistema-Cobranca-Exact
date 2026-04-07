@@ -117,7 +117,7 @@ function TrashIcon() {
   );
 }
 
-function TelaLista({ busca, setBusca, vrf, setVrf, onSelectCliente, onAddAgendamento, ausentes, onAusentar, cobrados, onRemoverCobrado, clientesAdicionais = [] }: {
+function TelaLista({ busca, setBusca, vrf, setVrf, onSelectCliente, onAddAgendamento, ausentes, onAusentar, cobrados, onRemoverCobrado, clientesAdicionais = [], cobradosExtras = [] }: {
   busca: string; setBusca: (v: string) => void;
   vrf: boolean; setVrf: (v: boolean) => void;
   onSelectCliente: (c: typeof clientesData[0]) => void;
@@ -127,6 +127,7 @@ function TelaLista({ busca, setBusca, vrf, setVrf, onSelectCliente, onAddAgendam
   cobrados?: number[];
   onRemoverCobrado: (id: number) => void;
   clientesAdicionais?: ClienteItem[];
+  cobradosExtras?: ClienteItem[];
 }) {
   const [clienteDetalhe, setClienteDetalhe] = useState<ClienteItem | null>(null);
   const [vrfRemovidos, setVrfRemovidos] = useState<number[]>([]);
@@ -141,7 +142,7 @@ function TelaLista({ busca, setBusca, vrf, setVrf, onSelectCliente, onAddAgendam
   );
   const vrfLista = [...new Set(cobradosIds)]
     .filter(id => !vrfRemovidos.includes(id))
-    .map(id => todosClientes.find(c => c.id === id)!)
+    .map(id => todosClientes.find(c => c.id === id) ?? cobradosExtras.find(c => c.id === id)!)
     .filter(Boolean);
 
   /* ── MODO VRF ── */
@@ -1401,6 +1402,7 @@ export function ListaClientes() {
   const [verAusentes, setVerAusentes] = useState(false);
   const [ausentes, setAusentes] = useState<number[]>([]);
   const [cobrados, setCobrados] = useState<number[]>([]);
+  const [cobradosExtras, setCobradosExtras] = useState<ClienteItem[]>([]);
   const [clienteParaAusentar, setClienteParaAusentar] = useState<ClienteItem | null>(null);
   const [salvoSinc, setSalvoSinc] = useState(false);
   const salvarSinc = () => { setSalvoSinc(true); setTimeout(() => setSalvoSinc(false), 2000); };
@@ -1420,7 +1422,18 @@ export function ListaClientes() {
     setRendimentos(prev => [...prev, { id: Date.now(), data: hoje, categoria, valor, observacao: observacao || undefined }]);
 
   if (clienteSelecionado) {
-    return <ParcelaCliente cliente={clienteSelecionado} onBack={() => setClienteSelecionado(null)} onSaved={() => { setCobrados(prev => prev.includes(clienteSelecionado!.id) ? prev : [clienteSelecionado!.id, ...prev]); setAusentes(prev => prev.filter(x => x !== clienteSelecionado!.id)); setClienteSelecionado(null); setVerOutrasDatas(false); setActiveNav(0); }} />;
+    return <ParcelaCliente cliente={clienteSelecionado} onBack={() => setClienteSelecionado(null)} onSaved={() => {
+      const id = clienteSelecionado!.id;
+      setCobrados(prev => prev.includes(id) ? prev : [id, ...prev]);
+      setAusentes(prev => prev.filter(x => x !== id));
+      const deOutrasDatas = outrasDatasData.some(c => c.id === id);
+      if (deOutrasDatas) {
+        setCobradosExtras(prev => prev.find(c => c.id === id) ? prev : [clienteSelecionado!, ...prev]);
+      }
+      setClienteSelecionado(null);
+      setVerOutrasDatas(false);
+      setActiveNav(0);
+    }} />;
   }
 
   if (clienteParaRenovar) {
@@ -1658,7 +1671,7 @@ export function ListaClientes() {
           />
         : verRenovacao
         ? <RenovacaoClientes onBack={() => setVerRenovacao(false)} onAddAgendamento={addAgendamento} onRenovar={setClienteParaRenovar} />
-        : activeNav === 0 ? <TelaLista busca={busca} setBusca={setBusca} vrf={vrf} setVrf={setVrf} onSelectCliente={setClienteSelecionado} onAddAgendamento={addAgendamento} ausentes={ausentes} onAusentar={setClienteParaAusentar} cobrados={cobrados} onRemoverCobrado={(id) => setCobrados(prev => prev.filter(x => x !== id))} clientesAdicionais={clientesAdicionaisHoje} />
+        : activeNav === 0 ? <TelaLista busca={busca} setBusca={setBusca} vrf={vrf} setVrf={setVrf} onSelectCliente={setClienteSelecionado} onAddAgendamento={addAgendamento} ausentes={ausentes} onAusentar={setClienteParaAusentar} cobrados={cobrados} onRemoverCobrado={(id) => { setCobrados(prev => prev.filter(x => x !== id)); setCobradosExtras(prev => prev.filter(x => x.id !== id)); }} clientesAdicionais={clientesAdicionaisHoje} cobradosExtras={cobradosExtras} />
         : activeNav === 1 ? <CadastroCliente onBack={() => setActiveNav(0)} onSalvar={(emp) => {
             setEmprestimentos(prev => [emp, ...prev]);
             setNovosClientesIds(prev => new Set([...prev, emp.id]));
