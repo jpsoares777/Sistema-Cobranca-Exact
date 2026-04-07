@@ -1404,6 +1404,7 @@ export function ListaClientes() {
   const salvarSinc = () => { setSalvoSinc(true); setTimeout(() => setSalvoSinc(false), 2000); };
   const [emprestimentos, setEmprestimentos] = useState<Emprestimo[]>(emprestimentosIniciais);
   const [novosClientesHoje, setNovosClientesHoje] = useState(0);
+  const [renovacoesHoje, setRenovacoesHoje] = useState(0);
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
   const addAgendamento = (a: Agendamento) => setAgendamentos(prev => [...prev, a]);
   const [clienteParaRenovar, setClienteParaRenovar] = useState<ClienteItem | null>(null);
@@ -1426,7 +1427,7 @@ export function ListaClientes() {
     return (
       <CadastroCliente
         onBack={() => setClienteParaRenovar(null)}
-        onSalvar={(emp) => { setEmprestimentos(prev => [emp, ...prev]); setTimeout(() => { setClienteParaRenovar(null); setVerRenovacao(false); }, 1600); }}
+        onSalvar={(emp) => { setEmprestimentos(prev => [emp, ...prev]); setRenovacoesHoje(prev => prev + 1); setTimeout(() => { setClienteParaRenovar(null); setVerRenovacao(false); }, 1600); }}
         initialData={{
           nome: primeiroNome,
           sobrenome,
@@ -1639,7 +1640,7 @@ export function ListaClientes() {
             onBack={() => setVerRelatorio(false)}
             totalDespesas={despesas.reduce((s, d) => s + d.valor, 0)}
             totalRendimentos={rendimentos.reduce((s, r) => s + r.valor, 0)}
-            totalClientes={clientesData.length + novosClientesHoje}
+            totalClientes={clientesData.length + novosClientesHoje + renovacoesHoje}
             cobradosCount={cobrados.length}
             ausentesCount={ausentes.length}
             novosCount={emprestimentos.length}
