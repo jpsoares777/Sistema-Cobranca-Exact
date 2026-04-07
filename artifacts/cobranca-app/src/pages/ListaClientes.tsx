@@ -1403,8 +1403,7 @@ export function ListaClientes() {
   const [salvoSinc, setSalvoSinc] = useState(false);
   const salvarSinc = () => { setSalvoSinc(true); setTimeout(() => setSalvoSinc(false), 2000); };
   const [emprestimentos, setEmprestimentos] = useState<Emprestimo[]>(emprestimentosIniciais);
-  const [novosClientesHoje, setNovosClientesHoje] = useState(0);
-  const [renovacoesHoje, setRenovacoesHoje] = useState(0);
+  const [novosEmprestimentoIds, setNovosEmprestimentoIds] = useState<Set<number>>(new Set());
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
   const addAgendamento = (a: Agendamento) => setAgendamentos(prev => [...prev, a]);
   const [clienteParaRenovar, setClienteParaRenovar] = useState<ClienteItem | null>(null);
@@ -1427,7 +1426,7 @@ export function ListaClientes() {
     return (
       <CadastroCliente
         onBack={() => setClienteParaRenovar(null)}
-        onSalvar={(emp) => { setEmprestimentos(prev => [emp, ...prev]); setRenovacoesHoje(prev => prev + 1); setTimeout(() => { setClienteParaRenovar(null); setVerRenovacao(false); }, 1600); }}
+        onSalvar={(emp) => { setEmprestimentos(prev => [emp, ...prev]); setNovosEmprestimentoIds(prev => new Set([...prev, emp.id])); setTimeout(() => { setClienteParaRenovar(null); setVerRenovacao(false); }, 1600); }}
         initialData={{
           nome: primeiroNome,
           sobrenome,
@@ -1631,6 +1630,7 @@ export function ListaClientes() {
             onDelete={(id) => {
               if (confirm("Confirmar exclusão deste registro?")) {
                 setEmprestimentos(prev => prev.filter(e => e.id !== id));
+                setNovosEmprestimentoIds(prev => { const s = new Set(prev); s.delete(id); return s; });
               }
             }}
             onBack={() => setVerEmprestimentos(false)}
@@ -1640,7 +1640,7 @@ export function ListaClientes() {
             onBack={() => setVerRelatorio(false)}
             totalDespesas={despesas.reduce((s, d) => s + d.valor, 0)}
             totalRendimentos={rendimentos.reduce((s, r) => s + r.valor, 0)}
-            totalClientes={clientesData.length + Math.max(0, emprestimentos.length - emprestimentosIniciais.length)}
+            totalClientes={clientesData.length + novosEmprestimentoIds.size}
             clientesParaCobranca={clientesData.length}
             cobradosCount={cobrados.length}
             ausentesCount={ausentes.length}
@@ -1651,7 +1651,7 @@ export function ListaClientes() {
         : verRenovacao
         ? <RenovacaoClientes onBack={() => setVerRenovacao(false)} onAddAgendamento={addAgendamento} onRenovar={setClienteParaRenovar} />
         : activeNav === 0 ? <TelaLista busca={busca} setBusca={setBusca} vrf={vrf} setVrf={setVrf} onSelectCliente={setClienteSelecionado} onAddAgendamento={addAgendamento} ausentes={ausentes} onAusentar={setClienteParaAusentar} cobrados={cobrados} onRemoverCobrado={(id) => setCobrados(prev => prev.filter(x => x !== id))} />
-        : activeNav === 1 ? <CadastroCliente onBack={() => setActiveNav(0)} onSalvar={(emp) => { setEmprestimentos(prev => [emp, ...prev]); setNovosClientesHoje(prev => prev + 1); }} />
+        : activeNav === 1 ? <CadastroCliente onBack={() => setActiveNav(0)} onSalvar={(emp) => { setEmprestimentos(prev => [emp, ...prev]); setNovosEmprestimentoIds(prev => new Set([...prev, emp.id])); }} />
         : activeNav === 2 ? <LancamentoFinanceiro onAddDespesa={addDespesa} onAddRendimento={addRendimento} />
         : <TelaCalendario agendamentos={agendamentos} />
       }
