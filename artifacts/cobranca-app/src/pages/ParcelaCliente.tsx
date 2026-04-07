@@ -55,7 +55,7 @@ export function ParcelaCliente({ cliente, onBack, onSaved }: { cliente: Cliente;
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const totalCredito = cliente.saldo + cliente.parcelasPagas * cliente.parcela;
-  const penalidade = paymentType === "sem" ? 0 : Math.max(0, (numeroParcela - 5) * 12);
+  const penalidade = 0;
   const novoSaldo =
     paymentType === "parcela" ? Math.max(0, saldoAtual - valorParcela)
     : paymentType === "abono" ? 0
@@ -261,7 +261,11 @@ export function ParcelaCliente({ cliente, onBack, onSaved }: { cliente: Cliente;
               <div className="relative border border-gray-200 rounded-lg bg-gray-50 overflow-hidden focus-within:border-[#1B2236] transition-colors">
                 <select
                   value={numeroParcela}
-                  onChange={(e) => setNumeroParcela(parseInt(e.target.value))}
+                  onChange={(e) => {
+                    setNumeroParcela(parseInt(e.target.value));
+                    setValorParcela(cliente.parcela);
+                    setValorParcelaStr(String(cliente.parcela));
+                  }}
                   className="w-full appearance-none bg-transparent px-2 py-1.5 text-xs font-medium text-[#1B2236] focus:outline-none"
                 >
                   <option value="" disabled>selecione</option>
