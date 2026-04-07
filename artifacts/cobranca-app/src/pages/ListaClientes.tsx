@@ -1402,6 +1402,7 @@ export function ListaClientes() {
   const [salvoSinc, setSalvoSinc] = useState(false);
   const salvarSinc = () => { setSalvoSinc(true); setTimeout(() => setSalvoSinc(false), 2000); };
   const [emprestimentos, setEmprestimentos] = useState<Emprestimo[]>(emprestimentosIniciais);
+  const [novosClientesHoje, setNovosClientesHoje] = useState(0);
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
   const addAgendamento = (a: Agendamento) => setAgendamentos(prev => [...prev, a]);
   const [clienteParaRenovar, setClienteParaRenovar] = useState<ClienteItem | null>(null);
@@ -1640,14 +1641,14 @@ export function ListaClientes() {
             totalClientes={clientesData.length}
             cobradosCount={cobrados.length}
             ausentesCount={ausentes.length}
-            novosCount={clientesData.filter(c => c.status === "novo").length}
+            novosCount={novosClientesHoje}
             cobrancaDiaria={cobrados.reduce((s, id) => { const c = clientesData.find(x => x.id === id); return s + (c?.parcela ?? 0); }, 0)}
             novosEmprestimos={emprestimentos.reduce((s, e) => s + (e.valorEmprestado ?? 0), 0)}
           />
         : verRenovacao
         ? <RenovacaoClientes onBack={() => setVerRenovacao(false)} onAddAgendamento={addAgendamento} onRenovar={setClienteParaRenovar} />
         : activeNav === 0 ? <TelaLista busca={busca} setBusca={setBusca} vrf={vrf} setVrf={setVrf} onSelectCliente={setClienteSelecionado} onAddAgendamento={addAgendamento} ausentes={ausentes} onAusentar={setClienteParaAusentar} cobrados={cobrados} />
-        : activeNav === 1 ? <CadastroCliente onBack={() => setActiveNav(0)} onSalvar={(emp) => { setEmprestimentos(prev => [emp, ...prev]); }} />
+        : activeNav === 1 ? <CadastroCliente onBack={() => setActiveNav(0)} onSalvar={(emp) => { setEmprestimentos(prev => [emp, ...prev]); setNovosClientesHoje(prev => prev + 1); }} />
         : activeNav === 2 ? <LancamentoFinanceiro onAddDespesa={addDespesa} onAddRendimento={addRendimento} />
         : <TelaCalendario agendamentos={agendamentos} />
       }
