@@ -1678,7 +1678,7 @@ export function ListaClientes() {
             }
             setTimeout(() => setActiveNav(0), 1600);
           }} />
-        : activeNav === 2 ? <LancamentoFinanceiro onAddDespesa={addDespesa} onAddRendimento={addRendimento} />
+        : activeNav === 2 ? <LancamentoFinanceiro onAddDespesa={addDespesa} onAddRendimento={addRendimento} onSalvo={() => setTimeout(() => setActiveNav(0), 1500)} />
         : <TelaCalendario agendamentos={agendamentos} />
       }
 

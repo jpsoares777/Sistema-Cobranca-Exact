@@ -38,7 +38,7 @@ const Spin = () => (
   </svg>
 );
 
-export function LancamentoFinanceiro({ onAddDespesa, onAddRendimento }: { onAddDespesa?: (categoria: string, valor: number, observacao: string) => void; onAddRendimento?: (categoria: string, valor: number, observacao: string) => void }) {
+export function LancamentoFinanceiro({ onAddDespesa, onAddRendimento, onSalvo }: { onAddDespesa?: (categoria: string, valor: number, observacao: string) => void; onAddRendimento?: (categoria: string, valor: number, observacao: string) => void; onSalvo?: () => void }) {
   const [tipo, setTipo] = useState<TipoLancamento>("despesa");
   const [conceito, setConceito] = useState("");
   const [valor, setValor] = useState("");
@@ -63,6 +63,7 @@ export function LancamentoFinanceiro({ onAddDespesa, onAddRendimento }: { onAddD
     else onAddRendimento?.(conceito, valorNum, observacoes);
     setSalvando(false);
     setSalvo(true);
+    onSalvo?.();
     setTimeout(() => { setSalvo(false); setConceito(""); setValor(""); setObservacoes(""); }, 2000);
   };
 
