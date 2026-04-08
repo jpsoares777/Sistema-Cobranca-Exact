@@ -1564,9 +1564,10 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
       if (deOutrasDatas) {
         setCobradosExtras(prev => prev.find(c => c.id === id) ? prev : [clienteSelecionado!, ...prev]);
       }
-      const saldoAposCobranca = Math.max(0, (clienteSelecionado!.saldo ?? 0) - valor);
+      const novasPagas = (clienteSelecionado!.parcelasPagas ?? 0) + 1;
+      const saldoAposCobranca = Math.max(0, clienteSelecionado!.parcela * (clienteSelecionado!.totalParcelas - novasPagas));
       setClientes(prev => prev.map(c => c.id === id
-        ? { ...c, saldo: saldoAposCobranca, parcelasPagas: (c.parcelasPagas ?? 0) + 1 }
+        ? { ...c, saldo: saldoAposCobranca, parcelasPagas: novasPagas }
         : c
       ));
       if (saldoAposCobranca <= 0) {

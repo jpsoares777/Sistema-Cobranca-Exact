@@ -51,11 +51,13 @@ export function ParcelaCliente({ cliente, onBack, onSaved }: { cliente: Cliente;
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "success">("idle");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [saldoAtual, setSaldoAtual] = useState(cliente.saldo);
+  const [saldoAtual, setSaldoAtual] = useState(
+    cliente.parcela * (cliente.totalParcelas - cliente.parcelasPagas)
+  );
   const [saldoModal, setSaldoModal] = useState<number | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const totalCredito = cliente.saldo + cliente.parcelasPagas * cliente.parcela;
+  const totalCredito = cliente.parcela * cliente.totalParcelas;
   const penalidade = 0;
   const novoSaldo =
     paymentType === "parcela" || paymentType === "abono" ? Math.max(0, saldoAtual - valorParcela)
