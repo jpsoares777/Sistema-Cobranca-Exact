@@ -1416,6 +1416,7 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
   const [modal, setModal] = useState<"menu" | null>(null);
   const [clienteSelecionado, setClienteSelecionado] = useState<typeof clientesData[0] | null>(null);
   const [verRelatorio, setVerRelatorio] = useState(false);
+  const [caixaFechadoHoje, setCaixaFechadoHoje] = useState(false);
   const [verEmprestimentos, setVerEmprestimentos] = useState(false);
   const [verRenovacao, setVerRenovacao] = useState(false);
   const [verSincronizar, setVerSincronizar] = useState(false);
@@ -1549,6 +1550,7 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
       .map(c => c.id)
       .filter(id => !ordemClientesIds.includes(id));
     const novaOrdem = [...ordemClientesIds, ...novosIds];
+    setCaixaFechadoHoje(true);
     setClientes(clientesMerged);
     setOrdemClientesIds(novaOrdem);
     setCobrados([]);
@@ -1726,7 +1728,10 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
                   }
                 </button>
               )}
-              <button onClick={() => { setVerRenovacao(false); setVerRelatorio(false); setVerEmprestimentos(false); setVerSincronizar(false); setVerOutrasDatas(false); setVerAusentes(false); }} style={{ background: "rgba(255,255,255,0.15)", border: "1.5px solid rgba(255,255,255,0.25)", borderRadius: 10, cursor: "pointer", width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <button onClick={() => {
+                if (verRelatorio && caixaFechadoHoje) { onSair?.(); return; }
+                setVerRenovacao(false); setVerRelatorio(false); setVerEmprestimentos(false); setVerSincronizar(false); setVerOutrasDatas(false); setVerAusentes(false);
+              }} style={{ background: "rgba(255,255,255,0.15)", border: "1.5px solid rgba(255,255,255,0.25)", borderRadius: 10, cursor: "pointer", width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <ArrowLeft size={18} color="#fff" />
               </button>
             </div>
