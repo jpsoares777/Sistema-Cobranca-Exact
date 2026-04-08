@@ -163,53 +163,24 @@ export function RelatorioFinanceiro({
           </button>
         </div>
 
-        {todosCorados && !caixaFechado && (
-          <div style={{ display: "flex", justifyContent: "center", paddingTop: 4 }}>
-            <button
-              onClick={() => setModalFechamento(true)}
-              style={{
-                background: "transparent",
-                border: "1px solid #cbd5e1",
-                borderRadius: 8,
-                padding: "5px 18px",
-                fontSize: 10,
-                fontWeight: 600,
-                color: "#64748b",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: 5,
-                letterSpacing: "0.03em",
-              }}
-            >
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
-                <rect x="5" y="11" width="14" height="10" rx="2" stroke="#64748b" strokeWidth="1.8" />
-                <path d="M8 11V7a4 4 0 0 1 8 0v4" stroke="#64748b" strokeWidth="1.8" strokeLinecap="round" />
-              </svg>
-              Fechar Caixa
-            </button>
-          </div>
-        )}
-
-        {caixaFechado && (
-          <div style={{ display: "flex", justifyContent: "center", paddingTop: 4 }}>
-            <div style={{
-              background: "#f0fdf4",
-              border: "1px solid #86efac",
-              borderRadius: 8,
-              padding: "5px 18px",
-              fontSize: 10,
-              fontWeight: 600,
-              color: "#16a34a",
-              display: "flex",
-              alignItems: "center",
-              gap: 5,
-            }}>
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
-                <polyline points="4,12 9,17 20,7" stroke="#16a34a" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              Caixa Fechado
-            </div>
+        {todosCorados && (
+          <div className="grid grid-cols-1 gap-2 pt-0">
+            {!caixaFechado ? (
+              <button
+                onClick={() => setModalFechamento(true)}
+                className="bg-slate-900 text-white rounded-lg py-1.5 text-[10px] font-semibold shadow-sm flex items-center justify-center gap-1.5"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-red-400 inline-block" />
+                Fechar Caixa
+              </button>
+            ) : (
+              <div className="rounded-lg py-1.5 text-[10px] font-semibold flex items-center justify-center gap-1.5" style={{ background: "#f0fdf4", border: "1px solid #86efac", color: "#16a34a" }}>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
+                  <polyline points="4,12 9,17 20,7" stroke="#16a34a" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                Caixa Fechado
+              </div>
+            )}
           </div>
         )}
       </div>
