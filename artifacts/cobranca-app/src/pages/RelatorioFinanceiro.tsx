@@ -101,7 +101,7 @@ export function RelatorioFinanceiro({
       headerBg: "bg-blue-50", headerText: "text-blue-700",
       rows: [
         { type: "row", label: "Caixa Inicial",      value: `R$ ${fmt(CAIXA_INICIAL)}` },
-        { type: "row", label: "Novos Empréstimos",   value: `R$ ${fmt(novosEmprestimos)}` },
+        { type: "row", label: "Total de Empréstimos", value: `R$ ${fmt(novosEmprestimos)}` },
         { type: "row", label: "Retirada de Caixa",  value: `R$ ${fmt(RETIRADA)}` },
         { type: "row", label: "Despesas",            value: `R$ ${fmt(totalDespesas)}`, valueColor: "text-red-500" },
         { type: "row", label: "Rendimento",          value: `R$ ${fmt(totalRendimentos)}`, valueColor: "text-emerald-600" },
