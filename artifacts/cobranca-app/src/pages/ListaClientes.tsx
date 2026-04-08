@@ -196,7 +196,7 @@ function TelaLista({ busca, setBusca, vrf, setVrf, onSelectCliente, onAddAgendam
                       <span style={{ color: P.textMuted, fontWeight: 600, marginRight: 4 }}>{vrfLista.indexOf(c) + 1}.</span>{c.nome}
                     </span>
                     {saldoApos <= 0 && (
-                      <span style={{ flexShrink: 0, fontSize: 9, fontWeight: 800, color: "#fff", background: "#16a34a", borderRadius: 4, padding: "1px 5px", letterSpacing: 0.5, textTransform: "uppercase" }}>QUITADO</span>
+                      <span style={{ flexShrink: 0, fontSize: 9, fontWeight: 800, color: "#fff", background: "#2563eb", borderRadius: 4, padding: "1px 5px", letterSpacing: 0.5, textTransform: "uppercase" }}>QUITADO</span>
                     )}
                   </div>
                   <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
@@ -204,7 +204,7 @@ function TelaLista({ busca, setBusca, vrf, setVrf, onSelectCliente, onAddAgendam
                       Parcela: <strong style={{ color: P.green, fontWeight: 700 }}>R$ {valorCobrado.toFixed(2)}</strong>
                     </span>
                     <span style={{ fontSize: 11, color: P.textSecondary }}>
-                      Saldo: <strong style={{ color: saldoApos <= 0 ? "#16a34a" : P.accent, fontWeight: 700 }}>R$ {saldoApos.toFixed(2)}</strong>
+                      Saldo: <strong style={{ color: saldoApos <= 0 ? "#2563eb" : P.accent, fontWeight: 700 }}>R$ {saldoApos.toFixed(2)}</strong>
                     </span>
                   </div>
                 </div>
