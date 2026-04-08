@@ -1,68 +1,71 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 const PIN_CORRETO = "10600";
-const MAX = 5;
-
 const GRAD_TOP = "#0d2b5e";
 const GRAD_MID = "#1a6fa8";
 const GRAD_BOT = "#3ecfcf";
-
-const ROWS = [
-  ["1", "2", "3"],
-  ["4", "5", "6"],
-  ["7", "8", "9"],
-  ["", "0", "DEL"],
-];
+const WHITE = "#ffffff";
+const WHITE70 = "rgba(255,255,255,0.7)";
+const WHITE40 = "rgba(255,255,255,0.4)";
+const WHITE20 = "rgba(255,255,255,0.2)";
+const WHITE10 = "rgba(255,255,255,0.10)";
 
 export function PinLogin({ onUnlock }: { onUnlock: () => void }) {
   const [pin, setPin] = useState("");
-  const [erro, setErro] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const [shake, setShake] = useState(false);
-  const [pressedKey, setPressedKey] = useState<string | null>(null);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (pin.length === MAX) {
-      if (pin === PIN_CORRETO) {
-        setTimeout(onUnlock, 200);
-      } else {
-        setErro(true);
-        setShake(true);
-        timeoutRef.current = setTimeout(() => {
-          setPin("");
-          setErro(false);
-          setShake(false);
-        }, 700);
-      }
-    }
-    return () => { if (timeoutRef.current) clearTimeout(timeoutRef.current); };
-  }, [pin]);
+    inputRef.current?.focus();
+  }, []);
 
-  const pressKey = (k: string) => {
-    if (pin.length < MAX && !erro) setPin(p => p + k);
+  const handleLogin = () => {
+    if (pin.length < 5) { setError("PIN deve ter 5 dígitos."); return; }
+    setLoading(true);
+    setTimeout(() => {
+      if (pin === PIN_CORRETO) {
+        onUnlock();
+      } else {
+        setShake(true);
+        setPin("");
+        setError("PIN incorreto. Tente novamente.");
+        setLoading(false);
+        setTimeout(() => {
+          setShake(false);
+          inputRef.current?.focus();
+        }, 500);
+      }
+    }, 120);
   };
-  const del = () => { if (!erro) setPin(p => p.slice(0, -1)); };
+
+  const handleKey = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") handleLogin();
+  };
 
   return (
     <div style={{
       minHeight: "100dvh",
+      width: "100%",
+      background: `linear-gradient(180deg, ${GRAD_TOP} 0%, ${GRAD_MID} 55%, ${GRAD_BOT} 100%)`,
+      fontFamily: "'Inter','Segoe UI',sans-serif",
+      position: "relative",
       display: "flex",
       flexDirection: "column",
       alignItems: "center",
-      justifyContent: "center",
-      background: `linear-gradient(180deg, ${GRAD_TOP} 0%, ${GRAD_MID} 55%, ${GRAD_BOT} 100%)`,
-      fontFamily: "'Inter','Segoe UI',sans-serif",
       userSelect: "none",
-      WebkitTapHighlightColor: "transparent",
     }}>
+
+      {/* Conteúdo central */}
       <div style={{
+        flex: 1,
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
+        justifyContent: "center",
         width: "100%",
-        maxWidth: 340,
-        padding: "0 28px",
-        gap: 0,
+        paddingBottom: 60,
       }}>
         {/* Logo */}
         <img
@@ -70,134 +73,151 @@ export function PinLogin({ onUnlock }: { onUnlock: () => void }) {
           alt="Logo"
           style={{
             width: "78%",
-            maxWidth: 280,
+            maxWidth: 360,
             height: "auto",
-            marginBottom: 48,
             objectFit: "contain",
+            marginBottom: 80,
           }}
           onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
         />
 
-        {/* Texto */}
-        <p style={{
-          color: "rgba(255,255,255,0.9)",
-          fontSize: 15,
-          fontWeight: 500,
-          margin: "0 0 28px",
-          letterSpacing: "0.01em",
-          textAlign: "center",
-        }}>
-          Digite seu PIN para acessar
-        </p>
-
-        {/* Dots */}
+        {/* Seção do PIN — largura ~48% da logo */}
         <div
           style={{
+            width: "min(48vw, 173px)",
+            minWidth: 160,
             display: "flex",
-            gap: 20,
-            marginBottom: 10,
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 12,
             animation: shake ? "shake 0.5s ease" : "none",
           }}
         >
-          {Array.from({ length: MAX }).map((_, i) => {
-            const filled = i < pin.length;
-            return (
-              <div key={i} style={{
-                width: 18,
-                height: 18,
-                borderRadius: "50%",
-                background: erro
-                  ? "#f87171"
-                  : filled
-                    ? "#ffffff"
-                    : "transparent",
-                border: `2px solid ${erro ? "#f87171" : filled ? "#ffffff" : "rgba(255,255,255,0.4)"}`,
-                transition: "background 0.15s, border-color 0.15s",
-              }} />
-            );
-          })}
+          {/* Campo de PIN */}
+          <div style={{ width: "100%" }}>
+            <input
+              ref={inputRef}
+              type="password"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              maxLength={5}
+              value={pin}
+              onChange={e => {
+                const v = e.target.value.replace(/[^0-9]/g, "").slice(0, 5);
+                setPin(v);
+                setError("");
+              }}
+              onKeyDown={handleKey}
+              placeholder="•••••"
+              style={{
+                width: "100%",
+                boxSizing: "border-box",
+                fontSize: 22,
+                fontWeight: 600,
+                color: WHITE,
+                textAlign: "center",
+                letterSpacing: 10,
+                paddingTop: 9,
+                paddingBottom: 9,
+                paddingLeft: 10,
+                paddingRight: 10,
+                background: WHITE10,
+                border: "none",
+                borderRadius: 10,
+                outline: "none",
+                caretColor: WHITE,
+                WebkitTextFillColor: WHITE,
+              }}
+            />
+            {/* Linha abaixo do campo */}
+            <div style={{
+              height: 2,
+              background: WHITE20,
+              marginTop: 2,
+              borderRadius: 1,
+            }} />
+          </div>
+
+          {/* Erro ou espaçador */}
+          {error ? (
+            <p style={{
+              margin: 0,
+              fontSize: 13,
+              color: "#ffe0e0",
+              textAlign: "center",
+              minHeight: 18,
+            }}>{error}</p>
+          ) : (
+            <div style={{ height: 18 }} />
+          )}
+
+          {/* Botão Entrar */}
+          <button
+            onClick={handleLogin}
+            disabled={loading}
+            style={{
+              width: "100%",
+              background: WHITE,
+              color: GRAD_TOP,
+              border: "none",
+              borderRadius: 50,
+              paddingTop: 12,
+              paddingBottom: 12,
+              fontSize: 15,
+              fontWeight: 600,
+              cursor: "pointer",
+              boxShadow: "0 3px 6px rgba(0,0,0,0.12)",
+              transition: "opacity 0.15s",
+              opacity: loading ? 0.8 : 1,
+              letterSpacing: 0,
+            }}
+          >
+            {loading ? "..." : "Entrar"}
+          </button>
+
+          {/* Link Redefinir PIN */}
+          <button
+            onClick={() => { setPin(""); setError(""); inputRef.current?.focus(); }}
+            style={{
+              background: "none",
+              border: "none",
+              color: WHITE70,
+              fontSize: 13,
+              textDecoration: "underline",
+              cursor: "pointer",
+              padding: 0,
+            }}
+          >
+            Redefinir PIN
+          </button>
         </div>
+      </div>
 
-        {/* Erro */}
+      {/* Rodapé fixo */}
+      <div style={{
+        position: "absolute",
+        bottom: 12,
+        left: 0,
+        right: 0,
+        textAlign: "center",
+      }}>
         <p style={{
-          color: "#f87171",
-          fontSize: 12,
-          fontWeight: 600,
-          margin: "8px 0 20px",
-          opacity: erro ? 1 : 0,
-          transition: "opacity 0.2s",
-          minHeight: 18,
-          letterSpacing: "0.02em",
+          margin: 0,
+          fontSize: 11,
+          color: "#000000",
         }}>
-          PIN incorreto
-        </p>
-
-        {/* Numpad */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%" }}>
-          {ROWS.map((row, ri) => (
-            <div key={ri} style={{ display: "flex", flexDirection: "row", justifyContent: "center", gap: 10 }}>
-              {row.map((key, ki) => {
-                if (key === "") {
-                  return <div key={ki} style={{ width: 82, height: 82 }} />;
-                }
-                const isDel = key === "DEL";
-                const isPressed = pressedKey === `${ri}-${ki}`;
-                return (
-                  <button
-                    key={ki}
-                    onPointerDown={() => {
-                      setPressedKey(`${ri}-${ki}`);
-                      if (isDel) del(); else pressKey(key);
-                    }}
-                    onPointerUp={() => setPressedKey(null)}
-                    onPointerLeave={() => setPressedKey(null)}
-                    style={{
-                      width: 82,
-                      height: 82,
-                      borderRadius: "50%",
-                      border: "none",
-                      background: isPressed
-                        ? "rgba(255,255,255,0.30)"
-                        : "rgba(255,255,255,0.15)",
-                      color: isDel ? "rgba(255,255,255,0.6)" : "#ffffff",
-                      fontSize: isDel ? 22 : 26,
-                      fontWeight: 400,
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      transition: "background 0.1s",
-                      WebkitTapHighlightColor: "transparent",
-                      outline: "none",
-                      flexShrink: 0,
-                    }}
-                  >
-                    {isDel ? "⌫" : key}
-                  </button>
-                );
-              })}
-            </div>
-          ))}
-        </div>
-
-        <p style={{
-          color: "rgba(255,255,255,0.25)",
-          fontSize: 10,
-          marginTop: 40,
-          letterSpacing: "0.06em",
-          textTransform: "uppercase",
-        }}>
-          Sistema de Cobrança • Acesso Restrito
+          © 2026 System Pay · Todos os direitos reservados
         </p>
       </div>
 
       <style>{`
+        input::placeholder { color: ${WHITE40}; opacity: 1; }
         @keyframes shake {
           0%,100% { transform: translateX(0); }
-          20% { transform: translateX(-10px); }
-          40% { transform: translateX(10px); }
-          60% { transform: translateX(-7px); }
-          80% { transform: translateX(7px); }
+          20% { transform: translateX(-12px); }
+          40% { transform: translateX(12px); }
+          60% { transform: translateX(-8px); }
+          80% { transform: translateX(8px); }
         }
       `}</style>
     </div>
