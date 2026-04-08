@@ -181,21 +181,30 @@ function TelaLista({ busca, setBusca, vrf, setVrf, onSelectCliente, onAddAgendam
                 </button>
                 {/* Bonequinho */}
                 <div onClick={e => { e.stopPropagation(); setClienteDetalhe(expandido ? null : clienteAtualizado); }} style={{ cursor: "pointer" }}>
-                  <PersonBadge status={c.status} badge="plus" />
+                  {saldoApos <= 0 ? (
+                    <div style={{ position: "relative", width: 38, height: 38, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <img src="/bloqueio.png" alt="Quitado" style={{ width: 34, height: 34, objectFit: "contain" }} />
+                    </div>
+                  ) : (
+                    <PersonBadge status={c.status} badge="plus" />
+                  )}
                 </div>
                 {/* Info */}
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ marginBottom: 3 }}>
-                    <span style={{ fontSize: 12.5, fontWeight: 700, color: P.textPrimary, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", letterSpacing: 0.1, lineHeight: 1.3, display: "block" }}>
+                  <div style={{ marginBottom: 3, display: "flex", alignItems: "center", gap: 5 }}>
+                    <span style={{ fontSize: 12.5, fontWeight: 700, color: P.textPrimary, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", letterSpacing: 0.1, lineHeight: 1.3 }}>
                       <span style={{ color: P.textMuted, fontWeight: 600, marginRight: 4 }}>{vrfLista.indexOf(c) + 1}.</span>{c.nome}
                     </span>
+                    {saldoApos <= 0 && (
+                      <span style={{ flexShrink: 0, fontSize: 9, fontWeight: 800, color: "#fff", background: "#ec4899", borderRadius: 4, padding: "1px 5px", letterSpacing: 0.5, textTransform: "uppercase" }}>QUITADO</span>
+                    )}
                   </div>
                   <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
                     <span style={{ fontSize: 11, color: P.textSecondary }}>
                       Parcela: <strong style={{ color: P.green, fontWeight: 700 }}>R$ {valorCobrado.toFixed(2)}</strong>
                     </span>
                     <span style={{ fontSize: 11, color: P.textSecondary }}>
-                      Saldo: <strong style={{ color: P.accent, fontWeight: 700 }}>R$ {saldoApos.toFixed(2)}</strong>
+                      Saldo: <strong style={{ color: saldoApos <= 0 ? "#ec4899" : P.accent, fontWeight: 700 }}>R$ {saldoApos.toFixed(2)}</strong>
                     </span>
                   </div>
                 </div>
@@ -1440,6 +1449,10 @@ export function ListaClientes() {
       const deOutrasDatas = outrasDatasData.some(c => c.id === id) || novosClientesOutras.some(c => c.id === id);
       if (deOutrasDatas) {
         setCobradosExtras(prev => prev.find(c => c.id === id) ? prev : [clienteSelecionado!, ...prev]);
+      }
+      const saldoAposCobranca = (clienteSelecionado!.saldo ?? 0) - valor;
+      if (saldoAposCobranca <= 0) {
+        setRenovacoesIds(prev => new Set([...prev, id]));
       }
       const hoje = new Date();
       const dataStr = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,"0")}-${String(hoje.getDate()).padStart(2,"0")}`;
