@@ -58,7 +58,16 @@ export function RelatorioFinanceiro({
   cobrancaEsperada?: number;
   novosEmprestimos?: number;
 }) {
+  const [modalFechamento, setModalFechamento] = useState(false);
+  const [caixaFechado, setCaixaFechado] = useState(false);
+
   const saldo = CAIXA_INICIAL + cobrancaDiaria + totalRendimentos - novosEmprestimos - RETIRADA - totalDespesas;
+  const todosCorados = clientesParaCobranca > 0 && cobradosCount >= clientesParaCobranca;
+
+  const handleFecharCaixa = () => {
+    setCaixaFechado(true);
+    setModalFechamento(false);
+  };
 
   const sections: Section[] = [
     {
@@ -145,7 +154,105 @@ export function RelatorioFinanceiro({
             Configurações
           </button>
         </div>
+
+        {todosCorados && !caixaFechado && (
+          <div style={{ display: "flex", justifyContent: "center", paddingTop: 4 }}>
+            <button
+              onClick={() => setModalFechamento(true)}
+              style={{
+                background: "transparent",
+                border: "1px solid #cbd5e1",
+                borderRadius: 8,
+                padding: "5px 18px",
+                fontSize: 10,
+                fontWeight: 600,
+                color: "#64748b",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: 5,
+                letterSpacing: "0.03em",
+              }}
+            >
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
+                <rect x="5" y="11" width="14" height="10" rx="2" stroke="#64748b" strokeWidth="1.8" />
+                <path d="M8 11V7a4 4 0 0 1 8 0v4" stroke="#64748b" strokeWidth="1.8" strokeLinecap="round" />
+              </svg>
+              Fechar Caixa
+            </button>
+          </div>
+        )}
+
+        {caixaFechado && (
+          <div style={{ display: "flex", justifyContent: "center", paddingTop: 4 }}>
+            <div style={{
+              background: "#f0fdf4",
+              border: "1px solid #86efac",
+              borderRadius: 8,
+              padding: "5px 18px",
+              fontSize: 10,
+              fontWeight: 600,
+              color: "#16a34a",
+              display: "flex",
+              alignItems: "center",
+              gap: 5,
+            }}>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
+                <polyline points="4,12 9,17 20,7" stroke="#16a34a" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              Caixa Fechado
+            </div>
+          </div>
+        )}
       </div>
+
+      {modalFechamento && (
+        <div style={{
+          position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)",
+          display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999,
+        }}>
+          <div style={{
+            background: "#fff", borderRadius: 16, padding: "22px 20px 18px",
+            width: 290, boxShadow: "0 10px 40px rgba(0,0,0,0.18)", textAlign: "center",
+          }}>
+            <div style={{
+              width: 44, height: 44, borderRadius: "50%", background: "#fef2f2",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              margin: "0 auto 12px",
+            }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                <rect x="5" y="11" width="14" height="10" rx="2" stroke="#dc2626" strokeWidth="1.8" />
+                <path d="M8 11V7a4 4 0 0 1 8 0v4" stroke="#dc2626" strokeWidth="1.8" strokeLinecap="round" />
+              </svg>
+            </div>
+            <p style={{ fontSize: 14, fontWeight: 700, color: "#1e293b", margin: "0 0 6px" }}>Fechar Caixa</p>
+            <p style={{ fontSize: 11, color: "#64748b", margin: "0 0 18px", lineHeight: 1.5 }}>
+              Todos os {clientesParaCobranca} clientes foram cobrados.<br />
+              Confirma o fechamento do caixa de hoje?
+            </p>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button
+                onClick={() => setModalFechamento(false)}
+                style={{
+                  flex: 1, padding: "8px 0", borderRadius: 9, border: "1.5px solid #e2e8f0",
+                  background: "#f8fafc", fontSize: 11, fontWeight: 600, color: "#64748b", cursor: "pointer",
+                }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleFecharCaixa}
+                style={{
+                  flex: 1, padding: "8px 0", borderRadius: 9, border: "none",
+                  background: "#dc2626", fontSize: 11, fontWeight: 700, color: "#fff", cursor: "pointer",
+                }}
+              >
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
