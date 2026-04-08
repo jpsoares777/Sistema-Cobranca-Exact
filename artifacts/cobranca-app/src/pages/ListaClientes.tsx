@@ -1003,8 +1003,7 @@ function RenovacaoClientes({ onBack, onAddAgendamento, onRenovar, clientesQuitad
                   {c.nome}
                 </span>
                 <span style={{ fontSize: 11, color: P.textSecondary }}>
-                  Parcela: <strong style={{ fontWeight: 700 }}>R$ {c.parcela.toFixed(2)}</strong>
-                  {"  "}Saldo: <strong style={{ color: c.saldo === 0 ? "#10B981" : P.accent, fontWeight: 700 }}>R$ {c.saldo.toFixed(2)}</strong>
+                  Valor: <strong style={{ fontWeight: 700 }}>R$ {(c.parcela * c.totalParcelas).toFixed(2)}</strong>
                 </span>
               </div>
               <div style={{
