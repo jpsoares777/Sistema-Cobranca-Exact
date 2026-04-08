@@ -140,6 +140,7 @@ function TelaLista({ busca, setBusca, vrf, setVrf, onSelectCliente, onAddAgendam
   const cobradosIds = cobrados ?? [];
   const todosClientes: ClienteItem[] = [...clientesBase, ...clientesAdicionais];
   const filtrados = todosClientes.filter((c) =>
+    c.saldo > 0 &&
     !ausentesIds.includes(c.id) &&
     !(cobradosIds.includes(c.id) && !vrfRemovidos.includes(c.id)) &&
     c.nome.toLowerCase().includes(busca.toLowerCase())
