@@ -1431,7 +1431,7 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
   const [salvoSinc, setSalvoSinc] = useState(false);
   const salvarSinc = () => { setSalvoSinc(true); setTimeout(() => setSalvoSinc(false), 2000); };
   const [emprestimentos, setEmprestimentos] = useState<Emprestimo[]>(emprestimentosIniciais);
-  const [novosClientesIds, setNovosClientesIds] = useState<Set<number>>(new Set());
+  const [novosClientesIds, setNovosClientesIds] = useState<Set<number>>(new Set(emprestimentosIniciais.map(e => e.id)));
   const [renovacoesIds, setRenovacoesIds] = useState<Set<number>>(new Set());
   const [clientesAdicionaisHoje, setClientesAdicionaisHoje] = useState<ClienteItem[]>([]);
   const [novosClientesOutras, setNovosClientesOutras] = useState<ClienteItem[]>([]);
