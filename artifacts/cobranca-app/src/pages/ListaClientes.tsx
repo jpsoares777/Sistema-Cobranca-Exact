@@ -169,9 +169,9 @@ function TelaLista({ busca, setBusca, vrf, setVrf, onSelectCliente, onAddAgendam
         <div style={{ flex: 1, overflowY: "auto", paddingBottom: 70, paddingTop: 4, paddingLeft: 10, paddingRight: 10 }}>
           {vrfLista.map((c) => {
             const valorCobrado = cobradosValores.find(x => x.id === c.id)?.valor ?? c.parcela;
-            const saldoApos = c.saldo - valorCobrado;
+            const saldoApos = Math.max(0, c.saldo);
             const sc = statusBorderColor(c.status);
-            const clienteAtualizado = { ...c, saldo: saldoApos, parcelasPagas: c.parcelasPagas + 1, pagamentos: pagamentosRegistro[c.id] ?? [] };
+            const clienteAtualizado = { ...c, saldo: saldoApos, pagamentos: pagamentosRegistro[c.id] ?? [] };
             const expandido = clienteDetalhe?.id === c.id;
 
             const rowContent = (
