@@ -1704,6 +1704,29 @@ export function ListaClientes() {
             cobrancaDiaria={cobradosValores.reduce((s, x) => s + x.valor, 0)}
             cobrancaEsperada={clientesData.reduce((s, c) => s + c.parcela, 0) + clientesAdicionaisHoje.reduce((s, c) => s + c.parcela, 0)}
             novosEmprestimos={emprestimentos.reduce((s, e) => s + (e.valorEmprestado ?? 0), 0)}
+            onSemPagamentos={() => {
+              const pendentes = clientesOrdenados.filter(c => !cobrados.includes(c.id) && !ausentes.includes(c.id));
+              if (pendentes.length === 0) return;
+              const hoje = new Date().toLocaleDateString("pt-BR");
+              setCobrados(prev => {
+                const novos = pendentes.map(c => c.id).filter(id => !prev.includes(id));
+                return [...prev, ...novos];
+              });
+              setCobradosValores(prev => {
+                const novos = pendentes.filter(c => !prev.some(x => x.id === c.id)).map(c => ({ id: c.id, valor: 0 }));
+                return [...prev, ...novos];
+              });
+              setRegistroPagamentos(prev => {
+                const next = { ...prev };
+                pendentes.forEach(c => {
+                  if (!next[c.id]) next[c.id] = [];
+                  if (!next[c.id].some((p: Pagamento) => p.metodo === "Sem pagamento")) {
+                    next[c.id] = [...next[c.id], { data: hoje, valor: 0, metodo: "Sem pagamento" as MetodoPagamento }];
+                  }
+                });
+                return next;
+              });
+            }}
           />
         : verRenovacao
         ? <RenovacaoClientes onBack={() => setVerRenovacao(false)} onAddAgendamento={addAgendamento} onRenovar={setClienteParaRenovar} clientesQuitados={quitadosClientes} />

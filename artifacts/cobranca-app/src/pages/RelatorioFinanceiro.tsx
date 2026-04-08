@@ -44,6 +44,7 @@ export function RelatorioFinanceiro({
   cobrancaDiaria = 0,
   cobrancaEsperada = 0,
   novosEmprestimos = 0,
+  onSemPagamentos,
 }: {
   onBack: () => void;
   totalDespesas?: number;
@@ -57,9 +58,11 @@ export function RelatorioFinanceiro({
   cobrancaDiaria?: number;
   cobrancaEsperada?: number;
   novosEmprestimos?: number;
+  onSemPagamentos?: () => void;
 }) {
   const [modalFechamento, setModalFechamento] = useState(false);
   const [caixaFechado, setCaixaFechado] = useState(false);
+  const [modalSemPag, setModalSemPag] = useState(false);
 
   const saldo = CAIXA_INICIAL + cobrancaDiaria + totalRendimentos - novosEmprestimos - RETIRADA - totalDespesas;
   const todosCorados = clientesParaCobranca > 0 && cobradosCount >= clientesParaCobranca;
@@ -145,7 +148,12 @@ export function RelatorioFinanceiro({
           </div>
         ))}
         <div className="grid grid-cols-2 gap-2 pt-0.5">
-          <button className="bg-slate-900 text-white rounded-lg py-1.5 text-[10px] font-semibold shadow-sm flex items-center justify-center gap-1.5">
+          <button
+            onClick={() => onSemPagamentos && setModalSemPag(true)}
+            disabled={!onSemPagamentos}
+            className="bg-slate-900 text-white rounded-lg py-1.5 text-[10px] font-semibold shadow-sm flex items-center justify-center gap-1.5"
+            style={{ opacity: !onSemPagamentos ? 0.5 : 1 }}
+          >
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" />
             Sem Pagamentos
           </button>
@@ -205,6 +213,53 @@ export function RelatorioFinanceiro({
           </div>
         )}
       </div>
+
+      {modalSemPag && (
+        <div style={{
+          position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)",
+          display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999,
+        }}>
+          <div style={{
+            background: "#fff", borderRadius: 16, padding: "22px 20px 18px",
+            width: 290, boxShadow: "0 10px 40px rgba(0,0,0,0.18)", textAlign: "center",
+          }}>
+            <div style={{
+              width: 44, height: 44, borderRadius: "50%", background: "#f0fdf4",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              margin: "0 auto 12px",
+            }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="9" stroke="#16a34a" strokeWidth="1.8" />
+                <path d="M12 7v5l3 3" stroke="#16a34a" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <p style={{ fontSize: 14, fontWeight: 700, color: "#1e293b", margin: "0 0 6px" }}>Sem Pagamentos</p>
+            <p style={{ fontSize: 11, color: "#64748b", margin: "0 0 18px", lineHeight: 1.5 }}>
+              Registrar <strong>Sem pagamento</strong> para todos os clientes diários ainda não cobrados?
+            </p>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button
+                onClick={() => setModalSemPag(false)}
+                style={{
+                  flex: 1, padding: "8px 0", borderRadius: 9, border: "1.5px solid #e2e8f0",
+                  background: "#f8fafc", fontSize: 11, fontWeight: 600, color: "#64748b", cursor: "pointer",
+                }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => { onSemPagamentos?.(); setModalSemPag(false); }}
+                style={{
+                  flex: 1, padding: "8px 0", borderRadius: 9, border: "none",
+                  background: "#16a34a", fontSize: 11, fontWeight: 700, color: "#fff", cursor: "pointer",
+                }}
+              >
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {modalFechamento && (
         <div style={{
