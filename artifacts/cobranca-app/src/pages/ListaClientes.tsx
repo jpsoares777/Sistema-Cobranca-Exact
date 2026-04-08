@@ -1444,7 +1444,8 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
   });
   const [clientes, setClientes] = useState<typeof clientesData>(() => {
     const db = loadDB();
-    return (db?.clientes as typeof clientesData)?.length ? (db!.clientes as typeof clientesData) : clientesData;
+    const raw = (db?.clientes as typeof clientesData)?.length ? (db!.clientes as typeof clientesData) : clientesData;
+    return raw.map(c => ({ ...c, saldo: c.parcela * (c.totalParcelas - (c.parcelasPagas ?? 0)) }));
   });
   const [ordemClientesIds, setOrdemClientesIds] = useState<number[]>(() => {
     const db = loadDB();
