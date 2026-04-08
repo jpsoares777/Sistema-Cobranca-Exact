@@ -10,11 +10,36 @@ const WHITE40 = "rgba(255,255,255,0.4)";
 const WHITE20 = "rgba(255,255,255,0.2)";
 const WHITE10 = "rgba(255,255,255,0.10)";
 
+const GRADIENT = `linear-gradient(180deg, ${GRAD_TOP} 0%, ${GRAD_MID} 55%, ${GRAD_BOT} 100%)`;
+
+function Footer() {
+  return (
+    <div style={{ position: "absolute", bottom: 12, left: 0, right: 0, textAlign: "center" }}>
+      <p style={{ margin: 0, fontSize: 11, color: "#000000" }}>
+        © 2026 System Pay · Todos os direitos reservados
+      </p>
+    </div>
+  );
+}
+
+function Logo() {
+  return (
+    <img
+      src="/logo_pin.png"
+      alt="Logo"
+      style={{ width: "78%", maxWidth: 360, height: "auto", objectFit: "contain" }}
+      onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+    />
+  );
+}
+
 export function PinLogin({ onUnlock }: { onUnlock: () => void }) {
   const [pin, setPin] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [shake, setShake] = useState(false);
+  const [sucesso, setSucesso] = useState(false);
+  const [fadeIn, setFadeIn] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -26,7 +51,9 @@ export function PinLogin({ onUnlock }: { onUnlock: () => void }) {
     setLoading(true);
     setTimeout(() => {
       if (pin === PIN_CORRETO) {
-        onUnlock();
+        setSucesso(true);
+        setTimeout(() => setFadeIn(true), 30);
+        setTimeout(() => onUnlock(), 2200);
       } else {
         setShake(true);
         setPin("");
@@ -44,11 +71,75 @@ export function PinLogin({ onUnlock }: { onUnlock: () => void }) {
     if (e.key === "Enter") handleLogin();
   };
 
+  /* ── TELA DE SUCESSO ─────────────────────────────────────── */
+  if (sucesso) {
+    return (
+      <div style={{
+        minHeight: "100dvh",
+        width: "100%",
+        background: GRADIENT,
+        fontFamily: "'Inter','Segoe UI',sans-serif",
+        position: "relative",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        userSelect: "none",
+        opacity: fadeIn ? 1 : 0,
+        transition: "opacity 0.4s ease",
+      }}>
+        {/* Logo no topo */}
+        <div style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "flex-start",
+          width: "100%",
+          paddingTop: "18%",
+          paddingBottom: 60,
+        }}>
+          <Logo />
+        </div>
+
+        {/* Texto na parte inferior */}
+        <div style={{
+          width: "100%",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 8,
+          paddingBottom: 80,
+        }}>
+          <p style={{
+            margin: 0,
+            fontSize: 19,
+            fontWeight: 700,
+            color: WHITE,
+            textAlign: "center",
+          }}>
+            Acesso autorizado
+          </p>
+          <p style={{
+            margin: 0,
+            fontSize: 13,
+            color: WHITE70,
+            textAlign: "center",
+          }}>
+            Você entrou no System Pay com sucesso
+          </p>
+        </div>
+
+        <Footer />
+      </div>
+    );
+  }
+
+  /* ── TELA DE LOGIN ───────────────────────────────────────── */
   return (
     <div style={{
       minHeight: "100dvh",
       width: "100%",
-      background: `linear-gradient(180deg, ${GRAD_TOP} 0%, ${GRAD_MID} 55%, ${GRAD_BOT} 100%)`,
+      background: GRADIENT,
       fontFamily: "'Inter','Segoe UI',sans-serif",
       position: "relative",
       display: "flex",
@@ -57,7 +148,6 @@ export function PinLogin({ onUnlock }: { onUnlock: () => void }) {
       userSelect: "none",
     }}>
 
-      {/* Conteúdo central */}
       <div style={{
         flex: 1,
         display: "flex",
@@ -68,31 +158,20 @@ export function PinLogin({ onUnlock }: { onUnlock: () => void }) {
         paddingBottom: 60,
       }}>
         {/* Logo */}
-        <img
-          src="/logo_pin.png"
-          alt="Logo"
-          style={{
-            width: "78%",
-            maxWidth: 360,
-            height: "auto",
-            objectFit: "contain",
-            marginBottom: 80,
-          }}
-          onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-        />
+        <div style={{ marginBottom: 80 }}>
+          <Logo />
+        </div>
 
-        {/* Seção do PIN — largura ~48% da logo */}
-        <div
-          style={{
-            width: "min(48vw, 173px)",
-            minWidth: 160,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 12,
-            animation: shake ? "shake 0.5s ease" : "none",
-          }}
-        >
+        {/* Seção do PIN */}
+        <div style={{
+          width: "min(48vw, 173px)",
+          minWidth: 160,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 12,
+          animation: shake ? "shake 0.5s ease" : "none",
+        }}>
           {/* Campo de PIN */}
           <div style={{ width: "100%" }}>
             <input
@@ -129,24 +208,14 @@ export function PinLogin({ onUnlock }: { onUnlock: () => void }) {
                 WebkitTextFillColor: WHITE,
               }}
             />
-            {/* Linha abaixo do campo */}
-            <div style={{
-              height: 2,
-              background: WHITE20,
-              marginTop: 2,
-              borderRadius: 1,
-            }} />
+            <div style={{ height: 2, background: WHITE20, marginTop: 2, borderRadius: 1 }} />
           </div>
 
           {/* Erro ou espaçador */}
           {error ? (
-            <p style={{
-              margin: 0,
-              fontSize: 13,
-              color: "#ffe0e0",
-              textAlign: "center",
-              minHeight: 18,
-            }}>{error}</p>
+            <p style={{ margin: 0, fontSize: 13, color: "#ffe0e0", textAlign: "center", minHeight: 18 }}>
+              {error}
+            </p>
           ) : (
             <div style={{ height: 18 }} />
           )}
@@ -169,7 +238,6 @@ export function PinLogin({ onUnlock }: { onUnlock: () => void }) {
               boxShadow: "0 3px 6px rgba(0,0,0,0.12)",
               transition: "opacity 0.15s",
               opacity: loading ? 0.8 : 1,
-              letterSpacing: 0,
             }}
           >
             {loading ? "..." : "Entrar"}
@@ -193,22 +261,7 @@ export function PinLogin({ onUnlock }: { onUnlock: () => void }) {
         </div>
       </div>
 
-      {/* Rodapé fixo */}
-      <div style={{
-        position: "absolute",
-        bottom: 12,
-        left: 0,
-        right: 0,
-        textAlign: "center",
-      }}>
-        <p style={{
-          margin: 0,
-          fontSize: 11,
-          color: "#000000",
-        }}>
-          © 2026 System Pay · Todos os direitos reservados
-        </p>
-      </div>
+      <Footer />
 
       <style>{`
         input::placeholder { color: ${WHITE40}; opacity: 1; }
