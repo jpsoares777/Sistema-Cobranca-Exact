@@ -1462,7 +1462,8 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
   });
   const [novosClientesIds, setNovosClientesIds] = useState<Set<number>>(() => {
     const db = loadDB();
-    return new Set<number>(db?.novosClientesIds?.length ? db.novosClientesIds : emprestimentosIniciais.map(e => e.id));
+    if (db?.clientes?.length) return new Set<number>(db.novosClientesIds ?? []);
+    return new Set<number>(emprestimentosIniciais.map(e => e.id));
   });
   const [renovacoesIds, setRenovacoesIds] = useState<Set<number>>(() => {
     const db = loadDB();
@@ -1521,7 +1522,19 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
       clientesAdicionaisHoje, novosClientesOutras, agendamentos, despesas, rendimentos, clientes]);
 
   const handleCaixaFechado = () => {
-    saveDB({ lastDate: "" });
+    const novosParaAdicionar = clientesAdicionaisHoje.filter(c => !clientes.some(e => e.id === c.id));
+    const clientesMerged = [...clientes, ...novosParaAdicionar];
+    const novaOrdem = [
+      ...ordemClientesIds,
+      ...novosParaAdicionar.map(c => c.id).filter(id => !ordemClientesIds.includes(id)),
+    ];
+    saveDB({
+      lastDate: "",
+      clientes: clientesMerged,
+      ordemClientesIds: novaOrdem,
+      novosClientesIds: [],
+      clientesAdicionaisHoje: [],
+    });
   };
 
   if (clienteSelecionado) {
