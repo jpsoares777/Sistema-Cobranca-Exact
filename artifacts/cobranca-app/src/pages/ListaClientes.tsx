@@ -1255,10 +1255,10 @@ const flatItems: FlatItem[] = [
   { id: 12, label: "Sair",                        color: "#C62828", icon: <img src="/icons/icone-sair.png" width={24} height={24} style={{ objectFit: "contain" }} />, isSair: true },
 ];
 
-function ClientesAusentes({ ausentes, onReativar, onAddAgendamento, onSelectCliente }: { ausentes: number[]; onReativar: (id: number) => void; onAddAgendamento: (a: Agendamento) => void; onSelectCliente: (c: ClienteItem) => void }) {
+function ClientesAusentes({ ausentes, onReativar, onAddAgendamento, onSelectCliente, clientesBase = clientesData }: { ausentes: number[]; onReativar: (id: number) => void; onAddAgendamento: (a: Agendamento) => void; onSelectCliente: (c: ClienteItem) => void; clientesBase?: typeof clientesData }) {
   const [busca, setBusca] = useState("");
   const [clienteDetalhe, setClienteDetalhe] = useState<ClienteItem | null>(null);
-  const lista = clientesData.filter(c => ausentes.includes(c.id) && c.nome.toLowerCase().includes(busca.toLowerCase()));
+  const lista = clientesBase.filter(c => ausentes.includes(c.id) && c.nome.toLowerCase().includes(busca.toLowerCase()));
 
   return (
     <>
@@ -1782,7 +1782,7 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
 
       {/* CONTEÚDO */}
       {verAusentes
-        ? <ClientesAusentes ausentes={ausentes} onReativar={(id) => setAusentes(prev => prev.filter(x => x !== id))} onAddAgendamento={addAgendamento} onSelectCliente={setClienteSelecionado} />
+        ? <ClientesAusentes ausentes={ausentes} onReativar={(id) => setAusentes(prev => prev.filter(x => x !== id))} onAddAgendamento={addAgendamento} onSelectCliente={setClienteSelecionado} clientesBase={clientes} />
         : verOutrasDatas
         ? <EmprestimosOutrasDatas onAddAgendamento={addAgendamento} onSelectCliente={setClienteSelecionado} novosClientes={novosClientesOutras} />
         : verSincronizar
@@ -1808,14 +1808,14 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
             onCaixaFechado={handleCaixaFechado}
             totalDespesas={despesas.reduce((s, d) => s + d.valor, 0)}
             totalRendimentos={rendimentos.reduce((s, r) => s + r.valor, 0)}
-            totalClientes={clientesData.length + novosClientesIds.size + renovacoesIds.size}
-            clientesParaCobranca={clientesData.length}
+            totalClientes={clientes.length + novosClientesIds.size + renovacoesIds.size}
+            clientesParaCobranca={clientes.length}
             cobradosCount={cobrados.length}
             ausentesCount={ausentes.length}
             novosCount={novosClientesIds.size}
             renovacoesCount={renovacoesIds.size}
             cobrancaDiaria={cobradosValores.reduce((s, x) => s + x.valor, 0)}
-            cobrancaEsperada={clientesData.reduce((s, c) => s + c.parcela, 0) + clientesAdicionaisHoje.reduce((s, c) => s + c.parcela, 0)}
+            cobrancaEsperada={clientes.reduce((s, c) => s + c.parcela, 0) + clientesAdicionaisHoje.reduce((s, c) => s + c.parcela, 0)}
             novosEmprestimos={emprestimentos.reduce((s, e) => s + (e.valorEmprestado ?? 0), 0)}
             onSemPagamentos={() => {
               const pendentes = clientesOrdenados.filter(c => !cobrados.includes(c.id) && !ausentes.includes(c.id));
