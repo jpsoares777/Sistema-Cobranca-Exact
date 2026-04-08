@@ -1458,6 +1458,7 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
   const salvarSinc = () => { setSalvoSinc(true); setTimeout(() => setSalvoSinc(false), 2000); };
   const [emprestimentos, setEmprestimentos] = useState<Emprestimo[]>(() => {
     const db = loadDB();
+    if (db?.clientes?.length) return (db?.emprestimentos as Emprestimo[]) ?? [];
     return (db?.emprestimentos as Emprestimo[])?.length ? (db!.emprestimentos as Emprestimo[]) : emprestimentosIniciais;
   });
   const [novosClientesIds, setNovosClientesIds] = useState<Set<number>>(() => {
@@ -1522,18 +1523,34 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
       clientesAdicionaisHoje, novosClientesOutras, agendamentos, despesas, rendimentos, clientes]);
 
   const handleCaixaFechado = () => {
-    const novosParaAdicionar = clientesAdicionaisHoje.filter(c => !clientes.some(e => e.id === c.id));
-    const clientesMerged = [...clientes, ...novosParaAdicionar];
-    const novaOrdem = [
-      ...ordemClientesIds,
-      ...novosParaAdicionar.map(c => c.id).filter(id => !ordemClientesIds.includes(id)),
-    ];
+    const emprestimentosComoClientes = emprestimentos
+      .filter(e => !clientes.some(c => c.id === e.id))
+      .map(e => ({
+        id: e.id,
+        nome: e.nomeCliente,
+        parcela: e.valorParcela,
+        saldo: e.valorEmprestado,
+        status: "novo" as const,
+        endereco: "",
+        parcelasPagas: 0,
+        totalParcelas: e.quantidadeParcelas,
+        telefone: "",
+        frequencia: e.frequencia,
+      }));
+    const clientesAdicionaisComoClientes = clientesAdicionaisHoje
+      .filter(c => !clientes.some(e => e.id === c.id) && !emprestimentosComoClientes.some(e => e.id === c.id));
+    const clientesMerged = [...clientes, ...emprestimentosComoClientes, ...clientesAdicionaisComoClientes];
+    const novosIds = [...emprestimentosComoClientes, ...clientesAdicionaisComoClientes]
+      .map(c => c.id)
+      .filter(id => !ordemClientesIds.includes(id));
+    const novaOrdem = [...ordemClientesIds, ...novosIds];
     saveDB({
       lastDate: "",
       clientes: clientesMerged,
       ordemClientesIds: novaOrdem,
       novosClientesIds: [],
       clientesAdicionaisHoje: [],
+      emprestimentos: [],
     });
   };
 
