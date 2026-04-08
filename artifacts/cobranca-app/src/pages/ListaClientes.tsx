@@ -948,15 +948,27 @@ function RelatorioRendimentos({ onVoltar, rendimentos = [] }: { onVoltar: () => 
 /* ── renovação de clientes ────────────────────────────── */
 const clientesInativos = clientesData.filter(c => c.status !== "emdia");
 
-function RenovacaoClientes({ onBack, onAddAgendamento, onRenovar, clientesQuitados = [] }: { onBack: () => void; onAddAgendamento: (a: Agendamento) => void; onRenovar: (c: ClienteItem) => void; clientesQuitados?: ClienteItem[] }) {
-  const filtrados = [
-    ...clientesQuitados.filter(q => !clientesInativos.some(i => i.id === q.id)),
+function RenovacaoClientes({ onBack, onAddAgendamento, onRenovar, clientesQuitados = [], todosClientes = [] }: { onBack: () => void; onAddAgendamento: (a: Agendamento) => void; onRenovar: (c: ClienteItem) => void; clientesQuitados?: ClienteItem[]; todosClientes?: ClienteItem[] }) {
+  const [busca, setBusca] = useState("");
+  const vistos = new Set<number>();
+  const base = [
+    ...todosClientes,
+    ...clientesQuitados,
     ...clientesInativos,
-  ];
+  ].filter(c => { if (vistos.has(c.id)) return false; vistos.add(c.id); return true; });
+  const filtrados = base.filter(c => c.nome.toLowerCase().includes(busca.toLowerCase()));
   const [clienteExpandido, setClienteExpandido] = useState<typeof clientesData[0] | null>(null);
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column", overflowY: "auto", backgroundColor: "#F2F4F7" }}>
-
+      {/* Busca */}
+      <div style={{ padding: "10px 12px 4px" }}>
+        <input
+          value={busca}
+          onChange={e => setBusca(e.target.value)}
+          placeholder="Procurar cliente..."
+          style={{ width: "100%", padding: "9px 14px", borderRadius: 10, border: `1.5px solid ${P.border}`, fontSize: 13, outline: "none", boxSizing: "border-box", backgroundColor: P.card }}
+        />
+      </div>
       {/* Lista */}
       <div style={{ flex: 1, overflowY: "auto", paddingBottom: 12, paddingTop: 4, paddingLeft: 10, paddingRight: 10 }}>
         {filtrados.length === 0 && (
@@ -997,11 +1009,17 @@ function RenovacaoClientes({ onBack, onAddAgendamento, onRenovar, clientesQuitad
                 onClick={e => { e.stopPropagation(); onRenovar(c); }}
                 style={{ flex: 1, minWidth: 0, cursor: "pointer" }}
               >
-                <span style={{ fontSize: 12.5, fontWeight: 700, color: "#2563EB", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", letterSpacing: 0.1, lineHeight: 1.3, display: "block", textDecorationLine: "underline", textDecorationStyle: "dotted" }}>
-                  {c.nome}
-                </span>
+                <div style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap" }}>
+                  <span style={{ fontSize: 12.5, fontWeight: 700, color: "#2563EB", overflow: "hidden", textOverflow: "ellipsis", letterSpacing: 0.1, lineHeight: 1.3, textDecorationLine: "underline", textDecorationStyle: "dotted" }}>
+                    {c.nome}
+                  </span>
+                  {c.saldo === 0 && (
+                    <span style={{ fontSize: 9, fontWeight: 700, backgroundColor: "#10B981", color: "#fff", borderRadius: 4, padding: "1px 5px", letterSpacing: 0.5 }}>QUITADO</span>
+                  )}
+                </div>
                 <span style={{ fontSize: 11, color: P.textSecondary }}>
-                  Valor: <strong style={{ color: P.textSecondary, fontWeight: 700 }}>R$ {(c.parcela * c.totalParcelas).toFixed(2)}</strong>
+                  Parcela: <strong style={{ fontWeight: 700 }}>R$ {c.parcela.toFixed(2)}</strong>
+                  {"  "}Saldo: <strong style={{ color: c.saldo === 0 ? "#10B981" : P.accent, fontWeight: 700 }}>R$ {c.saldo.toFixed(2)}</strong>
                 </span>
               </div>
               <div style={{
@@ -1881,7 +1899,7 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
             }}
           />
         : verRenovacao
-        ? <RenovacaoClientes onBack={() => setVerRenovacao(false)} onAddAgendamento={addAgendamento} onRenovar={setClienteParaRenovar} clientesQuitados={quitadosClientes} />
+        ? <RenovacaoClientes onBack={() => setVerRenovacao(false)} onAddAgendamento={addAgendamento} onRenovar={setClienteParaRenovar} clientesQuitados={quitadosClientes} todosClientes={clientesOrdenados} />
         : activeNav === 0 ? <TelaLista busca={busca} setBusca={setBusca} vrf={vrf} setVrf={setVrf} onSelectCliente={setClienteSelecionado} onAddAgendamento={addAgendamento} ausentes={ausentes} onAusentar={setClienteParaAusentar} cobrados={cobrados} onRemoverCobrado={(id) => { setCobrados(prev => prev.filter(x => x !== id)); setCobradosExtras(prev => prev.filter(x => x.id !== id)); setCobradosValores(prev => prev.filter(x => x.id !== id)); setRegistroPagamentos(prev => { const next = { ...prev }; delete next[id]; return next; }); setQuitadosClientes(prev => prev.filter(x => x.id !== id)); setRenovacoesIds(prev => { const s = new Set(prev); s.delete(id); return s; }); setClientes(prev => prev.map(c => { if (c.id !== id) return c; const valorPago = cobradosValores.find(x => x.id === id)?.valor ?? c.parcela; const parcelasReverter = Math.round(valorPago / (c.parcela || 1)); const pp = Math.max(0, c.parcelasPagas - parcelasReverter); const saldoRestaurado = c.parcela * (c.totalParcelas - pp); return { ...c, parcelasPagas: pp, saldo: saldoRestaurado }; })); }} clientesAdicionais={clientesAdicionaisHoje} cobradosExtras={cobradosExtras} cobradosValores={cobradosValores} pagamentosRegistro={registroPagamentos} clientesBase={clientesOrdenados} />
         : activeNav === 1 ? <CadastroCliente onBack={() => setActiveNav(0)} onSalvar={(emp) => {
             setEmprestimentos(prev => [emp, ...prev]);
