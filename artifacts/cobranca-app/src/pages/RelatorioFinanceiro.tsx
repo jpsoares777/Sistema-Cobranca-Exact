@@ -63,111 +63,50 @@ export function RelatorioFinanceiro({
   const [modalFechamento, setModalFechamento] = useState(false);
   const [caixaFechado, setCaixaFechado] = useState(false);
   const [modalSemPag, setModalSemPag] = useState(false);
+  const [modalRelatorio, setModalRelatorio] = useState(false);
 
   const saldo = CAIXA_INICIAL + cobrancaDiaria + totalRendimentos - novosEmprestimos - RETIRADA - totalDespesas;
   const todosCorados = clientesParaCobranca > 0 && cobradosCount >= clientesParaCobranca;
 
-  const gerarPDF = () => {
-    const hoje = new Date();
-    const dataStr = hoje.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
-    const caixaFinal = CAIXA_INICIAL + cobrancaDiaria + totalRendimentos - novosEmprestimos - RETIRADA - totalDespesas;
+  const hoje = new Date();
+  const dataStr = hoje.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
 
-    const html = `<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8"/>
-<title>Relatório Diário - ${dataStr}</title>
-<style>
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family: 'Segoe UI', Arial, sans-serif; background:#fff; color:#1e293b; padding: 32px 28px; max-width: 420px; margin: 0 auto; }
-  .logo { text-align:center; margin-bottom:24px; }
-  .logo-title { font-size:20px; font-weight:800; color:#3A5F82; letter-spacing:-0.3px; }
-  .logo-sub { font-size:11px; color:#64748b; margin-top:2px; }
-  .section { margin-bottom:20px; }
-  .section-title { font-size:13px; font-weight:700; color:#1e293b; margin-bottom:10px; display:flex; align-items:center; gap:6px; }
-  .row { display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid #f1f5f9; }
-  .row:last-child { border-bottom:none; }
-  .row-label { font-size:12px; color:#475569; }
-  .row-value { font-size:12px; font-weight:600; color:#1e293b; }
-  .row-value.green { color:#16a34a; }
-  .saldo-box { background:#f0fdf4; border:1px solid #86efac; border-radius:10px; padding:12px 14px; display:flex; justify-content:space-between; align-items:center; }
-  .saldo-label { font-size:13px; font-weight:700; color:#15803d; }
-  .saldo-value { font-size:16px; font-weight:800; color:#15803d; }
-  .divider { height:1px; background:#e2e8f0; margin:16px 0; }
-  .meta { font-size:11px; color:#94a3b8; text-align:center; margin-top:24px; }
-  @media print {
-    body { padding: 20px; }
-    @page { margin: 15mm; size: A4; }
-  }
-</style>
-</head>
-<body>
-<div class="logo">
-  <div class="logo-title">📊 Resumo de Caixa</div>
-  <div class="logo-sub">Rota Cred Bank · Sistema de Cobrança</div>
-</div>
-
-<div class="section">
-  <div class="row">
-    <span class="row-label">Status de Liquidação</span>
-    <span class="row-value green">✓ Correto</span>
-  </div>
-  <div class="row">
-    <span class="row-label">Sincronização</span>
-    <span class="row-value">Rota Cred Bank</span>
-  </div>
-  <div class="row">
-    <span class="row-label">Data</span>
-    <span class="row-value">${dataStr}</span>
-  </div>
-</div>
-
-<div class="divider"></div>
-
-<div class="section">
-  <div class="section-title">💰 Movimentação Financeira</div>
-  <div class="row"><span class="row-label">Caixa Inicial</span><span class="row-value">R$ ${fmt(CAIXA_INICIAL)}</span></div>
-  <div class="row"><span class="row-label">Novos Clientes</span><span class="row-value">${novosCount}</span></div>
-  <div class="row"><span class="row-label">Renovação de Clientes</span><span class="row-value">R$ 0,00</span></div>
-  <div class="row"><span class="row-label">Total de Empréstimos</span><span class="row-value">R$ ${fmt(novosEmprestimos)}</span></div>
-  <div class="row"><span class="row-label">Retiradas de Caixa</span><span class="row-value">R$ ${fmt(RETIRADA)}</span></div>
-  <div class="row"><span class="row-label">Despesas</span><span class="row-value">R$ ${fmt(totalDespesas)}</span></div>
-  <div class="row"><span class="row-label">Rendimentos</span><span class="row-value">R$ ${fmt(totalRendimentos)}</span></div>
-</div>
-
-<div class="divider"></div>
-
-<div class="section">
-  <div class="section-title">📥 Cobranças</div>
-  <div class="row"><span class="row-label">Total Cobrado</span><span class="row-value green">R$ ${fmt(cobrancaDiaria)}</span></div>
-</div>
-
-<div class="divider"></div>
-
-<div class="section">
-  <div class="section-title">📦 Saldo Final</div>
-  <div class="saldo-box">
-    <span class="saldo-label">Caixa Final</span>
-    <span class="saldo-value">R$ ${fmt(caixaFinal)}</span>
-  </div>
-</div>
-
-<div class="meta">Gerado em ${hoje.toLocaleString("pt-BR")} · Sistema de Cobrança</div>
-<script>window.onload = () => { window.print(); }</script>
-</body>
-</html>`;
-
-    const win = window.open("", "_blank");
-    if (win) {
-      win.document.write(html);
-      win.document.close();
-    }
+  const imprimirPDF = () => {
+    const conteudo = document.getElementById("relatorio-pdf-content");
+    if (!conteudo) return;
+    const estilo = `
+      <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; color:#1e293b; padding:24px; }
+        .rt { font-size:18px; font-weight:800; color:#3A5F82; text-align:center; margin-bottom:4px; }
+        .rs { font-size:10px; color:#64748b; text-align:center; margin-bottom:20px; }
+        .sec-title { font-size:12px; font-weight:700; margin:14px 0 6px; }
+        .row { display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid #f1f5f9; }
+        .row:last-child { border-bottom:none; }
+        .rl { font-size:11px; color:#475569; }
+        .rv { font-size:11px; font-weight:600; color:#1e293b; }
+        .rv.g { color:#16a34a; }
+        .divider { height:1px; background:#e2e8f0; margin:10px 0; }
+        .saldo { background:#f0fdf4; border:1px solid #86efac; border-radius:8px; padding:10px 12px; display:flex; justify-content:space-between; }
+        .sl { font-size:12px; font-weight:700; color:#15803d; }
+        .sv { font-size:14px; font-weight:800; color:#15803d; }
+        .meta { font-size:9px; color:#94a3b8; text-align:center; margin-top:18px; }
+        @page { margin:12mm; }
+      </style>
+    `;
+    const janela = window.open("", "", "width=480,height=700");
+    if (!janela) return;
+    janela.document.write(`<html><head><meta charset="UTF-8"/>${estilo}</head><body>${conteudo.innerHTML}</body></html>`);
+    janela.document.close();
+    janela.focus();
+    janela.print();
+    janela.close();
   };
 
   const handleFecharCaixa = () => {
     setCaixaFechado(true);
     setModalFechamento(false);
-    setTimeout(() => gerarPDF(), 300);
+    setTimeout(() => setModalRelatorio(true), 200);
   };
 
   const sections: Section[] = [
@@ -318,6 +257,100 @@ export function RelatorioFinanceiro({
             <div style={{ display: "flex", gap: 7 }}>
               <button onClick={() => setModalFechamento(false)} style={{ flex: 1, padding: "6px 0", borderRadius: 8, border: "1px solid #e2e8f0", background: "#fff", fontSize: 11, fontWeight: 600, color: "#64748b", cursor: "pointer" }}>Cancelar</button>
               <button onClick={handleFecharCaixa} style={{ flex: 1, padding: "6px 0", borderRadius: 8, border: "1px solid #fca5a5", background: "#fff", fontSize: 11, fontWeight: 700, color: "#dc2626", cursor: "pointer" }}>Confirmar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {modalRelatorio && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "flex-end", justifyContent: "center", zIndex: 10000 }}>
+          <div style={{ background: "#fff", borderRadius: "18px 18px 0 0", width: "100%", maxWidth: 430, maxHeight: "88vh", display: "flex", flexDirection: "column", boxShadow: "0 -4px 24px rgba(0,0,0,0.18)" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px 10px", borderBottom: "1px solid #f1f5f9", flexShrink: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: 16 }}>📊</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "#1e293b" }}>Relatório Diário</span>
+              </div>
+              <button onClick={() => setModalRelatorio(false)} style={{ width: 26, height: 26, borderRadius: "50%", border: "none", background: "#f1f5f9", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="#64748b" strokeWidth="2.2" strokeLinecap="round"/></svg>
+              </button>
+            </div>
+
+            <div style={{ overflowY: "auto", flex: 1, padding: "14px 16px" }}>
+              <div id="relatorio-pdf-content">
+                <div className="rt" style={{ fontSize: 15, fontWeight: 800, color: "#3A5F82", textAlign: "center", marginBottom: 2 }}>📊 Resumo de Caixa</div>
+                <div className="rs" style={{ fontSize: 10, color: "#64748b", textAlign: "center", marginBottom: 14 }}>Rota Cred Bank · Sistema de Cobrança</div>
+
+                <div style={{ background: "#f8fafc", borderRadius: 10, padding: "10px 12px", marginBottom: 12 }}>
+                  {[
+                    { l: "Status de Liquidação", v: "✓ Correto", g: true },
+                    { l: "Sincronização", v: "Rota Cred Bank", g: false },
+                    { l: "Data", v: dataStr, g: false },
+                  ].map(r => (
+                    <div key={r.l} className="row" style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", borderBottom: "1px solid #f1f5f9" }}>
+                      <span className="rl" style={{ fontSize: 11, color: "#475569" }}>{r.l}</span>
+                      <span className="rv" style={{ fontSize: 11, fontWeight: 600, color: r.g ? "#16a34a" : "#1e293b" }}>{r.v}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div style={{ height: 1, background: "#e2e8f0", margin: "10px 0" }} className="divider" />
+
+                <div style={{ marginBottom: 12 }}>
+                  <div className="sec-title" style={{ fontSize: 12, fontWeight: 700, color: "#1e293b", marginBottom: 8 }}>💰 Movimentação Financeira</div>
+                  <div style={{ background: "#f8fafc", borderRadius: 10, padding: "10px 12px" }}>
+                    {[
+                      { l: "Caixa Inicial", v: `R$ ${fmt(CAIXA_INICIAL)}` },
+                      { l: "Novos Clientes", v: String(novosCount) },
+                      { l: "Renovação de Clientes", v: "R$ 0,00" },
+                      { l: "Total de Empréstimos", v: `R$ ${fmt(novosEmprestimos)}` },
+                      { l: "Retiradas de Caixa", v: `R$ ${fmt(RETIRADA)}` },
+                      { l: "Despesas", v: `R$ ${fmt(totalDespesas)}` },
+                      { l: "Rendimentos", v: `R$ ${fmt(totalRendimentos)}` },
+                    ].map(r => (
+                      <div key={r.l} className="row" style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", borderBottom: "1px solid #f1f5f9" }}>
+                        <span className="rl" style={{ fontSize: 11, color: "#475569" }}>{r.l}</span>
+                        <span className="rv" style={{ fontSize: 11, fontWeight: 600, color: "#1e293b" }}>{r.v}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ height: 1, background: "#e2e8f0", margin: "10px 0" }} className="divider" />
+
+                <div style={{ marginBottom: 12 }}>
+                  <div className="sec-title" style={{ fontSize: 12, fontWeight: 700, color: "#1e293b", marginBottom: 8 }}>📥 Cobranças</div>
+                  <div style={{ background: "#f8fafc", borderRadius: 10, padding: "10px 12px" }}>
+                    <div className="row" style={{ display: "flex", justifyContent: "space-between", padding: "5px 0" }}>
+                      <span className="rl" style={{ fontSize: 11, color: "#475569" }}>Total Cobrado</span>
+                      <span className="rv g" style={{ fontSize: 11, fontWeight: 600, color: "#16a34a" }}>R$ {fmt(cobrancaDiaria)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ height: 1, background: "#e2e8f0", margin: "10px 0" }} className="divider" />
+
+                <div style={{ marginBottom: 8 }}>
+                  <div className="sec-title" style={{ fontSize: 12, fontWeight: 700, color: "#1e293b", marginBottom: 8 }}>📦 Saldo Final</div>
+                  <div className="saldo" style={{ background: "#f0fdf4", border: "1px solid #86efac", borderRadius: 10, padding: "12px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span className="sl" style={{ fontSize: 12, fontWeight: 700, color: "#15803d" }}>Caixa Final</span>
+                    <span className="sv" style={{ fontSize: 15, fontWeight: 800, color: "#15803d" }}>R$ {fmt(saldo)}</span>
+                  </div>
+                </div>
+
+                <div className="meta" style={{ fontSize: 9, color: "#94a3b8", textAlign: "center", marginTop: 14 }}>
+                  Gerado em {hoje.toLocaleString("pt-BR")} · Sistema de Cobrança
+                </div>
+              </div>
+            </div>
+
+            <div style={{ padding: "12px 16px 16px", borderTop: "1px solid #f1f5f9", flexShrink: 0 }}>
+              <button
+                onClick={imprimirPDF}
+                style={{ width: "100%", padding: "11px 0", borderRadius: 12, border: "none", background: "#3A5F82", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 16l-4-4h2.5V4h3v8H16l-4 4z" fill="#fff"/><path d="M4 18h16v2H4v-2z" fill="#fff"/></svg>
+                Baixar PDF
+              </button>
             </div>
           </div>
         </div>
