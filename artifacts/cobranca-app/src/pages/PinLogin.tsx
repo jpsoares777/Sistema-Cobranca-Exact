@@ -87,46 +87,38 @@ export function PinLogin({ onUnlock }: { onUnlock: () => void }) {
         opacity: fadeIn ? 1 : 0,
         transition: "opacity 0.4s ease",
       }}>
-        {/* Logo no topo */}
+        {/* Conteúdo centralizado */}
         <div style={{
           flex: 1,
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          justifyContent: "flex-start",
+          justifyContent: "center",
           width: "100%",
-          paddingTop: "18%",
+          gap: 48,
           paddingBottom: 60,
         }}>
           <Logo />
-        </div>
 
-        {/* Texto na parte inferior */}
-        <div style={{
-          width: "100%",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: 8,
-          paddingBottom: 80,
-        }}>
-          <p style={{
-            margin: 0,
-            fontSize: 19,
-            fontWeight: 700,
-            color: WHITE,
-            textAlign: "center",
-          }}>
-            Acesso autorizado
-          </p>
-          <p style={{
-            margin: 0,
-            fontSize: 13,
-            color: WHITE70,
-            textAlign: "center",
-          }}>
-            Você entrou no System Pay com sucesso
-          </p>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+            <p style={{
+              margin: 0,
+              fontSize: 19,
+              fontWeight: 700,
+              color: WHITE,
+              textAlign: "center",
+            }}>
+              Acesso autorizado
+            </p>
+            <p style={{
+              margin: 0,
+              fontSize: 13,
+              color: WHITE70,
+              textAlign: "center",
+            }}>
+              Você entrou no System Pay com sucesso
+            </p>
+          </div>
         </div>
 
         <Footer />
