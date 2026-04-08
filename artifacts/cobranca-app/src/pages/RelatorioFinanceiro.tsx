@@ -71,8 +71,6 @@ export function RelatorioFinanceiro({
   const [caixaFechado, setCaixaFechado] = useState(false);
   const [modalSemPag, setModalSemPag] = useState(false);
   const [modalRelatorio, setModalRelatorio] = useState(false);
-  const [editandoCaixa, setEditandoCaixa] = useState(false);
-  const [caixaInput, setCaixaInput] = useState("");
 
   const saldo = caixaInicial + cobrancaDiaria + totalRendimentos - novosEmprestimos - RETIRADA - totalDespesas;
   const todosCorados = clientesParaCobranca > 0 && cobradosCount >= clientesParaCobranca;
@@ -115,6 +113,7 @@ export function RelatorioFinanceiro({
   };
 
   const handleFecharCaixa = () => {
+    onCaixaInicialChange?.(saldo);
     onCaixaFechado?.();
     setCaixaFechado(true);
     setModalFechamento(false);
@@ -185,46 +184,6 @@ export function RelatorioFinanceiro({
                 );
               }
               const bg = row.highlight ? "bg-blue-50" : ri % 2 === 0 ? "bg-white" : "bg-slate-50/60";
-              if (row.editable) {
-                return (
-                  <div key={ri} className={`flex items-center justify-between px-3 py-[5px] border-t border-slate-100 ${bg}`}>
-                    <span className="text-[10px] text-slate-500 w-[45%]">{row.label}</span>
-                    {editandoCaixa ? (
-                      <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                        <span style={{ fontSize: 10, color: "#64748b" }}>R$</span>
-                        <input
-                          autoFocus
-                          type="number"
-                          value={caixaInput}
-                          onChange={e => setCaixaInput(e.target.value)}
-                          onBlur={() => {
-                            const v = parseFloat(caixaInput.replace(",", "."));
-                            if (!isNaN(v) && v >= 0) onCaixaInicialChange?.(v);
-                            setEditandoCaixa(false);
-                          }}
-                          onKeyDown={e => {
-                            if (e.key === "Enter") {
-                              const v = parseFloat(caixaInput.replace(",", "."));
-                              if (!isNaN(v) && v >= 0) onCaixaInicialChange?.(v);
-                              setEditandoCaixa(false);
-                            }
-                            if (e.key === "Escape") setEditandoCaixa(false);
-                          }}
-                          style={{ width: 70, fontSize: 10, border: "1.5px solid #3b82f6", borderRadius: 5, padding: "2px 4px", outline: "none", textAlign: "right" }}
-                        />
-                      </div>
-                    ) : (
-                      <button
-                        onClick={() => { setCaixaInput(String(caixaInicial)); setEditandoCaixa(true); }}
-                        style={{ fontSize: 10, fontWeight: 600, color: "#3b82f6", background: "none", border: "none", cursor: "pointer", textDecoration: "underline dotted", padding: 0 }}
-                        title="Toque para editar"
-                      >
-                        {row.value} ✎
-                      </button>
-                    )}
-                  </div>
-                );
-              }
               return (
                 <div key={ri} className={`flex items-center justify-between px-3 py-[5px] border-t border-slate-100 ${bg}`}>
                   <span className="text-[10px] text-slate-500 w-[55%]">{row.label}</span>
