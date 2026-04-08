@@ -67,9 +67,107 @@ export function RelatorioFinanceiro({
   const saldo = CAIXA_INICIAL + cobrancaDiaria + totalRendimentos - novosEmprestimos - RETIRADA - totalDespesas;
   const todosCorados = clientesParaCobranca > 0 && cobradosCount >= clientesParaCobranca;
 
+  const gerarPDF = () => {
+    const hoje = new Date();
+    const dataStr = hoje.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
+    const caixaFinal = CAIXA_INICIAL + cobrancaDiaria + totalRendimentos - novosEmprestimos - RETIRADA - totalDespesas;
+
+    const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<title>Relatório Diário - ${dataStr}</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background:#fff; color:#1e293b; padding: 32px 28px; max-width: 420px; margin: 0 auto; }
+  .logo { text-align:center; margin-bottom:24px; }
+  .logo-title { font-size:20px; font-weight:800; color:#3A5F82; letter-spacing:-0.3px; }
+  .logo-sub { font-size:11px; color:#64748b; margin-top:2px; }
+  .section { margin-bottom:20px; }
+  .section-title { font-size:13px; font-weight:700; color:#1e293b; margin-bottom:10px; display:flex; align-items:center; gap:6px; }
+  .row { display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid #f1f5f9; }
+  .row:last-child { border-bottom:none; }
+  .row-label { font-size:12px; color:#475569; }
+  .row-value { font-size:12px; font-weight:600; color:#1e293b; }
+  .row-value.green { color:#16a34a; }
+  .saldo-box { background:#f0fdf4; border:1px solid #86efac; border-radius:10px; padding:12px 14px; display:flex; justify-content:space-between; align-items:center; }
+  .saldo-label { font-size:13px; font-weight:700; color:#15803d; }
+  .saldo-value { font-size:16px; font-weight:800; color:#15803d; }
+  .divider { height:1px; background:#e2e8f0; margin:16px 0; }
+  .meta { font-size:11px; color:#94a3b8; text-align:center; margin-top:24px; }
+  @media print {
+    body { padding: 20px; }
+    @page { margin: 15mm; size: A4; }
+  }
+</style>
+</head>
+<body>
+<div class="logo">
+  <div class="logo-title">📊 Resumo de Caixa</div>
+  <div class="logo-sub">Rota Cred Bank · Sistema de Cobrança</div>
+</div>
+
+<div class="section">
+  <div class="row">
+    <span class="row-label">Status de Liquidação</span>
+    <span class="row-value green">✓ Correto</span>
+  </div>
+  <div class="row">
+    <span class="row-label">Sincronização</span>
+    <span class="row-value">Rota Cred Bank</span>
+  </div>
+  <div class="row">
+    <span class="row-label">Data</span>
+    <span class="row-value">${dataStr}</span>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div class="section">
+  <div class="section-title">💰 Movimentação Financeira</div>
+  <div class="row"><span class="row-label">Caixa Inicial</span><span class="row-value">R$ ${fmt(CAIXA_INICIAL)}</span></div>
+  <div class="row"><span class="row-label">Novos Clientes</span><span class="row-value">${novosCount}</span></div>
+  <div class="row"><span class="row-label">Renovação de Clientes</span><span class="row-value">R$ 0,00</span></div>
+  <div class="row"><span class="row-label">Total de Empréstimos</span><span class="row-value">R$ ${fmt(novosEmprestimos)}</span></div>
+  <div class="row"><span class="row-label">Retiradas de Caixa</span><span class="row-value">R$ ${fmt(RETIRADA)}</span></div>
+  <div class="row"><span class="row-label">Despesas</span><span class="row-value">R$ ${fmt(totalDespesas)}</span></div>
+  <div class="row"><span class="row-label">Rendimentos</span><span class="row-value">R$ ${fmt(totalRendimentos)}</span></div>
+</div>
+
+<div class="divider"></div>
+
+<div class="section">
+  <div class="section-title">📥 Cobranças</div>
+  <div class="row"><span class="row-label">Total Cobrado</span><span class="row-value green">R$ ${fmt(cobrancaDiaria)}</span></div>
+</div>
+
+<div class="divider"></div>
+
+<div class="section">
+  <div class="section-title">📦 Saldo Final</div>
+  <div class="saldo-box">
+    <span class="saldo-label">Caixa Final</span>
+    <span class="saldo-value">R$ ${fmt(caixaFinal)}</span>
+  </div>
+</div>
+
+<div class="meta">Gerado em ${hoje.toLocaleString("pt-BR")} · Sistema de Cobrança</div>
+<script>window.onload = () => { window.print(); }</script>
+</body>
+</html>`;
+
+    const win = window.open("", "_blank");
+    if (win) {
+      win.document.write(html);
+      win.document.close();
+    }
+  };
+
   const handleFecharCaixa = () => {
     setCaixaFechado(true);
     setModalFechamento(false);
+    setTimeout(() => gerarPDF(), 300);
   };
 
   const sections: Section[] = [
