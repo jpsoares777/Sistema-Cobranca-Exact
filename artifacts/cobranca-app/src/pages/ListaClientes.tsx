@@ -1845,14 +1845,14 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
             onCaixaInicialChange={(v) => { setCaixaInicial(v); saveDB({ caixaInicial: v }); }}
             totalDespesas={despesas.reduce((s, d) => s + d.valor, 0)}
             totalRendimentos={rendimentos.reduce((s, r) => s + r.valor, 0)}
-            totalClientes={clientes.length + novosClientesIds.size + renovacoesIds.size}
-            clientesParaCobranca={clientes.length}
+            totalClientes={clientes.filter(c => c.saldo > 0).length + novosClientesIds.size + renovacoesIds.size}
+            clientesParaCobranca={clientes.filter(c => c.saldo > 0).length}
             cobradosCount={cobrados.length}
             ausentesCount={ausentes.length}
             novosCount={novosClientesIds.size}
             renovacoesCount={renovacoesIds.size}
             cobrancaDiaria={cobradosValores.reduce((s, x) => s + x.valor, 0)}
-            cobrancaEsperada={clientes.reduce((s, c) => s + c.parcela, 0) + clientesAdicionaisHoje.reduce((s, c) => s + c.parcela, 0)}
+            cobrancaEsperada={clientes.filter(c => c.saldo > 0).reduce((s, c) => s + c.parcela, 0) + clientesAdicionaisHoje.filter(c => c.saldo > 0).reduce((s, c) => s + c.parcela, 0)}
             novosEmprestimos={emprestimentos.reduce((s, e) => s + (e.valorEmprestado ?? 0), 0)}
             onSemPagamentos={() => {
               const pendentes = clientesOrdenados.filter(c => !cobrados.includes(c.id) && !ausentes.includes(c.id));
