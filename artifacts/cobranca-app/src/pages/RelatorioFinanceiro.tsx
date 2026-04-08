@@ -33,6 +33,7 @@ function ToggleSwitch({ on }: { on: boolean }) {
 
 export function RelatorioFinanceiro({
   onBack,
+  onSair,
   totalDespesas = 0,
   totalRendimentos = 0,
   totalClientes = 0,
@@ -47,6 +48,7 @@ export function RelatorioFinanceiro({
   onSemPagamentos,
 }: {
   onBack: () => void;
+  onSair?: () => void;
   totalDespesas?: number;
   totalRendimentos?: number;
   totalClientes?: number;
@@ -267,7 +269,7 @@ Caixa Final: R$ ${fmt(caixaFinal)}`;
                 <span style={{ fontSize: 16 }}>📊</span>
                 <span style={{ fontSize: 14, fontWeight: 700, color: "#1e293b" }}>Relatório Diário</span>
               </div>
-              <button onClick={() => setModalRelatorio(false)} style={{ width: 28, height: 28, borderRadius: "50%", border: "none", background: "#f1f5f9", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <button onClick={() => { setModalRelatorio(false); onSair?.(); }} style={{ width: 28, height: 28, borderRadius: "50%", border: "none", background: "#f1f5f9", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="#64748b" strokeWidth="2.5" strokeLinecap="round"/></svg>
               </button>
             </div>

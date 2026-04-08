@@ -1692,6 +1692,7 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
         : verRelatorio
         ? <RelatorioFinanceiro
             onBack={() => setVerRelatorio(false)}
+            onSair={onSair}
             totalDespesas={despesas.reduce((s, d) => s + d.valor, 0)}
             totalRendimentos={rendimentos.reduce((s, r) => s + r.valor, 0)}
             totalClientes={clientesData.length + novosClientesIds.size + renovacoesIds.size}
