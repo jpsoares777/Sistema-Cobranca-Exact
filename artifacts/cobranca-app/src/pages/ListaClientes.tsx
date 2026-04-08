@@ -1857,7 +1857,7 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
             cobrancaEsperada={clientes.filter(c => c.saldo > 0).reduce((s, c) => s + c.parcela, 0) + clientesAdicionaisHoje.filter(c => c.saldo > 0).reduce((s, c) => s + c.parcela, 0)}
             novosEmprestimos={emprestimentos.reduce((s, e) => s + (e.valorEmprestado ?? 0), 0)}
             onSemPagamentos={() => {
-              const pendentes = clientesOrdenados.filter(c => !cobrados.includes(c.id) && !ausentes.includes(c.id) && c.saldo > 0);
+              const pendentes = clientesOrdenados.filter(c => !cobrados.includes(c.id) && !ausentes.includes(c.id));
               if (pendentes.length === 0) return;
               const hoje = new Date().toLocaleDateString("pt-BR");
               setCobrados(prev => {
