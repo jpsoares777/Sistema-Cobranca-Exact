@@ -1,37 +1,47 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
-const PIN_CORRETO = "1234";
+const PIN_CORRETO = "10600";
+const MAX = 5;
+
+const GRAD_TOP = "#0d2b5e";
+const GRAD_MID = "#1a6fa8";
+const GRAD_BOT = "#3ecfcf";
+
+const ROWS = [
+  ["1", "2", "3"],
+  ["4", "5", "6"],
+  ["7", "8", "9"],
+  ["", "0", "DEL"],
+];
 
 export function PinLogin({ onUnlock }: { onUnlock: () => void }) {
   const [pin, setPin] = useState("");
   const [erro, setErro] = useState(false);
   const [shake, setShake] = useState(false);
-
-  const MAX = 4;
+  const [pressedKey, setPressedKey] = useState<string | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (pin.length === MAX) {
       if (pin === PIN_CORRETO) {
-        setTimeout(onUnlock, 180);
+        setTimeout(onUnlock, 200);
       } else {
         setErro(true);
         setShake(true);
-        setTimeout(() => {
+        timeoutRef.current = setTimeout(() => {
           setPin("");
           setErro(false);
           setShake(false);
         }, 700);
       }
     }
+    return () => { if (timeoutRef.current) clearTimeout(timeoutRef.current); };
   }, [pin]);
 
   const pressKey = (k: string) => {
-    if (pin.length < MAX) setPin(p => p + k);
+    if (pin.length < MAX && !erro) setPin(p => p + k);
   };
-
-  const del = () => setPin(p => p.slice(0, -1));
-
-  const keys = ["1","2","3","4","5","6","7","8","9","","0","⌫"];
+  const del = () => { if (!erro) setPin(p => p.slice(0, -1)); };
 
   return (
     <div style={{
@@ -40,154 +50,154 @@ export function PinLogin({ onUnlock }: { onUnlock: () => void }) {
       flexDirection: "column",
       alignItems: "center",
       justifyContent: "center",
-      background: "linear-gradient(160deg, #0f3a24 0%, #1a5c38 60%, #0d2e1c 100%)",
+      background: `linear-gradient(180deg, ${GRAD_TOP} 0%, ${GRAD_MID} 55%, ${GRAD_BOT} 100%)`,
       fontFamily: "'Inter','Segoe UI',sans-serif",
       userSelect: "none",
+      WebkitTapHighlightColor: "transparent",
     }}>
       <div style={{
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        gap: 0,
         width: "100%",
-        maxWidth: 320,
-        padding: "0 24px",
+        maxWidth: 340,
+        padding: "0 28px",
+        gap: 0,
       }}>
         {/* Logo */}
-        <div style={{
-          width: 64, height: 64, borderRadius: 18,
-          background: "rgba(255,255,255,0.12)",
-          border: "1.5px solid rgba(255,255,255,0.2)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          marginBottom: 16,
-          backdropFilter: "blur(8px)",
+        <img
+          src="/logo_pin.png"
+          alt="Logo"
+          style={{
+            width: "78%",
+            maxWidth: 280,
+            height: "auto",
+            marginBottom: 48,
+            objectFit: "contain",
+          }}
+          onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+        />
+
+        {/* Texto */}
+        <p style={{
+          color: "rgba(255,255,255,0.9)",
+          fontSize: 15,
+          fontWeight: 500,
+          margin: "0 0 28px",
+          letterSpacing: "0.01em",
+          textAlign: "center",
         }}>
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-            <rect x="3" y="11" width="18" height="11" rx="2" fill="rgba(255,255,255,0.25)" stroke="white" strokeWidth="1.5"/>
-            <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
-            <circle cx="12" cy="16" r="1.5" fill="white"/>
-          </svg>
-        </div>
-
-        {/* Título */}
-        <p style={{ color: "white", fontSize: 20, fontWeight: 700, margin: "0 0 4px", letterSpacing: "-0.3px" }}>
-          Rota Cred Bank
-        </p>
-        <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 12, margin: "0 0 36px" }}>
-          Digite seu PIN para continuar
+          Digite seu PIN para acessar
         </p>
 
-        {/* Dots PIN */}
+        {/* Dots */}
         <div
           style={{
-            display: "flex", gap: 14, marginBottom: 36,
-            transition: "transform 0.1s",
-            transform: shake ? "translateX(0)" : "none",
+            display: "flex",
+            gap: 20,
+            marginBottom: 10,
             animation: shake ? "shake 0.5s ease" : "none",
           }}
         >
           {Array.from({ length: MAX }).map((_, i) => {
             const filled = i < pin.length;
-            const isErr = erro;
             return (
               <div key={i} style={{
-                width: 14, height: 14, borderRadius: "50%",
-                background: isErr
+                width: 18,
+                height: 18,
+                borderRadius: "50%",
+                background: erro
                   ? "#f87171"
                   : filled
-                    ? "white"
-                    : "rgba(255,255,255,0.25)",
-                border: `2px solid ${isErr ? "#f87171" : filled ? "white" : "rgba(255,255,255,0.4)"}`,
-                transition: "all 0.15s ease",
-                transform: filled ? "scale(1.1)" : "scale(1)",
+                    ? "#ffffff"
+                    : "transparent",
+                border: `2px solid ${erro ? "#f87171" : filled ? "#ffffff" : "rgba(255,255,255,0.4)"}`,
+                transition: "background 0.15s, border-color 0.15s",
               }} />
             );
           })}
         </div>
 
-        {/* Mensagem de erro */}
+        {/* Erro */}
         <p style={{
-          color: "#f87171", fontSize: 11, fontWeight: 600,
-          margin: erro ? "-24px 0 12px" : "-36px 0 0",
+          color: "#f87171",
+          fontSize: 12,
+          fontWeight: 600,
+          margin: "8px 0 20px",
           opacity: erro ? 1 : 0,
           transition: "opacity 0.2s",
+          minHeight: 18,
           letterSpacing: "0.02em",
         }}>
           PIN incorreto
         </p>
 
-        {/* Teclado numérico */}
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(3, 1fr)",
-          gap: 12,
-          width: "100%",
-        }}>
-          {keys.map((k, i) => {
-            if (k === "") return <div key={i} />;
-            const isDel = k === "⌫";
-            return (
-              <button
-                key={i}
-                onClick={() => isDel ? del() : pressKey(k)}
-                style={{
-                  height: 58,
-                  borderRadius: 14,
-                  border: isDel
-                    ? "1.5px solid rgba(255,255,255,0.15)"
-                    : "1.5px solid rgba(255,255,255,0.12)",
-                  background: isDel
-                    ? "rgba(255,255,255,0.06)"
-                    : "rgba(255,255,255,0.10)",
-                  color: "white",
-                  fontSize: isDel ? 18 : 22,
-                  fontWeight: isDel ? 400 : 600,
-                  cursor: "pointer",
-                  backdropFilter: "blur(4px)",
-                  transition: "background 0.12s, transform 0.1s",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  WebkitTapHighlightColor: "transparent",
-                  letterSpacing: 0,
-                }}
-                onPointerDown={e => {
-                  (e.currentTarget as HTMLButtonElement).style.background = isDel
-                    ? "rgba(255,255,255,0.14)"
-                    : "rgba(255,255,255,0.22)";
-                  (e.currentTarget as HTMLButtonElement).style.transform = "scale(0.94)";
-                }}
-                onPointerUp={e => {
-                  (e.currentTarget as HTMLButtonElement).style.background = isDel
-                    ? "rgba(255,255,255,0.06)"
-                    : "rgba(255,255,255,0.10)";
-                  (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)";
-                }}
-                onPointerLeave={e => {
-                  (e.currentTarget as HTMLButtonElement).style.background = isDel
-                    ? "rgba(255,255,255,0.06)"
-                    : "rgba(255,255,255,0.10)";
-                  (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)";
-                }}
-              >
-                {k}
-              </button>
-            );
-          })}
+        {/* Numpad */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%" }}>
+          {ROWS.map((row, ri) => (
+            <div key={ri} style={{ display: "flex", flexDirection: "row", justifyContent: "center", gap: 10 }}>
+              {row.map((key, ki) => {
+                if (key === "") {
+                  return <div key={ki} style={{ width: 82, height: 82 }} />;
+                }
+                const isDel = key === "DEL";
+                const isPressed = pressedKey === `${ri}-${ki}`;
+                return (
+                  <button
+                    key={ki}
+                    onPointerDown={() => {
+                      setPressedKey(`${ri}-${ki}`);
+                      if (isDel) del(); else pressKey(key);
+                    }}
+                    onPointerUp={() => setPressedKey(null)}
+                    onPointerLeave={() => setPressedKey(null)}
+                    style={{
+                      width: 82,
+                      height: 82,
+                      borderRadius: "50%",
+                      border: "none",
+                      background: isPressed
+                        ? "rgba(255,255,255,0.30)"
+                        : "rgba(255,255,255,0.15)",
+                      color: isDel ? "rgba(255,255,255,0.6)" : "#ffffff",
+                      fontSize: isDel ? 22 : 26,
+                      fontWeight: 400,
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      transition: "background 0.1s",
+                      WebkitTapHighlightColor: "transparent",
+                      outline: "none",
+                      flexShrink: 0,
+                    }}
+                  >
+                    {isDel ? "⌫" : key}
+                  </button>
+                );
+              })}
+            </div>
+          ))}
         </div>
 
-        <p style={{ color: "rgba(255,255,255,0.25)", fontSize: 10, marginTop: 32, letterSpacing: "0.04em" }}>
-          SISTEMA DE COBRANÇA • ACESSO RESTRITO
+        <p style={{
+          color: "rgba(255,255,255,0.25)",
+          fontSize: 10,
+          marginTop: 40,
+          letterSpacing: "0.06em",
+          textTransform: "uppercase",
+        }}>
+          Sistema de Cobrança • Acesso Restrito
         </p>
       </div>
 
       <style>{`
         @keyframes shake {
           0%,100% { transform: translateX(0); }
-          20% { transform: translateX(-8px); }
-          40% { transform: translateX(8px); }
-          60% { transform: translateX(-6px); }
-          80% { transform: translateX(6px); }
+          20% { transform: translateX(-10px); }
+          40% { transform: translateX(10px); }
+          60% { transform: translateX(-7px); }
+          80% { transform: translateX(7px); }
         }
       `}</style>
     </div>
