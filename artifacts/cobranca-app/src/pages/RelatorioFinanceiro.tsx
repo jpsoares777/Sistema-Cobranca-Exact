@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 type RowDef =
-  | { type: "row"; label: string; value: string; valueColor?: string; bold?: boolean; highlight?: boolean }
+  | { type: "row"; label: string; value: string; valueColor?: string; bold?: boolean; highlight?: boolean; editable?: boolean }
   | { type: "toggle"; label: string; on: boolean };
 
 type Section = {
@@ -15,7 +15,6 @@ type Section = {
 
 const fmt = (v: number) => v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-const CAIXA_INICIAL = 3000;
 const RETIRADA = 0;
 
 function ToggleSwitch({ on }: { on: boolean }) {
@@ -35,6 +34,8 @@ export function RelatorioFinanceiro({
   onBack,
   onSair,
   onCaixaFechado,
+  caixaInicial = 3000,
+  onCaixaInicialChange,
   totalDespesas = 0,
   totalRendimentos = 0,
   totalClientes = 0,
@@ -51,6 +52,8 @@ export function RelatorioFinanceiro({
   onBack: () => void;
   onSair?: () => void;
   onCaixaFechado?: () => void;
+  caixaInicial?: number;
+  onCaixaInicialChange?: (v: number) => void;
   totalDespesas?: number;
   totalRendimentos?: number;
   totalClientes?: number;
@@ -68,8 +71,10 @@ export function RelatorioFinanceiro({
   const [caixaFechado, setCaixaFechado] = useState(false);
   const [modalSemPag, setModalSemPag] = useState(false);
   const [modalRelatorio, setModalRelatorio] = useState(false);
+  const [editandoCaixa, setEditandoCaixa] = useState(false);
+  const [caixaInput, setCaixaInput] = useState("");
 
-  const saldo = CAIXA_INICIAL + cobrancaDiaria + totalRendimentos - novosEmprestimos - RETIRADA - totalDespesas;
+  const saldo = caixaInicial + cobrancaDiaria + totalRendimentos - novosEmprestimos - RETIRADA - totalDespesas;
   const todosCorados = clientesParaCobranca > 0 && cobradosCount >= clientesParaCobranca;
 
   const hoje = new Date();
@@ -144,7 +149,7 @@ export function RelatorioFinanceiro({
       dot: "bg-blue-500", accent: "#3b82f6",
       headerBg: "bg-blue-50", headerText: "text-blue-700",
       rows: [
-        { type: "row", label: "Caixa Inicial",      value: `R$ ${fmt(CAIXA_INICIAL)}` },
+        { type: "row", label: "Caixa Inicial",      value: `R$ ${fmt(caixaInicial)}`, editable: true },
         { type: "row", label: "Total de Empréstimos", value: `R$ ${fmt(novosEmprestimos)}` },
         { type: "row", label: "Retirada de Caixa",  value: `R$ ${fmt(RETIRADA)}` },
         { type: "row", label: "Despesas",            value: `R$ ${fmt(totalDespesas)}`, valueColor: "text-red-500" },
@@ -180,6 +185,46 @@ export function RelatorioFinanceiro({
                 );
               }
               const bg = row.highlight ? "bg-blue-50" : ri % 2 === 0 ? "bg-white" : "bg-slate-50/60";
+              if (row.editable) {
+                return (
+                  <div key={ri} className={`flex items-center justify-between px-3 py-[5px] border-t border-slate-100 ${bg}`}>
+                    <span className="text-[10px] text-slate-500 w-[45%]">{row.label}</span>
+                    {editandoCaixa ? (
+                      <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                        <span style={{ fontSize: 10, color: "#64748b" }}>R$</span>
+                        <input
+                          autoFocus
+                          type="number"
+                          value={caixaInput}
+                          onChange={e => setCaixaInput(e.target.value)}
+                          onBlur={() => {
+                            const v = parseFloat(caixaInput.replace(",", "."));
+                            if (!isNaN(v) && v >= 0) onCaixaInicialChange?.(v);
+                            setEditandoCaixa(false);
+                          }}
+                          onKeyDown={e => {
+                            if (e.key === "Enter") {
+                              const v = parseFloat(caixaInput.replace(",", "."));
+                              if (!isNaN(v) && v >= 0) onCaixaInicialChange?.(v);
+                              setEditandoCaixa(false);
+                            }
+                            if (e.key === "Escape") setEditandoCaixa(false);
+                          }}
+                          style={{ width: 70, fontSize: 10, border: "1.5px solid #3b82f6", borderRadius: 5, padding: "2px 4px", outline: "none", textAlign: "right" }}
+                        />
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => { setCaixaInput(String(caixaInicial)); setEditandoCaixa(true); }}
+                        style={{ fontSize: 10, fontWeight: 600, color: "#3b82f6", background: "none", border: "none", cursor: "pointer", textDecoration: "underline dotted", padding: 0 }}
+                        title="Toque para editar"
+                      >
+                        {row.value} ✎
+                      </button>
+                    )}
+                  </div>
+                );
+              }
               return (
                 <div key={ri} className={`flex items-center justify-between px-3 py-[5px] border-t border-slate-100 ${bg}`}>
                   <span className="text-[10px] text-slate-500 w-[55%]">{row.label}</span>
@@ -313,7 +358,7 @@ export function RelatorioFinanceiro({
                   <div style={{ fontSize: 11, fontWeight: 700, color: "#475569", marginBottom: 6, paddingLeft: 2 }}>💰 Movimentação Financeira</div>
                   <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e2e8f0", overflow: "hidden" }}>
                     {[
-                      { l: "Caixa Inicial", v: `R$ ${fmt(CAIXA_INICIAL)}` },
+                      { l: "Caixa Inicial", v: `R$ ${fmt(caixaInicial)}` },
                       { l: "Novos Clientes", v: String(novosCount) },
                       { l: "Renovação de Clientes", v: "R$ 0,00" },
                       { l: "Total de Empréstimos", v: `R$ ${fmt(novosEmprestimos)}` },

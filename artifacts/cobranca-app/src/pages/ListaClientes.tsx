@@ -1454,6 +1454,10 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
     const db = loadDB();
     return (db?.cobradosExtras as ClienteItem[]) ?? [];
   });
+  const [caixaInicial, setCaixaInicial] = useState<number>(() => {
+    const db = loadDB();
+    return db?.caixaInicial ?? 3000;
+  });
   const [clienteParaAusentar, setClienteParaAusentar] = useState<ClienteItem | null>(null);
   const [salvoSinc, setSalvoSinc] = useState(false);
   const salvarSinc = () => { setSalvoSinc(true); setTimeout(() => setSalvoSinc(false), 2000); };
@@ -1809,6 +1813,8 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
             onBack={() => setVerRelatorio(false)}
             onSair={onSair}
             onCaixaFechado={handleCaixaFechado}
+            caixaInicial={caixaInicial}
+            onCaixaInicialChange={(v) => { setCaixaInicial(v); saveDB({ caixaInicial: v }); }}
             totalDespesas={despesas.reduce((s, d) => s + d.valor, 0)}
             totalRendimentos={rendimentos.reduce((s, r) => s + r.valor, 0)}
             totalClientes={clientes.length + novosClientesIds.size + renovacoesIds.size}

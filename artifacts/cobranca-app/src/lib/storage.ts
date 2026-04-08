@@ -18,6 +18,7 @@ export interface AppDB {
   despesas: unknown[];
   rendimentos: unknown[];
   clientes: unknown[];
+  caixaInicial: number;
 }
 
 export function loadDB(): AppDB | null {
