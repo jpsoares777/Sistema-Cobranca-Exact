@@ -73,31 +73,38 @@ export function RelatorioFinanceiro({
   const hoje = new Date();
   const dataStr = hoje.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
 
-  const compartilharWhatsApp = () => {
-    const caixaFinal = CAIXA_INICIAL + cobrancaDiaria + totalRendimentos - novosEmprestimos - RETIRADA - totalDespesas;
-    const texto =
-`📊 *Resumo de Caixa*
-Status de Liquidação: ✅ Correto
-Sincronização: Rota Cred Bank
-Data: ${dataStr}
+  const [compartilhando, setCompartilhando] = useState(false);
 
-💰 *Movimentação Financeira*
-Caixa Inicial: R$ ${fmt(CAIXA_INICIAL)}
-Novos Clientes: ${novosCount}
-Renovação de Clientes: R$ 0,00
-Total de Empréstimos: R$ ${fmt(novosEmprestimos)}
-Retiradas de Caixa: R$ ${fmt(RETIRADA)}
-Despesas: R$ ${fmt(totalDespesas)}
-Rendimentos: R$ ${fmt(totalRendimentos)}
-
-📥 *Cobranças*
-Total Cobrado: R$ ${fmt(cobrancaDiaria)}
-
-📦 *Saldo Final*
-Caixa Final: R$ ${fmt(caixaFinal)}`;
-
-    const url = `https://wa.me/?text=${encodeURIComponent(texto)}`;
-    window.open(url, "_blank");
+  const compartilharImagem = async () => {
+    const el = document.getElementById("relatorio-pdf-content");
+    if (!el) return;
+    setCompartilhando(true);
+    try {
+      const html2canvas = (await import("html2canvas")).default;
+      const canvas = await html2canvas(el, {
+        backgroundColor: "#ffffff",
+        scale: 2,
+        useCORS: true,
+        logging: false,
+      });
+      canvas.toBlob(async (blob) => {
+        if (!blob) { setCompartilhando(false); return; }
+        const file = new File([blob], `relatorio-${dataStr.replace(/\//g, "-")}.png`, { type: "image/png" });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: "Relatório Diário" });
+        } else {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = file.name;
+          a.click();
+          URL.revokeObjectURL(url);
+        }
+        setCompartilhando(false);
+      }, "image/png");
+    } catch {
+      setCompartilhando(false);
+    }
   };
 
   const handleFecharCaixa = () => {
@@ -348,11 +355,21 @@ Caixa Final: R$ ${fmt(caixaFinal)}`;
             {/* Botão */}
             <div style={{ background: "#fff", padding: "12px 16px 20px", borderTop: "1px solid #e2e8f0" }}>
               <button
-                onClick={compartilharWhatsApp}
-                style={{ width: "100%", padding: "12px 0", borderRadius: 12, border: "none", background: "#25D366", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+                onClick={compartilharImagem}
+                disabled={compartilhando}
+                style={{ width: "100%", padding: "12px 0", borderRadius: 12, border: "none", background: compartilhando ? "#94a3b8" : "#25D366", color: "#fff", fontSize: 13, fontWeight: 700, cursor: compartilhando ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, transition: "background 0.2s" }}
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M20.52 3.48A11.93 11.93 0 0 0 12 0C5.37 0 0 5.37 0 12c0 2.11.55 4.17 1.6 5.99L0 24l6.18-1.62A11.94 11.94 0 0 0 12 24c6.63 0 12-5.37 12-12 0-3.2-1.25-6.21-3.48-8.52zM12 22c-1.85 0-3.66-.5-5.24-1.44l-.38-.22-3.67.96.98-3.58-.25-.4A9.95 9.95 0 0 1 2 12C2 6.48 6.48 2 12 2s10 4.48 10 10-4.48 10-10 10zm5.44-7.34c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51l-.57-.01c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.22 3.08c.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.69.63.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2.01-1.41.25-.69.25-1.29.17-1.41-.08-.12-.27-.2-.57-.35z" fill="#fff"/></svg>
-                Enviar pelo WhatsApp
+                {compartilhando ? (
+                  <>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ animation: "spin 1s linear infinite" }}><circle cx="12" cy="12" r="10" stroke="#fff" strokeWidth="2.5" strokeDasharray="31 63" strokeLinecap="round"/></svg>
+                    Gerando imagem...
+                  </>
+                ) : (
+                  <>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M20.52 3.48A11.93 11.93 0 0 0 12 0C5.37 0 0 5.37 0 12c0 2.11.55 4.17 1.6 5.99L0 24l6.18-1.62A11.94 11.94 0 0 0 12 24c6.63 0 12-5.37 12-12 0-3.2-1.25-6.21-3.48-8.52zM12 22c-1.85 0-3.66-.5-5.24-1.44l-.38-.22-3.67.96.98-3.58-.25-.4A9.95 9.95 0 0 1 2 12C2 6.48 6.48 2 12 2s10 4.48 10 10-4.48 10-10 10zm5.44-7.34c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51l-.57-.01c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.22 3.08c.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.69.63.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2.01-1.41.25-.69.25-1.29.17-1.41-.08-.12-.27-.2-.57-.35z" fill="#fff"/></svg>
+                    Enviar pelo WhatsApp
+                  </>
+                )}
               </button>
             </div>
           </div>
