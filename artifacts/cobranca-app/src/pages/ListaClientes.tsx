@@ -1349,7 +1349,7 @@ function ClientesAusentes({ ausentes, onReativar, onAddAgendamento, onSelectClie
   );
 }
 
-function ModalMenu({ onClose, onRelatorio, onEmprestimos, onRenovacao, onSincronizar, onOutrasDatas, onAusentes, despesas, rendimentos }: { onClose: () => void; onRelatorio: () => void; onEmprestimos: () => void; onRenovacao: () => void; onSincronizar: () => void; onOutrasDatas: () => void; onAusentes: () => void; despesas: LancamentoItem[]; rendimentos: LancamentoItem[] }) {
+function ModalMenu({ onClose, onRelatorio, onEmprestimos, onRenovacao, onSincronizar, onOutrasDatas, onAusentes, onSair, despesas, rendimentos }: { onClose: () => void; onRelatorio: () => void; onEmprestimos: () => void; onRenovacao: () => void; onSincronizar: () => void; onOutrasDatas: () => void; onAusentes: () => void; onSair: () => void; despesas: LancamentoItem[]; rendimentos: LancamentoItem[] }) {
   const [page, setPage] = useState<"menu" | "despesas" | "rendimentos">("menu");
 
   if (page === "despesas") {
@@ -1384,7 +1384,7 @@ function ModalMenu({ onClose, onRelatorio, onEmprestimos, onRenovacao, onSincron
         {flatItems.map((item, i) => (
           <Fragment key={item.id}>
             <button
-              onClick={() => { if (item.isRelatorio) { onRelatorio(); onClose(); } else if (item.isEmprestimos) { onEmprestimos(); onClose(); } else if (item.isRenovacao) { onRenovacao(); onClose(); } else if (item.isSincronizar) { onSincronizar(); onClose(); } else if (item.isOutrasDatas) { onOutrasDatas(); onClose(); } else if (item.id === 9) { onAusentes(); onClose(); } else if (item.action) setPage(item.action); else if (item.isSair) onClose(); }}
+              onClick={() => { if (item.isRelatorio) { onRelatorio(); onClose(); } else if (item.isEmprestimos) { onEmprestimos(); onClose(); } else if (item.isRenovacao) { onRenovacao(); onClose(); } else if (item.isSincronizar) { onSincronizar(); onClose(); } else if (item.isOutrasDatas) { onOutrasDatas(); onClose(); } else if (item.id === 9) { onAusentes(); onClose(); } else if (item.action) setPage(item.action); else if (item.isSair) { onClose(); onSair(); } }}
               style={{
                 width: "100%", display: "flex", alignItems: "center", gap: 10,
                 padding: "11px 12px", border: "none", backgroundColor: "transparent",
@@ -1407,7 +1407,7 @@ function ModalMenu({ onClose, onRelatorio, onEmprestimos, onRenovacao, onSincron
 }
 
 /* ══════════════════ APP PRINCIPAL ══════════════════ */
-export function ListaClientes() {
+export function ListaClientes({ onSair }: { onSair?: () => void }) {
   const [busca, setBusca] = useState("");
   const [vrf, setVrf] = useState(false);
   const [activeNav, setActiveNav] = useState(0);
@@ -1799,7 +1799,7 @@ export function ListaClientes() {
       </div>}
 
       {/* MODAIS */}
-      {modal === "menu" && <ModalMenu onClose={() => setModal(null)} onRelatorio={() => { setVerRelatorio(true); setModal(null); }} onEmprestimos={() => { setVerEmprestimentos(true); setModal(null); }} onRenovacao={() => { setVerRenovacao(true); setModal(null); }} onSincronizar={() => { setVerSincronizar(true); setModal(null); }} onOutrasDatas={() => { setVerOutrasDatas(true); setModal(null); }} onAusentes={() => { setVerAusentes(true); setModal(null); }} despesas={despesas} rendimentos={rendimentos} />}
+      {modal === "menu" && <ModalMenu onClose={() => setModal(null)} onRelatorio={() => { setVerRelatorio(true); setModal(null); }} onEmprestimos={() => { setVerEmprestimentos(true); setModal(null); }} onRenovacao={() => { setVerRenovacao(true); setModal(null); }} onSincronizar={() => { setVerSincronizar(true); setModal(null); }} onOutrasDatas={() => { setVerOutrasDatas(true); setModal(null); }} onAusentes={() => { setVerAusentes(true); setModal(null); }} onSair={() => { setModal(null); onSair?.(); }} despesas={despesas} rendimentos={rendimentos} />}
 
       {/* Modal confirmação ausentar */}
       {clienteParaAusentar && (

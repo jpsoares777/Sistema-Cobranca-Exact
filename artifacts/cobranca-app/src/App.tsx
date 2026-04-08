@@ -28,7 +28,7 @@ function App() {
       background: "#f0f0f0",
     }}>
       <div style={{ width: "100%", maxWidth: 430, background: "#fff" }}>
-        <ListaClientes />
+        <ListaClientes onSair={() => setDesbloqueado(false)} />
       </div>
     </div>
   );
