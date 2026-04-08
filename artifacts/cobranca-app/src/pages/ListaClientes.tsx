@@ -207,7 +207,7 @@ function TelaLista({ busca, setBusca, vrf, setVrf, onSelectCliente, onAddAgendam
                       Parcela: <strong style={{ color: P.green, fontWeight: 700 }}>R$ {valorCobrado.toFixed(2)}</strong>
                     </span>
                     <span style={{ fontSize: 11, color: P.textSecondary }}>
-                      Saldo: <strong style={{ color: saldoApos <= 0 ? "#2563eb" : P.accent, fontWeight: 700 }}>R$ {saldoApos.toFixed(2)}</strong>
+                      Saldo: <strong style={{ color: saldoApos <= 0 ? "#2563eb" : P.accent, fontWeight: 700 }}>R$ {Math.max(0, saldoApos).toFixed(2)}</strong>
                     </span>
                   </div>
                 </div>
