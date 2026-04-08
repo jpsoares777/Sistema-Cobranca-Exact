@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 
 const PIN_CORRETO = "10600";
-const GRAD_TOP = "#1a4fba";
-const GRAD_MID = "#2563eb";
-const GRAD_BOT = "#3b82f6";
+const GRAD_TOP = "#2d4f6b";
+const GRAD_MID = "#3A5F82";
+const GRAD_BOT = "#4A6F8E";
 const WHITE = "#ffffff";
 const WHITE70 = "rgba(255,255,255,0.7)";
 const WHITE40 = "rgba(255,255,255,0.4)";
