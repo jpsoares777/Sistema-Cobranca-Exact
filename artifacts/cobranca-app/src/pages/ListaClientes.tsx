@@ -1,4 +1,5 @@
-import { useState, Fragment, type ReactNode } from "react";
+import { useState, useEffect, Fragment, type ReactNode } from "react";
+import { loadDB, saveDB, getTodayStr } from "../lib/storage";
 import { ArrowLeft } from "lucide-react";
 import { ParcelaCliente } from "./ParcelaCliente";
 import { CadastroCliente } from "./CadastroCliente";
@@ -1419,32 +1420,100 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
   const [verSincronizar, setVerSincronizar] = useState(false);
   const [verOutrasDatas, setVerOutrasDatas] = useState(false);
   const [verAusentes, setVerAusentes] = useState(false);
-  const [ausentes, setAusentes] = useState<number[]>([]);
-  const [cobrados, setCobrados] = useState<number[]>([]);
-  const [cobradosValores, setCobradosValores] = useState<{id: number, valor: number}[]>([]);
-  const [registroPagamentos, setRegistroPagamentos] = useState<Record<number, Pagamento[]>>({});
-  const [quitadosClientes, setQuitadosClientes] = useState<ClienteItem[]>([]);
-  const [ordemClientesIds, setOrdemClientesIds] = useState<number[]>(clientesData.map(c => c.id));
+  const [ausentes, setAusentes] = useState<number[]>(() => {
+    const db = loadDB(); const hoje = getTodayStr();
+    return (db && db.lastDate === hoje) ? (db.ausentes ?? []) : [];
+  });
+  const [cobrados, setCobrados] = useState<number[]>(() => {
+    const db = loadDB(); const hoje = getTodayStr();
+    return (db && db.lastDate === hoje) ? (db.cobrados ?? []) : [];
+  });
+  const [cobradosValores, setCobradosValores] = useState<{id: number, valor: number}[]>(() => {
+    const db = loadDB(); const hoje = getTodayStr();
+    return (db && db.lastDate === hoje) ? (db.cobradosValores ?? []) : [];
+  });
+  const [registroPagamentos, setRegistroPagamentos] = useState<Record<number, Pagamento[]>>(() => {
+    const db = loadDB();
+    return (db?.registroPagamentos as Record<number, Pagamento[]>) ?? {};
+  });
+  const [quitadosClientes, setQuitadosClientes] = useState<ClienteItem[]>(() => {
+    const db = loadDB();
+    return (db?.quitadosClientes as ClienteItem[]) ?? [];
+  });
+  const [ordemClientesIds, setOrdemClientesIds] = useState<number[]>(() => {
+    const db = loadDB();
+    return (db?.ordemClientesIds?.length ? db.ordemClientesIds : clientesData.map(c => c.id));
+  });
   const clientesOrdenados = ordemClientesIds.map(id => clientesData.find(c => c.id === id)!).filter(Boolean) as typeof clientesData;
-  const [cobradosExtras, setCobradosExtras] = useState<ClienteItem[]>([]);
+  const [cobradosExtras, setCobradosExtras] = useState<ClienteItem[]>(() => {
+    const db = loadDB();
+    return (db?.cobradosExtras as ClienteItem[]) ?? [];
+  });
   const [clienteParaAusentar, setClienteParaAusentar] = useState<ClienteItem | null>(null);
   const [salvoSinc, setSalvoSinc] = useState(false);
   const salvarSinc = () => { setSalvoSinc(true); setTimeout(() => setSalvoSinc(false), 2000); };
-  const [emprestimentos, setEmprestimentos] = useState<Emprestimo[]>(emprestimentosIniciais);
-  const [novosClientesIds, setNovosClientesIds] = useState<Set<number>>(new Set(emprestimentosIniciais.map(e => e.id)));
-  const [renovacoesIds, setRenovacoesIds] = useState<Set<number>>(new Set());
-  const [clientesAdicionaisHoje, setClientesAdicionaisHoje] = useState<ClienteItem[]>([]);
-  const [novosClientesOutras, setNovosClientesOutras] = useState<ClienteItem[]>([]);
-  const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
+  const [emprestimentos, setEmprestimentos] = useState<Emprestimo[]>(() => {
+    const db = loadDB();
+    return (db?.emprestimentos as Emprestimo[])?.length ? (db!.emprestimentos as Emprestimo[]) : emprestimentosIniciais;
+  });
+  const [novosClientesIds, setNovosClientesIds] = useState<Set<number>>(() => {
+    const db = loadDB();
+    return new Set<number>(db?.novosClientesIds?.length ? db.novosClientesIds : emprestimentosIniciais.map(e => e.id));
+  });
+  const [renovacoesIds, setRenovacoesIds] = useState<Set<number>>(() => {
+    const db = loadDB();
+    return new Set<number>(db?.renovacoesIds ?? []);
+  });
+  const [clientesAdicionaisHoje, setClientesAdicionaisHoje] = useState<ClienteItem[]>(() => {
+    const db = loadDB();
+    return (db?.clientesAdicionaisHoje as ClienteItem[]) ?? [];
+  });
+  const [novosClientesOutras, setNovosClientesOutras] = useState<ClienteItem[]>(() => {
+    const db = loadDB();
+    return (db?.novosClientesOutras as ClienteItem[]) ?? [];
+  });
+  const [agendamentos, setAgendamentos] = useState<Agendamento[]>(() => {
+    const db = loadDB();
+    return (db?.agendamentos as Agendamento[]) ?? [];
+  });
   const addAgendamento = (a: Agendamento) => setAgendamentos(prev => [...prev, a]);
   const [clienteParaRenovar, setClienteParaRenovar] = useState<ClienteItem | null>(null);
-  const [despesas, setDespesas] = useState<LancamentoItem[]>(despesasIniciais);
-  const [rendimentos, setRendimentos] = useState<LancamentoItem[]>(rendimentosIniciais);
+  const [despesas, setDespesas] = useState<LancamentoItem[]>(() => {
+    const db = loadDB();
+    return (db?.despesas as LancamentoItem[])?.length ? (db!.despesas as LancamentoItem[]) : despesasIniciais;
+  });
+  const [rendimentos, setRendimentos] = useState<LancamentoItem[]>(() => {
+    const db = loadDB();
+    return (db?.rendimentos as LancamentoItem[])?.length ? (db!.rendimentos as LancamentoItem[]) : rendimentosIniciais;
+  });
   const hoje = new Date().toLocaleDateString("pt-BR");
   const addDespesa = (categoria: string, valor: number, observacao: string) =>
     setDespesas(prev => [...prev, { id: Date.now(), data: hoje, categoria, valor, observacao: observacao || undefined }]);
   const addRendimento = (categoria: string, valor: number, observacao: string) =>
     setRendimentos(prev => [...prev, { id: Date.now(), data: hoje, categoria, valor, observacao: observacao || undefined }]);
+
+  useEffect(() => {
+    saveDB({
+      lastDate: getTodayStr(),
+      cobrados,
+      ausentes,
+      cobradosValores,
+      registroPagamentos,
+      quitadosClientes,
+      ordemClientesIds,
+      cobradosExtras,
+      emprestimentos,
+      novosClientesIds: Array.from(novosClientesIds),
+      renovacoesIds: Array.from(renovacoesIds),
+      clientesAdicionaisHoje,
+      novosClientesOutras,
+      agendamentos,
+      despesas,
+      rendimentos,
+    });
+  }, [cobrados, ausentes, cobradosValores, registroPagamentos, quitadosClientes,
+      ordemClientesIds, cobradosExtras, emprestimentos, novosClientesIds, renovacoesIds,
+      clientesAdicionaisHoje, novosClientesOutras, agendamentos, despesas, rendimentos]);
 
   if (clienteSelecionado) {
     return <ParcelaCliente cliente={clienteSelecionado} onBack={() => setClienteSelecionado(null)} onSaved={(valor, metodo) => {
