@@ -1440,11 +1440,15 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
     const db = loadDB();
     return (db?.quitadosClientes as ClienteItem[]) ?? [];
   });
+  const [clientes, setClientes] = useState<typeof clientesData>(() => {
+    const db = loadDB();
+    return (db?.clientes as typeof clientesData)?.length ? (db!.clientes as typeof clientesData) : clientesData;
+  });
   const [ordemClientesIds, setOrdemClientesIds] = useState<number[]>(() => {
     const db = loadDB();
     return (db?.ordemClientesIds?.length ? db.ordemClientesIds : clientesData.map(c => c.id));
   });
-  const clientesOrdenados = ordemClientesIds.map(id => clientesData.find(c => c.id === id)!).filter(Boolean) as typeof clientesData;
+  const clientesOrdenados = ordemClientesIds.map(id => clientes.find(c => c.id === id)!).filter(Boolean) as typeof clientesData;
   const [cobradosExtras, setCobradosExtras] = useState<ClienteItem[]>(() => {
     const db = loadDB();
     return (db?.cobradosExtras as ClienteItem[]) ?? [];
@@ -1510,10 +1514,15 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
       agendamentos,
       despesas,
       rendimentos,
+      clientes,
     });
   }, [cobrados, ausentes, cobradosValores, registroPagamentos, quitadosClientes,
       ordemClientesIds, cobradosExtras, emprestimentos, novosClientesIds, renovacoesIds,
-      clientesAdicionaisHoje, novosClientesOutras, agendamentos, despesas, rendimentos]);
+      clientesAdicionaisHoje, novosClientesOutras, agendamentos, despesas, rendimentos, clientes]);
+
+  const handleCaixaFechado = () => {
+    saveDB({ lastDate: "" });
+  };
 
   if (clienteSelecionado) {
     return <ParcelaCliente cliente={clienteSelecionado} onBack={() => setClienteSelecionado(null)} onSaved={(valor, metodo) => {
@@ -1525,9 +1534,13 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
       if (deOutrasDatas) {
         setCobradosExtras(prev => prev.find(c => c.id === id) ? prev : [clienteSelecionado!, ...prev]);
       }
-      const saldoAposCobranca = (clienteSelecionado!.saldo ?? 0) - valor;
+      const saldoAposCobranca = Math.max(0, (clienteSelecionado!.saldo ?? 0) - valor);
+      setClientes(prev => prev.map(c => c.id === id
+        ? { ...c, saldo: saldoAposCobranca, parcelasPagas: (c.parcelasPagas ?? 0) + 1 }
+        : c
+      ));
       if (saldoAposCobranca <= 0) {
-        setQuitadosClientes(prev => prev.some(q => q.id === id) ? prev : [clienteSelecionado!, ...prev]);
+        setQuitadosClientes(prev => prev.some(q => q.id === id) ? prev : [{ ...clienteSelecionado!, saldo: 0 }, ...prev]);
       }
       const hoje = new Date();
       const dataStr = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,"0")}-${String(hoje.getDate()).padStart(2,"0")}`;
@@ -1762,6 +1775,7 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
         ? <RelatorioFinanceiro
             onBack={() => setVerRelatorio(false)}
             onSair={onSair}
+            onCaixaFechado={handleCaixaFechado}
             totalDespesas={despesas.reduce((s, d) => s + d.valor, 0)}
             totalRendimentos={rendimentos.reduce((s, r) => s + r.valor, 0)}
             totalClientes={clientesData.length + novosClientesIds.size + renovacoesIds.size}

@@ -34,6 +34,7 @@ function ToggleSwitch({ on }: { on: boolean }) {
 export function RelatorioFinanceiro({
   onBack,
   onSair,
+  onCaixaFechado,
   totalDespesas = 0,
   totalRendimentos = 0,
   totalClientes = 0,
@@ -49,6 +50,7 @@ export function RelatorioFinanceiro({
 }: {
   onBack: () => void;
   onSair?: () => void;
+  onCaixaFechado?: () => void;
   totalDespesas?: number;
   totalRendimentos?: number;
   totalClientes?: number;
@@ -108,6 +110,7 @@ export function RelatorioFinanceiro({
   };
 
   const handleFecharCaixa = () => {
+    onCaixaFechado?.();
     setCaixaFechado(true);
     setModalFechamento(false);
     setTimeout(() => setModalRelatorio(true), 200);

@@ -17,6 +17,7 @@ export interface AppDB {
   agendamentos: unknown[];
   despesas: unknown[];
   rendimentos: unknown[];
+  clientes: unknown[];
 }
 
 export function loadDB(): AppDB | null {
