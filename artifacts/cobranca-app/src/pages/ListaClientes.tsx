@@ -945,8 +945,11 @@ function RelatorioRendimentos({ onVoltar, rendimentos = [] }: { onVoltar: () => 
 /* ── renovação de clientes ────────────────────────────── */
 const clientesInativos = clientesData.filter(c => c.status !== "emdia");
 
-function RenovacaoClientes({ onBack, onAddAgendamento, onRenovar }: { onBack: () => void; onAddAgendamento: (a: Agendamento) => void; onRenovar: (c: ClienteItem) => void }) {
-  const filtrados = clientesInativos;
+function RenovacaoClientes({ onBack, onAddAgendamento, onRenovar, clientesQuitados = [] }: { onBack: () => void; onAddAgendamento: (a: Agendamento) => void; onRenovar: (c: ClienteItem) => void; clientesQuitados?: ClienteItem[] }) {
+  const filtrados = [
+    ...clientesQuitados.filter(q => !clientesInativos.some(i => i.id === q.id)),
+    ...clientesInativos,
+  ];
   const [clienteExpandido, setClienteExpandido] = useState<typeof clientesData[0] | null>(null);
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column", overflowY: "auto", backgroundColor: "#F2F4F7" }}>
@@ -1420,6 +1423,7 @@ export function ListaClientes() {
   const [cobrados, setCobrados] = useState<number[]>([]);
   const [cobradosValores, setCobradosValores] = useState<{id: number, valor: number}[]>([]);
   const [registroPagamentos, setRegistroPagamentos] = useState<Record<number, Pagamento[]>>({});
+  const [quitadosClientes, setQuitadosClientes] = useState<ClienteItem[]>([]);
   const [cobradosExtras, setCobradosExtras] = useState<ClienteItem[]>([]);
   const [clienteParaAusentar, setClienteParaAusentar] = useState<ClienteItem | null>(null);
   const [salvoSinc, setSalvoSinc] = useState(false);
@@ -1453,6 +1457,7 @@ export function ListaClientes() {
       const saldoAposCobranca = (clienteSelecionado!.saldo ?? 0) - valor;
       if (saldoAposCobranca <= 0) {
         setRenovacoesIds(prev => new Set([...prev, id]));
+        setQuitadosClientes(prev => prev.some(q => q.id === id) ? prev : [clienteSelecionado!, ...prev]);
       }
       const hoje = new Date();
       const dataStr = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,"0")}-${String(hoje.getDate()).padStart(2,"0")}`;
@@ -1699,7 +1704,7 @@ export function ListaClientes() {
             novosEmprestimos={emprestimentos.reduce((s, e) => s + (e.valorEmprestado ?? 0), 0)}
           />
         : verRenovacao
-        ? <RenovacaoClientes onBack={() => setVerRenovacao(false)} onAddAgendamento={addAgendamento} onRenovar={setClienteParaRenovar} />
+        ? <RenovacaoClientes onBack={() => setVerRenovacao(false)} onAddAgendamento={addAgendamento} onRenovar={setClienteParaRenovar} clientesQuitados={quitadosClientes} />
         : activeNav === 0 ? <TelaLista busca={busca} setBusca={setBusca} vrf={vrf} setVrf={setVrf} onSelectCliente={setClienteSelecionado} onAddAgendamento={addAgendamento} ausentes={ausentes} onAusentar={setClienteParaAusentar} cobrados={cobrados} onRemoverCobrado={(id) => { setCobrados(prev => prev.filter(x => x !== id)); setCobradosExtras(prev => prev.filter(x => x.id !== id)); setCobradosValores(prev => prev.filter(x => x.id !== id)); setRegistroPagamentos(prev => { const next = { ...prev }; delete next[id]; return next; }); }} clientesAdicionais={clientesAdicionaisHoje} cobradosExtras={cobradosExtras} cobradosValores={cobradosValores} pagamentosRegistro={registroPagamentos} />
         : activeNav === 1 ? <CadastroCliente onBack={() => setActiveNav(0)} onSalvar={(emp) => {
             setEmprestimentos(prev => [emp, ...prev]);
