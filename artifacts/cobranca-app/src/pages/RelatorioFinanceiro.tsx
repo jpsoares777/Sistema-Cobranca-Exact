@@ -264,7 +264,7 @@ export function RelatorioFinanceiro({
 
       {modalRelatorio && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "flex-end", justifyContent: "center", zIndex: 10000 }}>
-          <div style={{ background: "#fff", borderRadius: "14px 14px 0 0", width: "100%", maxWidth: 430, display: "flex", flexDirection: "column", boxShadow: "0 -4px 20px rgba(0,0,0,0.15)" }}>
+          <div style={{ background: "#fff", borderRadius: "14px 14px 0 0", width: "100%", maxWidth: 430, height: "100%", display: "flex", flexDirection: "column", boxShadow: "0 -4px 20px rgba(0,0,0,0.15)" }}>
 
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px 8px", borderBottom: "1px solid #f1f5f9" }}>
               <span style={{ fontSize: 12, fontWeight: 700, color: "#1e293b" }}>📊 Relatório Diário</span>
@@ -273,7 +273,7 @@ export function RelatorioFinanceiro({
               </button>
             </div>
 
-            <div style={{ padding: "10px 14px 6px" }}>
+            <div style={{ flex: 1, overflowY: "auto", padding: "10px 14px 6px" }}>
               <div id="relatorio-pdf-content">
 
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
