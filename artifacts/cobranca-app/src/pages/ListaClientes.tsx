@@ -148,8 +148,7 @@ function TelaLista({ busca, setBusca, vrf, setVrf, onSelectCliente, onAddAgendam
   const vrfLista = [...new Set(cobradosIds)]
     .filter(id => !vrfRemovidos.includes(id))
     .map(id => todosClientes.find(c => c.id === id) ?? cobradosExtras.find(c => c.id === id)!)
-    .filter(Boolean)
-    .filter(c => c.saldo > 0);
+    .filter(Boolean);
 
   /* ── MODO VRF ── */
   if (vrf) {
