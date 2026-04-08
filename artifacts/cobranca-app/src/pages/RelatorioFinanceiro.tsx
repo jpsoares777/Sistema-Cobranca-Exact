@@ -186,54 +186,40 @@ export function RelatorioFinanceiro({
       </div>
 
       {modalSemPag && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }}>
-          <div style={{ background: "#fff", borderRadius: 14, padding: "14px 16px 12px", width: 270, boxShadow: "0 8px 30px rgba(0,0,0,0.15)" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-              <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#f0fdf4", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
-                  <circle cx="12" cy="12" r="9" stroke="#16a34a" strokeWidth="1.8" />
-                  <path d="M12 7v5l3 3" stroke="#16a34a" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }}>
+          <div style={{ background: "#fff", borderRadius: 12, padding: "10px 12px 10px", width: 220, boxShadow: "0 4px 20px rgba(0,0,0,0.15)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 5 }}>
+              <div style={{ width: 22, height: 22, borderRadius: "50%", background: "#f0fdf4", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#16a34a" strokeWidth="2" /><path d="M12 7v5l3 3" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
               </div>
-              <span style={{ fontSize: 13, fontWeight: 700, color: "#1e293b" }}>Sem Pagamentos</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: "#1e293b" }}>Sem Pagamentos</span>
             </div>
-            <p style={{ fontSize: 11, color: "#64748b", margin: "0 0 12px", lineHeight: 1.5, paddingLeft: 42 }}>
-              Registrar <strong>Sem pagamento</strong> para todos os clientes diários ainda não cobrados?
+            <p style={{ fontSize: 10, color: "#64748b", margin: "0 0 9px", lineHeight: 1.4, paddingLeft: 29 }}>
+              Registrar <strong>Sem pagamento</strong> para todos os clientes não cobrados?
             </p>
-            <div style={{ display: "flex", gap: 8 }}>
-              <button onClick={() => setModalSemPag(false)} style={{ flex: 1, padding: "6px 0", borderRadius: 8, border: "1.5px solid #e2e8f0", background: "#fff", fontSize: 11, fontWeight: 600, color: "#64748b", cursor: "pointer" }}>
-                Cancelar
-              </button>
-              <button onClick={() => { onSemPagamentos?.(); setModalSemPag(false); }} style={{ flex: 1, padding: "6px 0", borderRadius: 8, border: "1.5px solid #86efac", background: "#fff", fontSize: 11, fontWeight: 700, color: "#16a34a", cursor: "pointer" }}>
-                Confirmar
-              </button>
+            <div style={{ display: "flex", gap: 6 }}>
+              <button onClick={() => setModalSemPag(false)} style={{ flex: 1, padding: "5px 0", borderRadius: 7, border: "1px solid #e2e8f0", background: "#fff", fontSize: 10, fontWeight: 600, color: "#64748b", cursor: "pointer" }}>Cancelar</button>
+              <button onClick={() => { onSemPagamentos?.(); setModalSemPag(false); }} style={{ flex: 1, padding: "5px 0", borderRadius: 7, border: "1px solid #86efac", background: "#fff", fontSize: 10, fontWeight: 700, color: "#16a34a", cursor: "pointer" }}>Confirmar</button>
             </div>
           </div>
         </div>
       )}
 
       {modalFechamento && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }}>
-          <div style={{ background: "#fff", borderRadius: 14, padding: "14px 16px 12px", width: 270, boxShadow: "0 8px 30px rgba(0,0,0,0.15)" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-              <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#fef2f2", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
-                  <rect x="5" y="11" width="14" height="10" rx="2" stroke="#dc2626" strokeWidth="1.8" />
-                  <path d="M8 11V7a4 4 0 0 1 8 0v4" stroke="#dc2626" strokeWidth="1.8" strokeLinecap="round" />
-                </svg>
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }}>
+          <div style={{ background: "#fff", borderRadius: 12, padding: "10px 12px 10px", width: 220, boxShadow: "0 4px 20px rgba(0,0,0,0.15)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 5 }}>
+              <div style={{ width: 22, height: 22, borderRadius: "50%", background: "#fef2f2", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="10" rx="2" stroke="#dc2626" strokeWidth="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" stroke="#dc2626" strokeWidth="2" strokeLinecap="round" /></svg>
               </div>
-              <span style={{ fontSize: 13, fontWeight: 700, color: "#1e293b" }}>Fechar Caixa</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: "#1e293b" }}>Fechar Caixa</span>
             </div>
-            <p style={{ fontSize: 11, color: "#64748b", margin: "0 0 12px", lineHeight: 1.5, paddingLeft: 42 }}>
-              Todos os {clientesParaCobranca} clientes foram cobrados.<br />Confirma o fechamento do caixa de hoje?
+            <p style={{ fontSize: 10, color: "#64748b", margin: "0 0 9px", lineHeight: 1.4, paddingLeft: 29 }}>
+              Todos os {clientesParaCobranca} clientes cobrados. Confirma o fechamento?
             </p>
-            <div style={{ display: "flex", gap: 8 }}>
-              <button onClick={() => setModalFechamento(false)} style={{ flex: 1, padding: "6px 0", borderRadius: 8, border: "1.5px solid #e2e8f0", background: "#fff", fontSize: 11, fontWeight: 600, color: "#64748b", cursor: "pointer" }}>
-                Cancelar
-              </button>
-              <button onClick={handleFecharCaixa} style={{ flex: 1, padding: "6px 0", borderRadius: 8, border: "1.5px solid #fca5a5", background: "#fff", fontSize: 11, fontWeight: 700, color: "#dc2626", cursor: "pointer" }}>
-                Confirmar
-              </button>
+            <div style={{ display: "flex", gap: 6 }}>
+              <button onClick={() => setModalFechamento(false)} style={{ flex: 1, padding: "5px 0", borderRadius: 7, border: "1px solid #e2e8f0", background: "#fff", fontSize: 10, fontWeight: 600, color: "#64748b", cursor: "pointer" }}>Cancelar</button>
+              <button onClick={handleFecharCaixa} style={{ flex: 1, padding: "5px 0", borderRadius: 7, border: "1px solid #fca5a5", background: "#fff", fontSize: 10, fontWeight: 700, color: "#dc2626", cursor: "pointer" }}>Confirmar</button>
             </div>
           </div>
         </div>
