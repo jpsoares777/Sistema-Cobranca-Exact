@@ -1549,6 +1549,8 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
       .map(c => c.id)
       .filter(id => !ordemClientesIds.includes(id));
     const novaOrdem = [...ordemClientesIds, ...novosIds];
+    setDespesas([]);
+    setRendimentos([]);
     saveDB({
       lastDate: "",
       clientes: clientesMerged,
@@ -1556,6 +1558,8 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
       novosClientesIds: [],
       clientesAdicionaisHoje: [],
       emprestimentos: [],
+      despesas: [],
+      rendimentos: [],
     });
   };
 
