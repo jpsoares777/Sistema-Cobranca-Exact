@@ -158,7 +158,7 @@ export function PinLogin({ onUnlock }: { onUnlock: () => void }) {
         paddingBottom: 60,
       }}>
         {/* Logo */}
-        <div style={{ marginBottom: 80 }}>
+        <div style={{ width: "100%", display: "flex", justifyContent: "center", marginBottom: 80 }}>
           <Logo />
         </div>
 
