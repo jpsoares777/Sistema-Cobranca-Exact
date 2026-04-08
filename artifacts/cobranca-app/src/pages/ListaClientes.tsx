@@ -1565,8 +1565,9 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
       if (deOutrasDatas) {
         setCobradosExtras(prev => prev.find(c => c.id === id) ? prev : [clienteSelecionado!, ...prev]);
       }
-      const novasPagas = (clienteSelecionado!.parcelasPagas ?? 0) + 1;
-      const saldoAposCobranca = Math.max(0, clienteSelecionado!.parcela * (clienteSelecionado!.totalParcelas - novasPagas));
+      const saldoAposCobranca = Math.max(0, (clienteSelecionado!.saldo) - valor);
+      const parcelasNoPagamento = Math.round(valor / (clienteSelecionado!.parcela || 1));
+      const novasPagas = Math.min(clienteSelecionado!.totalParcelas, (clienteSelecionado!.parcelasPagas ?? 0) + parcelasNoPagamento);
       setClientes(prev => prev.map(c => c.id === id
         ? { ...c, saldo: saldoAposCobranca, parcelasPagas: novasPagas }
         : c
@@ -1845,7 +1846,7 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
           />
         : verRenovacao
         ? <RenovacaoClientes onBack={() => setVerRenovacao(false)} onAddAgendamento={addAgendamento} onRenovar={setClienteParaRenovar} clientesQuitados={quitadosClientes} />
-        : activeNav === 0 ? <TelaLista busca={busca} setBusca={setBusca} vrf={vrf} setVrf={setVrf} onSelectCliente={setClienteSelecionado} onAddAgendamento={addAgendamento} ausentes={ausentes} onAusentar={setClienteParaAusentar} cobrados={cobrados} onRemoverCobrado={(id) => { setCobrados(prev => prev.filter(x => x !== id)); setCobradosExtras(prev => prev.filter(x => x.id !== id)); setCobradosValores(prev => prev.filter(x => x.id !== id)); setRegistroPagamentos(prev => { const next = { ...prev }; delete next[id]; return next; }); setQuitadosClientes(prev => prev.filter(x => x.id !== id)); setRenovacoesIds(prev => { const s = new Set(prev); s.delete(id); return s; }); setClientes(prev => prev.map(c => { if (c.id !== id) return c; const pp = Math.max(0, c.parcelasPagas - 1); return { ...c, parcelasPagas: pp, saldo: c.parcela * (c.totalParcelas - pp) }; })); }} clientesAdicionais={clientesAdicionaisHoje} cobradosExtras={cobradosExtras} cobradosValores={cobradosValores} pagamentosRegistro={registroPagamentos} clientesBase={clientesOrdenados} />
+        : activeNav === 0 ? <TelaLista busca={busca} setBusca={setBusca} vrf={vrf} setVrf={setVrf} onSelectCliente={setClienteSelecionado} onAddAgendamento={addAgendamento} ausentes={ausentes} onAusentar={setClienteParaAusentar} cobrados={cobrados} onRemoverCobrado={(id) => { setCobrados(prev => prev.filter(x => x !== id)); setCobradosExtras(prev => prev.filter(x => x.id !== id)); setCobradosValores(prev => prev.filter(x => x.id !== id)); setRegistroPagamentos(prev => { const next = { ...prev }; delete next[id]; return next; }); setQuitadosClientes(prev => prev.filter(x => x.id !== id)); setRenovacoesIds(prev => { const s = new Set(prev); s.delete(id); return s; }); setClientes(prev => prev.map(c => { if (c.id !== id) return c; const valorPago = cobradosValores.find(x => x.id === id)?.valor ?? c.parcela; const parcelasReverter = Math.round(valorPago / (c.parcela || 1)); const pp = Math.max(0, c.parcelasPagas - parcelasReverter); const saldoRestaurado = Math.min(c.parcela * c.totalParcelas, c.saldo + valorPago); return { ...c, parcelasPagas: pp, saldo: saldoRestaurado }; })); }} clientesAdicionais={clientesAdicionaisHoje} cobradosExtras={cobradosExtras} cobradosValores={cobradosValores} pagamentosRegistro={registroPagamentos} clientesBase={clientesOrdenados} />
         : activeNav === 1 ? <CadastroCliente onBack={() => setActiveNav(0)} onSalvar={(emp) => {
             setEmprestimentos(prev => [emp, ...prev]);
             setNovosClientesIds(prev => new Set([...prev, emp.id]));
