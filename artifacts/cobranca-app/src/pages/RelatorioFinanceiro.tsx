@@ -263,70 +263,98 @@ export function RelatorioFinanceiro({
       )}
 
       {modalRelatorio && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "flex-end", justifyContent: "center", zIndex: 10000 }}>
-          <div style={{ background: "#fff", borderRadius: "14px 14px 0 0", width: "100%", maxWidth: 430, height: "100%", display: "flex", flexDirection: "column", boxShadow: "0 -4px 20px rgba(0,0,0,0.15)" }}>
+        <div style={{ position: "fixed", inset: 0, zIndex: 10000, display: "flex", alignItems: "stretch", justifyContent: "center" }}>
+          <div style={{ background: "#f8fafc", width: "100%", maxWidth: 430, display: "flex", flexDirection: "column" }}>
 
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px 8px", borderBottom: "1px solid #f1f5f9" }}>
-              <span style={{ fontSize: 12, fontWeight: 700, color: "#1e293b" }}>📊 Relatório Diário</span>
-              <button onClick={() => setModalRelatorio(false)} style={{ width: 22, height: 22, borderRadius: "50%", border: "none", background: "#f1f5f9", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="#64748b" strokeWidth="2.5" strokeLinecap="round"/></svg>
+            {/* Cabeçalho */}
+            <div style={{ background: "#fff", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px 12px", borderBottom: "1px solid #e2e8f0" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: 16 }}>📊</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: "#1e293b" }}>Relatório Diário</span>
+              </div>
+              <button onClick={() => setModalRelatorio(false)} style={{ width: 28, height: 28, borderRadius: "50%", border: "none", background: "#f1f5f9", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="#64748b" strokeWidth="2.5" strokeLinecap="round"/></svg>
               </button>
             </div>
 
-            <div style={{ flex: 1, overflowY: "auto", padding: "10px 14px 6px" }}>
+            {/* Conteúdo rolável */}
+            <div style={{ flex: 1, overflowY: "auto", padding: "16px" }}>
               <div id="relatorio-pdf-content">
 
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                  <span style={{ fontSize: 10, color: "#64748b" }}>Sincronização: <strong style={{ color: "#1e293b" }}>Rota Cred Bank</strong></span>
-                  <span style={{ fontSize: 10, color: "#64748b" }}>{dataStr}</span>
+                {/* Título */}
+                <div style={{ textAlign: "center", marginBottom: 16 }}>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: "#3A5F82" }}>📊 Resumo de Caixa</div>
+                  <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 3 }}>Rota Cred Bank · Sistema de Cobrança</div>
                 </div>
-                <div style={{ fontSize: 9, color: "#16a34a", fontWeight: 600, marginBottom: 8 }}>✓ Status de Liquidação: Correto</div>
 
-                <div style={{ height: 1, background: "#f1f5f9", marginBottom: 7 }} />
+                {/* Info geral */}
+                <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e2e8f0", marginBottom: 12, overflow: "hidden" }}>
+                  {[
+                    { l: "Status de Liquidação", v: "✓ Correto", green: true },
+                    { l: "Sincronização", v: "Rota Cred Bank", green: false },
+                    { l: "Data", v: dataStr, green: false },
+                  ].map((r, i, arr) => (
+                    <div key={r.l} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", borderBottom: i < arr.length - 1 ? "1px solid #f1f5f9" : "none" }}>
+                      <span style={{ fontSize: 12, color: "#64748b" }}>{r.l}</span>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: r.green ? "#16a34a" : "#1e293b" }}>{r.v}</span>
+                    </div>
+                  ))}
+                </div>
 
-                <div style={{ fontSize: 10, fontWeight: 700, color: "#475569", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.4px" }}>💰 Movimentação Financeira</div>
-                {[
-                  { l: "Caixa Inicial", v: `R$ ${fmt(CAIXA_INICIAL)}` },
-                  { l: "Novos Clientes", v: String(novosCount) },
-                  { l: "Renovação de Clientes", v: "R$ 0,00" },
-                  { l: "Total de Empréstimos", v: `R$ ${fmt(novosEmprestimos)}` },
-                  { l: "Retiradas de Caixa", v: `R$ ${fmt(RETIRADA)}` },
-                  { l: "Despesas", v: `R$ ${fmt(totalDespesas)}` },
-                  { l: "Rendimentos", v: `R$ ${fmt(totalRendimentos)}` },
-                ].map(r => (
-                  <div key={r.l} style={{ display: "flex", justifyContent: "space-between", padding: "3px 0", borderBottom: "1px solid #f8fafc" }}>
-                    <span style={{ fontSize: 11, color: "#64748b" }}>{r.l}</span>
-                    <span style={{ fontSize: 11, fontWeight: 600, color: "#1e293b" }}>{r.v}</span>
+                {/* Movimentação */}
+                <div style={{ marginBottom: 12 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "#475569", marginBottom: 6, paddingLeft: 2 }}>💰 Movimentação Financeira</div>
+                  <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e2e8f0", overflow: "hidden" }}>
+                    {[
+                      { l: "Caixa Inicial", v: `R$ ${fmt(CAIXA_INICIAL)}` },
+                      { l: "Novos Clientes", v: String(novosCount) },
+                      { l: "Renovação de Clientes", v: "R$ 0,00" },
+                      { l: "Total de Empréstimos", v: `R$ ${fmt(novosEmprestimos)}` },
+                      { l: "Retiradas de Caixa", v: `R$ ${fmt(RETIRADA)}` },
+                      { l: "Despesas", v: `R$ ${fmt(totalDespesas)}` },
+                      { l: "Rendimentos", v: `R$ ${fmt(totalRendimentos)}` },
+                    ].map((r, i, arr) => (
+                      <div key={r.l} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "9px 14px", borderBottom: i < arr.length - 1 ? "1px solid #f1f5f9" : "none" }}>
+                        <span style={{ fontSize: 12, color: "#64748b" }}>{r.l}</span>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: "#1e293b" }}>{r.v}</span>
+                      </div>
+                    ))}
                   </div>
-                ))}
-
-                <div style={{ height: 1, background: "#f1f5f9", margin: "7px 0" }} />
-
-                <div style={{ fontSize: 10, fontWeight: 700, color: "#475569", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.4px" }}>📥 Cobranças</div>
-                <div style={{ display: "flex", justifyContent: "space-between", padding: "3px 0" }}>
-                  <span style={{ fontSize: 11, color: "#64748b" }}>Total Cobrado</span>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: "#16a34a" }}>R$ {fmt(cobrancaDiaria)}</span>
                 </div>
 
-                <div style={{ height: 1, background: "#f1f5f9", margin: "7px 0" }} />
-
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 8, padding: "7px 10px", marginBottom: 6 }}>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: "#15803d" }}>📦 Caixa Final</span>
-                  <span style={{ fontSize: 13, fontWeight: 800, color: "#15803d" }}>R$ {fmt(saldo)}</span>
+                {/* Cobranças */}
+                <div style={{ marginBottom: 12 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "#475569", marginBottom: 6, paddingLeft: 2 }}>📥 Cobranças</div>
+                  <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e2e8f0", overflow: "hidden" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "9px 14px" }}>
+                      <span style={{ fontSize: 12, color: "#64748b" }}>Total Cobrado</span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: "#16a34a" }}>R$ {fmt(cobrancaDiaria)}</span>
+                    </div>
+                  </div>
                 </div>
 
-                <div style={{ fontSize: 9, color: "#cbd5e1", textAlign: "center", paddingBottom: 4 }}>
-                  {hoje.toLocaleString("pt-BR")} · Sistema de Cobrança
+                {/* Saldo Final */}
+                <div style={{ marginBottom: 12 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "#475569", marginBottom: 6, paddingLeft: 2 }}>📦 Saldo Final</div>
+                  <div style={{ background: "#f0fdf4", border: "1px solid #86efac", borderRadius: 12, padding: "12px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: "#15803d" }}>Caixa Final</span>
+                    <span style={{ fontSize: 16, fontWeight: 800, color: "#15803d" }}>R$ {fmt(saldo)}</span>
+                  </div>
+                </div>
+
+                <div style={{ fontSize: 10, color: "#cbd5e1", textAlign: "center", marginTop: 8, paddingBottom: 4 }}>
+                  Gerado em {hoje.toLocaleString("pt-BR")} · Sistema de Cobrança
                 </div>
               </div>
             </div>
 
-            <div style={{ padding: "8px 14px 14px" }}>
+            {/* Botão */}
+            <div style={{ background: "#fff", padding: "12px 16px 20px", borderTop: "1px solid #e2e8f0" }}>
               <button
                 onClick={imprimirPDF}
-                style={{ width: "100%", padding: "9px 0", borderRadius: 10, border: "none", background: "#3A5F82", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+                style={{ width: "100%", padding: "12px 0", borderRadius: 12, border: "none", background: "#1e293b", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
               >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 16l-4-4h2.5V4h3v8H16l-4 4z" fill="#fff"/><path d="M4 18h16v2H4v-2z" fill="#fff"/></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 16l-4-4h2.5V4h3v8H16l-4 4z" fill="#fff"/><path d="M4 18h16v2H4v-2z" fill="#fff"/></svg>
                 Baixar PDF
               </button>
             </div>
