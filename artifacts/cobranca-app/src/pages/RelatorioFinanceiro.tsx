@@ -263,92 +263,70 @@ export function RelatorioFinanceiro({
       )}
 
       {modalRelatorio && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "flex-end", justifyContent: "center", zIndex: 10000 }}>
-          <div style={{ background: "#fff", borderRadius: "18px 18px 0 0", width: "100%", maxWidth: 430, maxHeight: "88vh", display: "flex", flexDirection: "column", boxShadow: "0 -4px 24px rgba(0,0,0,0.18)" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px 10px", borderBottom: "1px solid #f1f5f9", flexShrink: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ fontSize: 16 }}>📊</span>
-                <span style={{ fontSize: 13, fontWeight: 700, color: "#1e293b" }}>Relatório Diário</span>
-              </div>
-              <button onClick={() => setModalRelatorio(false)} style={{ width: 26, height: 26, borderRadius: "50%", border: "none", background: "#f1f5f9", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="#64748b" strokeWidth="2.2" strokeLinecap="round"/></svg>
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "flex-end", justifyContent: "center", zIndex: 10000 }}>
+          <div style={{ background: "#fff", borderRadius: "14px 14px 0 0", width: "100%", maxWidth: 430, display: "flex", flexDirection: "column", boxShadow: "0 -4px 20px rgba(0,0,0,0.15)" }}>
+
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px 8px", borderBottom: "1px solid #f1f5f9" }}>
+              <span style={{ fontSize: 12, fontWeight: 700, color: "#1e293b" }}>📊 Relatório Diário</span>
+              <button onClick={() => setModalRelatorio(false)} style={{ width: 22, height: 22, borderRadius: "50%", border: "none", background: "#f1f5f9", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="#64748b" strokeWidth="2.5" strokeLinecap="round"/></svg>
               </button>
             </div>
 
-            <div style={{ overflowY: "auto", flex: 1, padding: "14px 16px" }}>
+            <div style={{ padding: "10px 14px 6px" }}>
               <div id="relatorio-pdf-content">
-                <div className="rt" style={{ fontSize: 15, fontWeight: 800, color: "#3A5F82", textAlign: "center", marginBottom: 2 }}>📊 Resumo de Caixa</div>
-                <div className="rs" style={{ fontSize: 10, color: "#64748b", textAlign: "center", marginBottom: 14 }}>Rota Cred Bank · Sistema de Cobrança</div>
 
-                <div style={{ background: "#f8fafc", borderRadius: 10, padding: "10px 12px", marginBottom: 12 }}>
-                  {[
-                    { l: "Status de Liquidação", v: "✓ Correto", g: true },
-                    { l: "Sincronização", v: "Rota Cred Bank", g: false },
-                    { l: "Data", v: dataStr, g: false },
-                  ].map(r => (
-                    <div key={r.l} className="row" style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", borderBottom: "1px solid #f1f5f9" }}>
-                      <span className="rl" style={{ fontSize: 11, color: "#475569" }}>{r.l}</span>
-                      <span className="rv" style={{ fontSize: 11, fontWeight: 600, color: r.g ? "#16a34a" : "#1e293b" }}>{r.v}</span>
-                    </div>
-                  ))}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                  <span style={{ fontSize: 10, color: "#64748b" }}>Sincronização: <strong style={{ color: "#1e293b" }}>Rota Cred Bank</strong></span>
+                  <span style={{ fontSize: 10, color: "#64748b" }}>{dataStr}</span>
                 </div>
+                <div style={{ fontSize: 9, color: "#16a34a", fontWeight: 600, marginBottom: 8 }}>✓ Status de Liquidação: Correto</div>
 
-                <div style={{ height: 1, background: "#e2e8f0", margin: "10px 0" }} className="divider" />
+                <div style={{ height: 1, background: "#f1f5f9", marginBottom: 7 }} />
 
-                <div style={{ marginBottom: 12 }}>
-                  <div className="sec-title" style={{ fontSize: 12, fontWeight: 700, color: "#1e293b", marginBottom: 8 }}>💰 Movimentação Financeira</div>
-                  <div style={{ background: "#f8fafc", borderRadius: 10, padding: "10px 12px" }}>
-                    {[
-                      { l: "Caixa Inicial", v: `R$ ${fmt(CAIXA_INICIAL)}` },
-                      { l: "Novos Clientes", v: String(novosCount) },
-                      { l: "Renovação de Clientes", v: "R$ 0,00" },
-                      { l: "Total de Empréstimos", v: `R$ ${fmt(novosEmprestimos)}` },
-                      { l: "Retiradas de Caixa", v: `R$ ${fmt(RETIRADA)}` },
-                      { l: "Despesas", v: `R$ ${fmt(totalDespesas)}` },
-                      { l: "Rendimentos", v: `R$ ${fmt(totalRendimentos)}` },
-                    ].map(r => (
-                      <div key={r.l} className="row" style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", borderBottom: "1px solid #f1f5f9" }}>
-                        <span className="rl" style={{ fontSize: 11, color: "#475569" }}>{r.l}</span>
-                        <span className="rv" style={{ fontSize: 11, fontWeight: 600, color: "#1e293b" }}>{r.v}</span>
-                      </div>
-                    ))}
+                <div style={{ fontSize: 10, fontWeight: 700, color: "#475569", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.4px" }}>💰 Movimentação Financeira</div>
+                {[
+                  { l: "Caixa Inicial", v: `R$ ${fmt(CAIXA_INICIAL)}` },
+                  { l: "Novos Clientes", v: String(novosCount) },
+                  { l: "Renovação de Clientes", v: "R$ 0,00" },
+                  { l: "Total de Empréstimos", v: `R$ ${fmt(novosEmprestimos)}` },
+                  { l: "Retiradas de Caixa", v: `R$ ${fmt(RETIRADA)}` },
+                  { l: "Despesas", v: `R$ ${fmt(totalDespesas)}` },
+                  { l: "Rendimentos", v: `R$ ${fmt(totalRendimentos)}` },
+                ].map(r => (
+                  <div key={r.l} style={{ display: "flex", justifyContent: "space-between", padding: "3px 0", borderBottom: "1px solid #f8fafc" }}>
+                    <span style={{ fontSize: 11, color: "#64748b" }}>{r.l}</span>
+                    <span style={{ fontSize: 11, fontWeight: 600, color: "#1e293b" }}>{r.v}</span>
                   </div>
+                ))}
+
+                <div style={{ height: 1, background: "#f1f5f9", margin: "7px 0" }} />
+
+                <div style={{ fontSize: 10, fontWeight: 700, color: "#475569", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.4px" }}>📥 Cobranças</div>
+                <div style={{ display: "flex", justifyContent: "space-between", padding: "3px 0" }}>
+                  <span style={{ fontSize: 11, color: "#64748b" }}>Total Cobrado</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "#16a34a" }}>R$ {fmt(cobrancaDiaria)}</span>
                 </div>
 
-                <div style={{ height: 1, background: "#e2e8f0", margin: "10px 0" }} className="divider" />
+                <div style={{ height: 1, background: "#f1f5f9", margin: "7px 0" }} />
 
-                <div style={{ marginBottom: 12 }}>
-                  <div className="sec-title" style={{ fontSize: 12, fontWeight: 700, color: "#1e293b", marginBottom: 8 }}>📥 Cobranças</div>
-                  <div style={{ background: "#f8fafc", borderRadius: 10, padding: "10px 12px" }}>
-                    <div className="row" style={{ display: "flex", justifyContent: "space-between", padding: "5px 0" }}>
-                      <span className="rl" style={{ fontSize: 11, color: "#475569" }}>Total Cobrado</span>
-                      <span className="rv g" style={{ fontSize: 11, fontWeight: 600, color: "#16a34a" }}>R$ {fmt(cobrancaDiaria)}</span>
-                    </div>
-                  </div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 8, padding: "7px 10px", marginBottom: 6 }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "#15803d" }}>📦 Caixa Final</span>
+                  <span style={{ fontSize: 13, fontWeight: 800, color: "#15803d" }}>R$ {fmt(saldo)}</span>
                 </div>
 
-                <div style={{ height: 1, background: "#e2e8f0", margin: "10px 0" }} className="divider" />
-
-                <div style={{ marginBottom: 8 }}>
-                  <div className="sec-title" style={{ fontSize: 12, fontWeight: 700, color: "#1e293b", marginBottom: 8 }}>📦 Saldo Final</div>
-                  <div className="saldo" style={{ background: "#f0fdf4", border: "1px solid #86efac", borderRadius: 10, padding: "12px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span className="sl" style={{ fontSize: 12, fontWeight: 700, color: "#15803d" }}>Caixa Final</span>
-                    <span className="sv" style={{ fontSize: 15, fontWeight: 800, color: "#15803d" }}>R$ {fmt(saldo)}</span>
-                  </div>
-                </div>
-
-                <div className="meta" style={{ fontSize: 9, color: "#94a3b8", textAlign: "center", marginTop: 14 }}>
-                  Gerado em {hoje.toLocaleString("pt-BR")} · Sistema de Cobrança
+                <div style={{ fontSize: 9, color: "#cbd5e1", textAlign: "center", paddingBottom: 4 }}>
+                  {hoje.toLocaleString("pt-BR")} · Sistema de Cobrança
                 </div>
               </div>
             </div>
 
-            <div style={{ padding: "12px 16px 16px", borderTop: "1px solid #f1f5f9", flexShrink: 0 }}>
+            <div style={{ padding: "8px 14px 14px" }}>
               <button
                 onClick={imprimirPDF}
-                style={{ width: "100%", padding: "11px 0", borderRadius: 12, border: "none", background: "#3A5F82", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+                style={{ width: "100%", padding: "9px 0", borderRadius: 10, border: "none", background: "#3A5F82", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 16l-4-4h2.5V4h3v8H16l-4 4z" fill="#fff"/><path d="M4 18h16v2H4v-2z" fill="#fff"/></svg>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 16l-4-4h2.5V4h3v8H16l-4 4z" fill="#fff"/><path d="M4 18h16v2H4v-2z" fill="#fff"/></svg>
                 Baixar PDF
               </button>
             </div>
