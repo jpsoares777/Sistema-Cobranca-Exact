@@ -1458,7 +1458,6 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
       }
       const saldoAposCobranca = (clienteSelecionado!.saldo ?? 0) - valor;
       if (saldoAposCobranca <= 0) {
-        setRenovacoesIds(prev => new Set([...prev, id]));
         setQuitadosClientes(prev => prev.some(q => q.id === id) ? prev : [clienteSelecionado!, ...prev]);
       }
       const hoje = new Date();
