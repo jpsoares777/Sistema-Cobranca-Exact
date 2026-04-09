@@ -1648,7 +1648,13 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
           nome: primeiroNome,
           sobrenome,
           telefone: clienteParaRenovar.telefone,
+          cpf: clienteParaRenovar.cpf,
           endereco: clienteParaRenovar.endereco,
+          cep: clienteParaRenovar.cep,
+          numero: clienteParaRenovar.numero,
+          bairro: clienteParaRenovar.bairro,
+          cidade: clienteParaRenovar.cidade,
+          uf: clienteParaRenovar.uf,
           valorEmprestado: (clienteParaRenovar.parcela * clienteParaRenovar.totalParcelas).toFixed(2),
           valorParcela: clienteParaRenovar.parcela.toFixed(2),
         }}
@@ -1912,11 +1918,17 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
               parcela: emp.valorParcela,
               saldo: emp.valorEmprestado,
               status: "novo",
-              endereco: "",
+              endereco: emp.endereco ?? "",
               parcelasPagas: 0,
               totalParcelas: emp.quantidadeParcelas,
-              telefone: "",
+              telefone: emp.telefone ?? "",
               frequencia: emp.frequencia,
+              cpf: emp.cpf,
+              cep: emp.cep,
+              numero: emp.numero,
+              bairro: emp.bairro,
+              cidade: emp.cidade,
+              uf: emp.uf,
             };
             if (emp.pagamentoAdiantado) {
               setClientesAdicionaisHoje(prev => [novoCliente, ...prev]);

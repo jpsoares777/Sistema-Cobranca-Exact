@@ -11,6 +11,14 @@ export interface Emprestimo {
   taxaJuros: number;
   quantidadeParcelas: number;
   pagamentoAdiantado?: boolean;
+  telefone?: string;
+  cpf?: string;
+  endereco?: string;
+  cep?: string;
+  numero?: string;
+  bairro?: string;
+  cidade?: string;
+  uf?: string;
 }
 
 export const emprestimentosIniciais: Emprestimo[] = [

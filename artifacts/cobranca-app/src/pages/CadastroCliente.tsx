@@ -80,7 +80,8 @@ function SelectField({ label, options, value, onChange }: {
 export interface CadastroInicialData {
   nome?: string; sobrenome?: string;
   telefone?: string; cpf?: string;
-  endereco?: string;
+  endereco?: string; cep?: string; numero?: string;
+  bairro?: string; cidade?: string; uf?: string;
   valorEmprestado?: string; valorParcela?: string;
   juros?: string; parcelas?: string; frequencia?: string;
 }
@@ -100,12 +101,12 @@ export function CadastroCliente({ onBack, onSalvar, initialData }: {
   const [submitted, setSubmitted] = useState(false);
   const [cpfField, setCpfField] = useState(initialData?.cpf ?? "");
   const [telefoneField, setTelefoneField] = useState(initialData?.telefone ?? "");
-  const [cepField, setCepField] = useState("");
+  const [cepField, setCepField] = useState(initialData?.cep ?? "");
   const [enderecoField, setEnderecoField] = useState(initialData?.endereco ?? "");
-  const [numeroField, setNumeroField] = useState("");
-  const [bairroField, setBairroField] = useState("");
-  const [cidadeField, setCidadeField] = useState("");
-  const [ufField, setUfField] = useState("");
+  const [numeroField, setNumeroField] = useState(initialData?.numero ?? "");
+  const [bairroField, setBairroField] = useState(initialData?.bairro ?? "");
+  const [cidadeField, setCidadeField] = useState(initialData?.cidade ?? "");
+  const [ufField, setUfField] = useState(initialData?.uf ?? "");
 
   const [loanForm, setLoanForm] = useState({
     nome: initialData?.nome ?? "",
@@ -177,6 +178,14 @@ export function CadastroCliente({ onBack, onSalvar, initialData }: {
         taxaJuros: parseFloat(loanForm.juros) || 0,
         quantidadeParcelas: parseInt(loanForm.parcelas) || 1,
         pagamentoAdiantado,
+        telefone: telefoneField,
+        cpf: cpfField,
+        endereco: enderecoField,
+        cep: cepField,
+        numero: numeroField,
+        bairro: bairroField,
+        cidade: cidadeField,
+        uf: ufField,
       });
     }
 

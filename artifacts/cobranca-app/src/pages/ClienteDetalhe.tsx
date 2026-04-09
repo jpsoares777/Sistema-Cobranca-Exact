@@ -25,6 +25,12 @@ export interface ClienteItem {
   telefone: string;
   frequencia?: string;
   pagamentos?: Pagamento[];
+  cpf?: string;
+  cep?: string;
+  numero?: string;
+  bairro?: string;
+  cidade?: string;
+  uf?: string;
 }
 
 function StatusBadge({ status, onClick, ativo }: { status: StatusType; onClick?: () => void; ativo?: boolean }) {
