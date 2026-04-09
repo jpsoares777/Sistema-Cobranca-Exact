@@ -1545,11 +1545,17 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
         parcela: e.valorParcela,
         saldo: e.valorEmprestado,
         status: "novo" as const,
-        endereco: "",
+        endereco: e.endereco ?? "",
         parcelasPagas: 0,
         totalParcelas: e.quantidadeParcelas,
-        telefone: "",
+        telefone: e.telefone ?? "",
         frequencia: e.frequencia,
+        cpf: e.cpf,
+        cep: e.cep,
+        numero: e.numero,
+        bairro: e.bairro,
+        cidade: e.cidade,
+        uf: e.uf,
       }));
     const clientesAdicionaisComoClientes = clientesAdicionaisHoje
       .filter(c => !clientes.some(e => e.id === c.id) && !emprestimentosComoClientes.some(e => e.id === c.id));
