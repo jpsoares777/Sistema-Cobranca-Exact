@@ -1946,6 +1946,9 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
               cidade: emp.cidade,
               uf: emp.uf,
             };
+            if (emp.pagamentoAdiantado) {
+              setClientesAdicionaisHoje(prev => prev.some(c => c.id === novoCliente.id) ? prev : [novoCliente, ...prev]);
+            }
             if (!emp.diario) {
               setNovosClientesOutras(prev => [novoCliente, ...prev]);
             }
