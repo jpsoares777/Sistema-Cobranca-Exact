@@ -19,6 +19,7 @@ export interface Emprestimo {
   bairro?: string;
   cidade?: string;
   uf?: string;
+  renovacao?: boolean;
 }
 
 export const emprestimentosIniciais: Emprestimo[] = [

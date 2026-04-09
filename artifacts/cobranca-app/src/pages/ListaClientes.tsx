@@ -1540,7 +1540,7 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
 
   const handleCaixaFechado = () => {
     const emprestimentosComoClientes = emprestimentos
-      .filter(e => !clientes.some(c => c.id === e.id))
+      .filter(e => !e.renovacao && !clientes.some(c => c.id === e.id))
       .map(e => ({
         id: e.id,
         nome: e.nomeCliente,
@@ -1649,27 +1649,27 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
             : c
           ));
           setQuitadosClientes(prev => prev.filter(q => q.id !== idOriginal));
-          setCobrados(prev => prev.filter(x => x !== idOriginal));
-          setCobradosValores(prev => prev.filter(x => x.id !== idOriginal));
           setRenovacoesIds(prev => new Set([...prev, idOriginal]));
-          const clienteRenovadoItem: ClienteItem = {
-            id: idOriginal,
-            nome: clienteParaRenovar!.nome,
-            saldo: novoSaldo,
-            parcela: novaParcela,
-            totalParcelas: novoTotal,
-            parcelasPagas: 0,
-            telefone: clienteParaRenovar!.telefone,
-            frequencia: clienteParaRenovar!.frequencia,
-            endereco: clienteParaRenovar!.endereco,
-            cpf: clienteParaRenovar!.cpf,
-            cep: clienteParaRenovar!.cep,
-            numero: clienteParaRenovar!.numero,
-            bairro: clienteParaRenovar!.bairro,
-            cidade: clienteParaRenovar!.cidade,
-            uf: clienteParaRenovar!.uf,
-          };
-          setClientesAdicionaisHoje(prev => prev.some(c => c.id === idOriginal) ? prev.map(c => c.id === idOriginal ? clienteRenovadoItem : c) : prev);
+          setEmprestimentos(prev => [...prev, {
+            id: Date.now(),
+            nomeCliente: clienteParaRenovar!.nome,
+            diario: emp.diario,
+            frequencia: emp.frequencia,
+            criadoEm: new Date().toISOString(),
+            valorEmprestado: novoSaldo,
+            valorParcela: novaParcela,
+            taxaJuros: emp.taxaJuros,
+            quantidadeParcelas: novoTotal,
+            telefone: emp.telefone,
+            cpf: emp.cpf,
+            endereco: emp.endereco,
+            cep: emp.cep,
+            numero: emp.numero,
+            bairro: emp.bairro,
+            cidade: emp.cidade,
+            uf: emp.uf,
+            renovacao: true,
+          }]);
           setTimeout(() => { setClienteParaRenovar(null); setVerRenovacao(false); setActiveNav(0); }, 1600);
         }}
         initialData={{
@@ -1958,7 +1958,6 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
               cidade: emp.cidade,
               uf: emp.uf,
             };
-            setClientesAdicionaisHoje(prev => prev.some(c => c.id === novoCliente.id) ? prev : [novoCliente, ...prev]);
             if (!emp.diario) {
               setNovosClientesOutras(prev => [novoCliente, ...prev]);
             }
