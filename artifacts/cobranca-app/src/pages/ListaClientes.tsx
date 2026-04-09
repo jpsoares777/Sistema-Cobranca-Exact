@@ -1649,6 +1649,7 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
             : c
           ));
           setQuitadosClientes(prev => prev.filter(q => q.id !== idOriginal));
+          setCobrados(prev => prev.includes(idOriginal) ? prev : [...prev, idOriginal]);
           setRenovacoesIds(prev => new Set([...prev, idOriginal]));
           setEmprestimentos(prev => [...prev, {
             id: Date.now(),
