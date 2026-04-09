@@ -1647,6 +1647,8 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
             : c
           ));
           setQuitadosClientes(prev => prev.filter(q => q.id !== idOriginal));
+          setCobrados(prev => prev.filter(x => x !== idOriginal));
+          setCobradosValores(prev => prev.filter(x => x.id !== idOriginal));
           setRenovacoesIds(prev => new Set([...prev, idOriginal]));
           setEmprestimentos(prev => {
             const jaExiste = prev.some(e => e.id === idOriginal);
@@ -1941,9 +1943,8 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
               cidade: emp.cidade,
               uf: emp.uf,
             };
-            if (emp.pagamentoAdiantado) {
-              setClientesAdicionaisHoje(prev => [novoCliente, ...prev]);
-            } else if (!emp.diario) {
+            setClientesAdicionaisHoje(prev => prev.some(c => c.id === novoCliente.id) ? prev : [novoCliente, ...prev]);
+            if (!emp.diario) {
               setNovosClientesOutras(prev => [novoCliente, ...prev]);
             }
             setTimeout(() => setActiveNav(0), 1600);
