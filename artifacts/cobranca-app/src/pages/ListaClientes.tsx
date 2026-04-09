@@ -1650,6 +1650,24 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
           setCobrados(prev => prev.filter(x => x !== idOriginal));
           setCobradosValores(prev => prev.filter(x => x.id !== idOriginal));
           setRenovacoesIds(prev => new Set([...prev, idOriginal]));
+          const clienteRenovadoItem: ClienteItem = {
+            id: idOriginal,
+            nome: clienteParaRenovar!.nome,
+            saldo: novoSaldo,
+            parcela: novaParcela,
+            totalParcelas: novoTotal,
+            parcelasPagas: 0,
+            telefone: clienteParaRenovar!.telefone,
+            frequencia: clienteParaRenovar!.frequencia,
+            endereco: clienteParaRenovar!.endereco,
+            cpf: clienteParaRenovar!.cpf,
+            cep: clienteParaRenovar!.cep,
+            numero: clienteParaRenovar!.numero,
+            bairro: clienteParaRenovar!.bairro,
+            cidade: clienteParaRenovar!.cidade,
+            uf: clienteParaRenovar!.uf,
+          };
+          setClientesAdicionaisHoje(prev => prev.some(c => c.id === idOriginal) ? prev.map(c => c.id === idOriginal ? clienteRenovadoItem : c) : prev);
           setTimeout(() => { setClienteParaRenovar(null); setVerRenovacao(false); setActiveNav(0); }, 1600);
         }}
         initialData={{
@@ -1938,9 +1956,8 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
               cidade: emp.cidade,
               uf: emp.uf,
             };
-            if (emp.pagamentoAdiantado) {
-              setClientesAdicionaisHoje(prev => [novoCliente, ...prev]);
-            } else if (!emp.diario) {
+            setClientesAdicionaisHoje(prev => prev.some(c => c.id === novoCliente.id) ? prev : [novoCliente, ...prev]);
+            if (!emp.diario) {
               setNovosClientesOutras(prev => [novoCliente, ...prev]);
             }
             setTimeout(() => setActiveNav(0), 1600);
