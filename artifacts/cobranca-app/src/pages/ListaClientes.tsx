@@ -1631,13 +1631,25 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
     return (
       <CadastroCliente
         onBack={() => setClienteParaRenovar(null)}
-        onSalvar={(emp) => { setEmprestimentos(prev => [emp, ...prev]); setRenovacoesIds(prev => new Set([...prev, emp.id])); setTimeout(() => { setClienteParaRenovar(null); setVerRenovacao(false); setActiveNav(0); }, 1600); }}
+        onSalvar={(emp) => {
+          const idOriginal = clienteParaRenovar!.id;
+          const novaParcela = emp.valorParcela;
+          const novoTotal = emp.quantidadeParcelas;
+          const novoSaldo = novaParcela * novoTotal;
+          setClientes(prev => prev.map(c => c.id === idOriginal
+            ? { ...c, parcela: novaParcela, totalParcelas: novoTotal, parcelasPagas: 0, saldo: novoSaldo }
+            : c
+          ));
+          setQuitadosClientes(prev => prev.filter(q => q.id !== idOriginal));
+          setRenovacoesIds(prev => new Set([...prev, idOriginal]));
+          setTimeout(() => { setClienteParaRenovar(null); setVerRenovacao(false); setActiveNav(0); }, 1600);
+        }}
         initialData={{
           nome: primeiroNome,
           sobrenome,
           telefone: clienteParaRenovar.telefone,
           endereco: clienteParaRenovar.endereco,
-          valorEmprestado: clienteParaRenovar.saldo.toFixed(2),
+          valorEmprestado: (clienteParaRenovar.parcela * clienteParaRenovar.totalParcelas).toFixed(2),
           valorParcela: clienteParaRenovar.parcela.toFixed(2),
         }}
       />
