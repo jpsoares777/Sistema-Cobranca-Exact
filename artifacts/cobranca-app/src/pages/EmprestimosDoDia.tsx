@@ -22,11 +22,7 @@ export interface Emprestimo {
   renovacao?: boolean;
 }
 
-export const emprestimentosIniciais: Emprestimo[] = [
-  { id: 1, nomeCliente: "ANDREIA DE JESUS COSTA ARAÚJO", diario: true,  criadoEm: new Date(Date.now() - 1000 * 60 * 30).toISOString(), valorEmprestado: 1120, valorParcela: 80,  taxaJuros: 5, quantidadeParcelas: 14 },
-  { id: 2, nomeCliente: "LUCIANA ALVES DA SILVA",         diario: false, criadoEm: new Date(Date.now() - 1000 * 60 * 55).toISOString(), valorEmprestado: 700,  valorParcela: 50,  taxaJuros: 4, quantidadeParcelas: 14 },
-  { id: 3, nomeCliente: "NATANAEL DOS SANTOS MENDES",     diario: true,  criadoEm: new Date(Date.now() - 1000 * 60 * 80).toISOString(), valorEmprestado: 650,  valorParcela: 50,  taxaJuros: 5, quantidadeParcelas: 14 },
-];
+export const emprestimentosIniciais: Emprestimo[] = [];
 
 function formatMoney(v: number) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);

@@ -8,20 +8,7 @@ import { RelatorioFinanceiro } from "./RelatorioFinanceiro";
 import { EmprestimosDoDia, Emprestimo, emprestimentosIniciais } from "./EmprestimosDoDia";
 import { ClienteDetalhe, ClienteDetalheRenovacao, ClienteItem, Agendamento, Pagamento, MetodoPagamento } from "./ClienteDetalhe";
 
-const clientesData = [
-  { id: 1, nome: "ANDREIA DE JESUS COSTA ARAÚJO", parcela: 80.0, saldo: 720.0, status: "emdia", endereco: "Rua das Flores, 123", parcelasPagas: 5, totalParcelas: 14, telefone: "(98) 98985-0143" },
-  { id: 2, nome: "LUCIANA ALVES DA SILVA", parcela: 50.0, saldo: 700.0, status: "atencao", endereco: "Av. Brasil, 456", parcelasPagas: 3, totalParcelas: 14, telefone: "(98) 99123-4567" },
-  { id: 3, nome: "ANA PAULA MARQUES DE OLIVEIRA", parcela: 50.0, saldo: 560.0, status: "emdia", endereco: "Rua São João, 78", parcelasPagas: 6, totalParcelas: 14, telefone: "(98) 99234-5678" },
-  { id: 4, nome: "MARIANA BEATRIZ RABELO BARBOSA", parcela: 50.0, saldo: 500.0, status: "emdia", endereco: "Rua da Paz, 220", parcelasPagas: 7, totalParcelas: 14, telefone: "(98) 99345-6789" },
-  { id: 5, nome: "NATANAEL DOS SANTOS MENDES", parcela: 50.0, saldo: 650.0, status: "atencao", endereco: "Av. Central, 900", parcelasPagas: 2, totalParcelas: 14, telefone: "(98) 99456-7890" },
-  { id: 6, nome: "ANTÔNIO LEITE NETO", parcela: 60.0, saldo: 750.0, status: "ruim", endereco: "Rua Nova, 33", parcelasPagas: 1, totalParcelas: 14, telefone: "(98) 99567-8901" },
-  { id: 7, nome: "KLEITON VIANA GONÇALVES", parcela: 90.0, saldo: 510.0, status: "atencao", endereco: "Rua do Sol, 15", parcelasPagas: 4, totalParcelas: 10, telefone: "(98) 99678-9012" },
-  { id: 8, nome: "JOÃO FELIPE PEREIRA", parcela: 30.0, saldo: 360.0, status: "emdia", endereco: "Travessa Boa Vista, 7", parcelasPagas: 8, totalParcelas: 14, telefone: "(98) 99789-0123" },
-  { id: 9, nome: "BORES VIANA DE SOUZA", parcela: 30.0, saldo: 420.0, status: "novo", endereco: "Rua das Palmeiras, 55", parcelasPagas: 0, totalParcelas: 14, telefone: "(98) 99890-1234" },
-  { id: 10, nome: "ROSÂNGELA SILVESTRE SILVA", parcela: 30.0, saldo: 270.0, status: "novo", endereco: "Rua Principal, 101", parcelasPagas: 0, totalParcelas: 9, telefone: "(98) 99901-2345" },
-  { id: 11, nome: "PATRICK MICHAEL SÁ MENEZES", parcela: 50.0, saldo: 650.0, status: "emdia", endereco: "Av. das Nações, 300", parcelasPagas: 4, totalParcelas: 14, telefone: "(98) 99012-3456" },
-  { id: 12, nome: "JOSÉ FRANCISCO CHAVES", parcela: 40.0, saldo: 480.0, status: "novo", endereco: "Rua Esperança, 88", parcelasPagas: 0, totalParcelas: 12, telefone: "(98) 99111-2222" },
-];
+const clientesData: { id: number; nome: string; parcela: number; saldo: number; status: string; endereco: string; parcelasPagas: number; totalParcelas: number; telefone: string }[] = [];
 
 const P = {
   bg: "#F2F4F7",

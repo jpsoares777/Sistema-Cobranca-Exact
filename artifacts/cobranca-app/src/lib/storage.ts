@@ -1,4 +1,4 @@
-const DB_KEY = "cobranca_db_v1";
+const DB_KEY = "cobranca_db_v2";
 
 export interface AppDB {
   lastDate: string;
