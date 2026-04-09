@@ -6,6 +6,7 @@ export interface AppDB {
   ausentes: number[];
   cobradosValores: { id: number; valor: number }[];
   registroPagamentos: Record<number, { id: number; data: string; parcela: number; valor: number; metodo: string }[]>;
+  historicoPagamentos: Record<number, { id: number; data: string; parcela: number; valor: number; metodo: string }[]>;
   quitadosClientes: unknown[];
   ordemClientesIds: number[];
   cobradosExtras: unknown[];
