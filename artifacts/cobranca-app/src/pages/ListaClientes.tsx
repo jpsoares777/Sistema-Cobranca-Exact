@@ -1451,11 +1451,13 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
   const [clientes, setClientes] = useState<typeof clientesData>(() => {
     const db = loadDB();
     const raw = (db?.clientes as typeof clientesData)?.length ? (db!.clientes as typeof clientesData) : clientesData;
-    return raw.map(c => ({ ...c, saldo: c.parcela * (c.totalParcelas - (c.parcelasPagas ?? 0)) }));
+    const deduped = raw.filter((c, i, arr) => arr.findIndex(x => x.id === c.id) === i);
+    return deduped.map(c => ({ ...c, saldo: c.parcela * (c.totalParcelas - (c.parcelasPagas ?? 0)) }));
   });
   const [ordemClientesIds, setOrdemClientesIds] = useState<number[]>(() => {
     const db = loadDB();
-    return (db?.ordemClientesIds?.length ? db.ordemClientesIds : clientesData.map(c => c.id));
+    const ids = db?.ordemClientesIds?.length ? db.ordemClientesIds : clientesData.map(c => c.id);
+    return ids.filter((id, i, arr) => arr.indexOf(id) === i);
   });
   const clientesOrdenados = ordemClientesIds.map(id => clientes.find(c => c.id === id)!).filter(Boolean) as typeof clientesData;
   const [cobradosExtras, setCobradosExtras] = useState<ClienteItem[]>(() => {
