@@ -1648,6 +1648,11 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
           ));
           setQuitadosClientes(prev => prev.filter(q => q.id !== idOriginal));
           setRenovacoesIds(prev => new Set([...prev, idOriginal]));
+          setEmprestimentos(prev => {
+            const jaExiste = prev.some(e => e.id === idOriginal);
+            if (jaExiste) return prev;
+            return [{ ...emp, id: idOriginal, nomeCliente: clienteParaRenovar!.nome }, ...prev];
+          });
           setTimeout(() => { setClienteParaRenovar(null); setVerRenovacao(false); setActiveNav(0); }, 1600);
         }}
         initialData={{
