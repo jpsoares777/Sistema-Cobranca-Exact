@@ -73,7 +73,7 @@ export function RelatorioFinanceiro({
   const [modalRelatorio, setModalRelatorio] = useState(false);
 
   const saldo = caixaInicial + cobrancaDiaria + totalRendimentos - novosEmprestimos - RETIRADA - totalDespesas;
-  const todosCorados = clientesParaCobranca > 0 && cobradosCount >= clientesParaCobranca;
+  const todosCorados = clientesParaCobranca === 0 || cobradosCount >= clientesParaCobranca;
 
   const hoje = new Date();
   const dataStr = hoje.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
@@ -263,7 +263,7 @@ export function RelatorioFinanceiro({
               <span style={{ fontSize: 12, fontWeight: 700, color: "#1e293b" }}>Fechar Caixa</span>
             </div>
             <p style={{ fontSize: 11, color: "#64748b", margin: "0 0 11px", lineHeight: 1.45, paddingLeft: 34 }}>
-              Todos os {clientesParaCobranca} clientes cobrados. Confirma o fechamento?
+              {clientesParaCobranca === 0 ? "Nenhum cliente na lista. Confirma o fechamento?" : `Todos os ${clientesParaCobranca} clientes cobrados. Confirma o fechamento?`}
             </p>
             <div style={{ display: "flex", gap: 7 }}>
               <button onClick={() => setModalFechamento(false)} style={{ flex: 1, padding: "6px 0", borderRadius: 8, border: "1px solid #e2e8f0", background: "#fff", fontSize: 11, fontWeight: 600, color: "#64748b", cursor: "pointer" }}>Cancelar</button>
