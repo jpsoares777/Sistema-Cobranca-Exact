@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 
 import { Emprestimo } from "./EmprestimosDoDia";
+import { compressToBase64, saveFotoCliente } from "../lib/storage";
 
 const P_CC = { headerTop: "#3A5F82", headerBot: "#4A6F8E" };
 
@@ -160,15 +161,36 @@ export function CadastroCliente({ onBack, onSalvar, initialData }: {
     bairroField.trim() && cidadeField.trim() && ufField.trim() &&
     loanForm.valorEmprestado.trim() && loanForm.valorParcela.trim() && loanForm.juros.trim();
 
-  const handleSalvar = () => {
+  const handleSalvar = async () => {
     setSubmitted(true);
     if (!isValid()) return;
     setSalvo(true);
     setShowConfirmacao(true);
 
+    const clienteId = Date.now();
+
+    const fotosParaSalvar: { id: number; nome: string; base64: string }[] = [];
+    const docLabels = [
+      "Identidade (frente)",
+      "Identidade (verso)",
+      "Comprovante de Residência",
+    ];
+    for (let i = 0; i < docFiles.length; i++) {
+      const file = docFiles[i];
+      if (file) {
+        try {
+          const base64 = await compressToBase64(file);
+          fotosParaSalvar.push({ id: clienteId + i + 1, nome: docLabels[i], base64 });
+        } catch {}
+      }
+    }
+    if (fotosParaSalvar.length > 0) {
+      saveFotoCliente(clienteId, fotosParaSalvar);
+    }
+
     if (onSalvar) {
       onSalvar({
-        id: Date.now(),
+        id: clienteId,
         nomeCliente: [loanForm.nome, loanForm.sobrenome].filter(Boolean).join(" ").toUpperCase() || "CLIENTE",
         diario: loanForm.frequencia === "Diário",
         frequencia: loanForm.frequencia,

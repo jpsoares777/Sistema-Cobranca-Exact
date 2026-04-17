@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import "./ClienteDetalhe.css";
+import { loadFotos, saveFotoCliente, compressToBase64 } from "../lib/storage";
 
 type StatusType = "pago" | "pendente" | "atrasado";
 type AbaAtiva = "detalhes" | "pagamentos" | "fotos" | "agendar";
@@ -229,33 +230,43 @@ interface FotoItem {
   tipo: "perfil" | "documento";
 }
 
-const fotosIniciais: FotoItem[] = [
-  { id: 2, url: "https://placehold.co/200x140/e2e8f0/94a3b8?text=RG+Frente", nome: "RG Frente", tipo: "documento" },
-  { id: 3, url: "https://placehold.co/200x140/e2e8f0/94a3b8?text=RG+Verso", nome: "RG Verso", tipo: "documento" },
-  { id: 4, url: "https://placehold.co/200x140/e2e8f0/94a3b8?text=Comprovante", nome: "Comprovante", tipo: "documento" },
-];
-
-function GaleriaFotos() {
-  const [fotos, setFotos] = useState<FotoItem[]>(fotosIniciais);
+function GaleriaFotos({ clienteId }: { clienteId: number }) {
+  const [fotos, setFotos] = useState<FotoItem[]>(() => {
+    const stored = loadFotos();
+    const clienteFotos = stored[clienteId];
+    if (clienteFotos && clienteFotos.length > 0) {
+      return clienteFotos.map(f => ({ id: f.id, url: f.base64, nome: f.nome, tipo: "documento" as const }));
+    }
+    return [];
+  });
   const [ampliada, setAmpliada] = useState<FotoItem | null>(null);
   const inputDocRef = useRef<HTMLInputElement>(null);
 
   const docs = fotos.filter(f => f.tipo === "documento");
 
-  function handleAnexar(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleAnexar(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
-    const novas: FotoItem[] = files.map((f, i) => ({
-      id: Date.now() + i,
-      url: URL.createObjectURL(f),
-      nome: f.name.replace(/\.[^.]+$/, ""),
-      tipo: "documento" as const,
-    }));
-    setFotos(prev => [...prev, ...novas]);
+    const novas: FotoItem[] = [];
+    for (let i = 0; i < files.length; i++) {
+      try {
+        const base64 = await compressToBase64(files[i]);
+        novas.push({ id: Date.now() + i, url: base64, nome: files[i].name.replace(/\.[^.]+$/, ""), tipo: "documento" as const });
+      } catch {}
+    }
+    setFotos(prev => {
+      const next = [...prev, ...novas];
+      saveFotoCliente(clienteId, next.map(f => ({ id: f.id, nome: f.nome, base64: f.url })));
+      return next;
+    });
     e.target.value = "";
   }
 
   function remover(id: number) {
-    setFotos(prev => prev.filter(f => f.id !== id));
+    setFotos(prev => {
+      const next = prev.filter(f => f.id !== id);
+      saveFotoCliente(clienteId, next.map(f => ({ id: f.id, nome: f.nome, base64: f.url })));
+      return next;
+    });
     if (ampliada?.id === id) setAmpliada(null);
   }
 
@@ -539,7 +550,7 @@ export function ClienteDetalheRenovacao({ cliente, onClose, onAddAgendamento }: 
         );
       })()}
       {aba === "registro" && <RegistroCreditos cliente={cliente} />}
-      {aba === "fotos" && <GaleriaFotos />}
+      {aba === "fotos" && <GaleriaFotos clienteId={cliente.id} />}
       {aba === "agendar" && <AgendarView onAddAgendamento={onAddAgendamento} nomeCliente={cliente.nome} />}
     </div>
   );
@@ -595,7 +606,7 @@ export function ClienteDetalhe({ cliente, onClose, onAddAgendamento }: { cliente
         </div>
       )}
       {aba === "pagamentos" && <ListaPagamentos pagamentos={pagamentos} />}
-      {aba === "fotos" && <GaleriaFotos />}
+      {aba === "fotos" && <GaleriaFotos clienteId={cliente.id} />}
       {aba === "agendar" && <AgendarView onAddAgendamento={onAddAgendamento} nomeCliente={cliente.nome} />}
     </div>
   );
