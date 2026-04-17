@@ -1668,6 +1668,7 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
             cidade: emp.cidade,
             uf: emp.uf,
             renovacao: true,
+            clienteId: idOriginal,
           }]);
           setTimeout(() => { setClienteParaRenovar(null); setVerRenovacao(false); setActiveNav(0); }, 1600);
         }}
@@ -1882,17 +1883,19 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
             lista={emprestimentos}
             onDelete={(id) => {
               if (confirm("Confirmar exclusão deste registro?")) {
+                const emp = emprestimentos.find(e => e.id === id);
+                const clienteAlvoId = emp?.clienteId ?? id;
                 setEmprestimentos(prev => prev.filter(e => e.id !== id));
-                setNovosClientesIds(prev => { const s = new Set(prev); s.delete(id); return s; });
-                setRenovacoesIds(prev => { const s = new Set(prev); s.delete(id); return s; });
-                setClientesAdicionaisHoje(prev => prev.filter(c => c.id !== id));
-                setNovosClientesOutras(prev => prev.filter(c => c.id !== id));
-                setClientes(prev => prev.filter(c => c.id !== id));
-                setOrdemClientesIds(prev => prev.filter(oid => oid !== id));
-                setCobrados(prev => prev.filter(cid => cid !== id));
-                setCobradosValores(prev => prev.filter(x => x.id !== id));
-                setCobradosExtras(prev => prev.filter(c => c.id !== id));
-                setHistoricoPagamentos(prev => { const next = { ...prev }; delete next[id]; return next; });
+                setNovosClientesIds(prev => { const s = new Set(prev); s.delete(clienteAlvoId); return s; });
+                setRenovacoesIds(prev => { const s = new Set(prev); s.delete(clienteAlvoId); return s; });
+                setClientesAdicionaisHoje(prev => prev.filter(c => c.id !== clienteAlvoId));
+                setNovosClientesOutras(prev => prev.filter(c => c.id !== clienteAlvoId));
+                setClientes(prev => prev.filter(c => c.id !== clienteAlvoId));
+                setOrdemClientesIds(prev => prev.filter(oid => oid !== clienteAlvoId));
+                setCobrados(prev => prev.filter(cid => cid !== clienteAlvoId));
+                setCobradosValores(prev => prev.filter(x => x.id !== clienteAlvoId));
+                setCobradosExtras(prev => prev.filter(c => c.id !== clienteAlvoId));
+                setHistoricoPagamentos(prev => { const next = { ...prev }; delete next[clienteAlvoId]; return next; });
               }
             }}
             onBack={() => setVerEmprestimentos(false)}
