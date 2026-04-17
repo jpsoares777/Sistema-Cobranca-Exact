@@ -546,17 +546,27 @@ export function ClienteDetalheRenovacao({ cliente, onClose, onAddAgendamento }: 
 }
 
 export function ClienteDetalhe({ cliente, onClose, onAddAgendamento }: { cliente: ClienteItem; onClose: () => void; onAddAgendamento: (a: Agendamento) => void }) {
-  const [aba, setAba] = useState<"detalhes" | "registro" | "fotos" | "agendar">("detalhes");
+  const [aba, setAba] = useState<"detalhes" | "pagamentos" | "fotos" | "agendar">("detalhes");
 
   const pendentes = cliente.totalParcelas - cliente.parcelasPagas;
+
+  const todosPagamentos: Pagamento[] = cliente.pagamentos ?? [];
+  const cutoff = cliente.creditoStartTimestamp ?? 0;
+  const pagamentosCredito = cutoff
+    ? todosPagamentos.filter(p => p.id >= cutoff)
+    : todosPagamentos;
+  const pagamentosOrdenados = [...pagamentosCredito].sort((a, b) => a.id - b.id);
+  const pagamentos: Pagamento[] = pagamentosOrdenados
+    .map((p, i) => ({ ...p, parcela: i + 1 }))
+    .reverse();
 
   return (
     <div className="cd-card" style={{ borderRadius: 0, boxShadow: "none", border: "none", maxWidth: "none" }}>
       <div className="cd-header">
         <div className="cd-status-bar">
-          <div className={`cd-status-item cd-status-item--btn ${aba === "registro" ? "cd-status-item--ativo" : ""}`} onClick={() => setAba(aba === "registro" ? "detalhes" : "registro")}>
-            <StatusBadge status="pago" ativo={aba === "registro"} />
-            <span className="cd-status-label">registro</span>
+          <div className={`cd-status-item cd-status-item--btn ${aba === "pagamentos" ? "cd-status-item--ativo" : ""}`} onClick={() => setAba(aba === "pagamentos" ? "detalhes" : "pagamentos")}>
+            <StatusBadge status="pago" ativo={aba === "pagamentos"} />
+            <span className="cd-status-label">pagamentos</span>
           </div>
           <div className={`cd-status-item cd-status-item--btn ${aba === "fotos" ? "cd-status-item--ativo" : ""}`} onClick={() => setAba(aba === "fotos" ? "detalhes" : "fotos")}>
             <StatusBadge status="pago" ativo={aba === "fotos"} />
@@ -571,18 +581,18 @@ export function ClienteDetalhe({ cliente, onClose, onAddAgendamento }: { cliente
       {aba === "detalhes" && (
         <div className="cd-body">
           <InfoRow label="Nº De Registro" value={`#${cliente.id}`} />
-          <InfoRow label="Data Do Crédito" value={cliente.creditoStartTimestamp ? fmtTs(cliente.creditoStartTimestamp) : "—"} highlight />
-          <InfoRow label="CPF" value={cliente.cpf ?? "—"} />
-          <InfoRow label="Valor" value={`R$ ${(cliente.parcela * cliente.totalParcelas).toFixed(2)}`} highlight />
+          <InfoRow label="Data Do Crédito" value="30/03/2026" highlight />
+          <InfoRow label="CPF" value="—" />
+          <InfoRow label="Valor" value={`R$ ${cliente.saldo.toFixed(2)}`} highlight />
           <InfoRow label="Parcelas Pendentes" value={`${pendentes} de ${cliente.totalParcelas}`} />
-          <InfoRow label="Juros" value={`${cliente.taxaJuros ?? 0}%`} />
+          <InfoRow label="Atrasadas" value="0" />
           <InfoRow label="Visitas" value={String(cliente.parcelasPagas)} />
           <InfoRow label="Telefone" value={cliente.telefone} isPhone />
-          <InfoRow label="Frequência" value={(cliente.frequencia ?? "Diário").toUpperCase()} highlight />
+          <InfoRow label="Frequência" value="DIÁRIO" highlight />
           <InfoRow label="Endereço" value={cliente.endereco} isAddress />
         </div>
       )}
-      {aba === "registro" && <RegistroCreditos cliente={cliente} />}
+      {aba === "pagamentos" && <ListaPagamentos pagamentos={pagamentos} />}
       {aba === "fotos" && <GaleriaFotos />}
       {aba === "agendar" && <AgendarView onAddAgendamento={onAddAgendamento} nomeCliente={cliente.nome} />}
     </div>
