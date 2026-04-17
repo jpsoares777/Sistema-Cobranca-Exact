@@ -1887,6 +1887,12 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
                 setRenovacoesIds(prev => { const s = new Set(prev); s.delete(id); return s; });
                 setClientesAdicionaisHoje(prev => prev.filter(c => c.id !== id));
                 setNovosClientesOutras(prev => prev.filter(c => c.id !== id));
+                setClientes(prev => prev.filter(c => c.id !== id));
+                setOrdemClientesIds(prev => prev.filter(oid => oid !== id));
+                setCobrados(prev => prev.filter(cid => cid !== id));
+                setCobradosValores(prev => prev.filter(x => x.id !== id));
+                setCobradosExtras(prev => prev.filter(c => c.id !== id));
+                setHistoricoPagamentos(prev => { const next = { ...prev }; delete next[id]; return next; });
               }
             }}
             onBack={() => setVerEmprestimentos(false)}
