@@ -1639,8 +1639,9 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
           const novaParcela = emp.valorParcela;
           const novoTotal = emp.quantidadeParcelas;
           const novoSaldo = novaParcela * novoTotal;
+          const renovacaoTs = Date.now();
           setClientes(prev => prev.map(c => c.id === idOriginal
-            ? { ...c, parcela: novaParcela, totalParcelas: novoTotal, parcelasPagas: 0, saldo: novoSaldo }
+            ? { ...c, parcela: novaParcela, totalParcelas: novoTotal, parcelasPagas: 0, saldo: novoSaldo, creditoStartTimestamp: renovacaoTs }
             : c
           ));
           setQuitadosClientes(prev => prev.filter(q => q.id !== idOriginal));
@@ -1953,6 +1954,7 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
               bairro: emp.bairro,
               cidade: emp.cidade,
               uf: emp.uf,
+              creditoStartTimestamp: emp.id,
             };
             if (emp.pagamentoAdiantado) {
               setClientesAdicionaisHoje(prev => prev.some(c => c.id === novoCliente.id) ? prev : [novoCliente, ...prev]);

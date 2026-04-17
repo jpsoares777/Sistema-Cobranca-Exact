@@ -31,6 +31,7 @@ export interface ClienteItem {
   bairro?: string;
   cidade?: string;
   uf?: string;
+  creditoStartTimestamp?: number;
 }
 
 function StatusBadge({ status, onClick, ativo }: { status: StatusType; onClick?: () => void; ativo?: boolean }) {
@@ -525,7 +526,15 @@ export function ClienteDetalhe({ cliente, onClose, onAddAgendamento }: { cliente
 
   const pendentes = cliente.totalParcelas - cliente.parcelasPagas;
 
-  const pagamentos: Pagamento[] = cliente.pagamentos ?? [];
+  const todosPagamentos: Pagamento[] = cliente.pagamentos ?? [];
+  const cutoff = cliente.creditoStartTimestamp ?? 0;
+  const pagamentosCredito = cutoff
+    ? todosPagamentos.filter(p => p.id >= cutoff)
+    : todosPagamentos;
+  const pagamentosOrdenados = [...pagamentosCredito].sort((a, b) => a.id - b.id);
+  const pagamentos: Pagamento[] = pagamentosOrdenados
+    .map((p, i) => ({ ...p, parcela: i + 1 }))
+    .reverse();
 
   return (
     <div className="cd-card" style={{ borderRadius: 0, boxShadow: "none", border: "none", maxWidth: "none" }}>
