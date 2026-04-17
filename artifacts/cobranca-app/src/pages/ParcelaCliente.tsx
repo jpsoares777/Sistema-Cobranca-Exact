@@ -15,7 +15,20 @@ type Cliente = {
   parcelasPagas: number;
   totalParcelas: number;
   telefone: string;
+  frequencia?: string;
+  creditoStartTimestamp?: number;
 };
+
+function calcAtrasadas(parcelasPagas: number, totalParcelas: number, creditoStartTimestamp?: number, frequencia?: string): number {
+  if (!creditoStartTimestamp) return 0;
+  const daysSinceStart = (Date.now() - creditoStartTimestamp) / (1000 * 60 * 60 * 24);
+  let periodDays = 1;
+  if (frequencia === "semanal") periodDays = 7;
+  else if (frequencia === "quinzenal") periodDays = 15;
+  else if (frequencia === "mensal") periodDays = 30;
+  const esperados = Math.min(Math.floor(daysSinceStart / periodDays), totalParcelas);
+  return Math.max(0, esperados - parcelasPagas);
+}
 
 function MiniLabel({ children }: { children: React.ReactNode }) {
   return <span className="text-[9px] font-semibold text-gray-400 uppercase tracking-wide">{children}</span>;
@@ -59,6 +72,7 @@ export function ParcelaCliente({ cliente, onBack, onSaved }: { cliente: Cliente;
 
   const totalCredito = cliente.parcela * cliente.totalParcelas;
   const penalidade = 0;
+  const atrasadas = calcAtrasadas(cliente.parcelasPagas, cliente.totalParcelas, cliente.creditoStartTimestamp, cliente.frequencia);
   const novoSaldo =
     paymentType === "parcela" || paymentType === "abono" ? Math.max(0, saldoAtual - valorParcela)
     : saldoAtual;
@@ -161,7 +175,7 @@ export function ParcelaCliente({ cliente, onBack, onSaved }: { cliente: Cliente;
             {[
               { icon: "✓", iconColor: "#16A34A", value: String(cliente.parcelasPagas), label: "Pagas", color: "text-green-700" },
               { icon: "⏱", iconColor: "#D97706", value: String(parcelasPendentes), label: "Pendentes", color: "text-amber-700" },
-              { icon: "!", iconColor: "#DC2626", value: "0", label: "Atrasadas", color: "text-red-600" },
+              { icon: "!", iconColor: "#DC2626", value: String(atrasadas), label: "Atrasadas", color: "text-red-600" },
               { icon: "R$", iconColor: "#3B5998", value: String(Math.round(saldoAtual)), label: "Saldo", color: "text-blue-700" },
             ].map(({ icon, iconColor, value, label, color }) => (
               <div key={label} className="bg-gray-50 rounded-lg p-1.5 flex flex-col items-center gap-0.5">
