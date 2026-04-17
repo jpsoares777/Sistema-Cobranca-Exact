@@ -71,6 +71,7 @@ export function RelatorioFinanceiro({
   const [caixaFechado, setCaixaFechado] = useState(false);
   const [modalSemPag, setModalSemPag] = useState(false);
   const [modalRelatorio, setModalRelatorio] = useState(false);
+  const [snap, setSnap] = useState<{ caixaInicial: number; cobrancaDiaria: number; novosEmprestimos: number; totalDespesas: number; totalRendimentos: number; novosCount: number; saldo: number } | null>(null);
 
   const saldo = caixaInicial + cobrancaDiaria + totalRendimentos - novosEmprestimos - RETIRADA - totalDespesas;
   const todosCorados = clientesParaCobranca === 0 || cobradosCount >= clientesParaCobranca;
@@ -113,6 +114,7 @@ export function RelatorioFinanceiro({
   };
 
   const handleFecharCaixa = () => {
+    setSnap({ caixaInicial, cobrancaDiaria, novosEmprestimos, totalDespesas, totalRendimentos, novosCount, saldo });
     onCaixaInicialChange?.(saldo);
     onCaixaFechado?.();
     setCaixaFechado(true);
@@ -317,13 +319,13 @@ export function RelatorioFinanceiro({
                   <div style={{ fontSize: 11, fontWeight: 700, color: "#475569", marginBottom: 6, paddingLeft: 2 }}>💰 Movimentação Financeira</div>
                   <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e2e8f0", overflow: "hidden" }}>
                     {[
-                      { l: "Caixa Inicial", v: `R$ ${fmt(caixaInicial)}` },
-                      { l: "Novos Clientes", v: String(novosCount) },
+                      { l: "Caixa Inicial", v: `R$ ${fmt(snap?.caixaInicial ?? caixaInicial)}` },
+                      { l: "Novos Clientes", v: String(snap?.novosCount ?? novosCount) },
                       { l: "Renovação de Clientes", v: "R$ 0,00" },
-                      { l: "Total de Empréstimos", v: `R$ ${fmt(novosEmprestimos)}` },
+                      { l: "Total de Empréstimos", v: `R$ ${fmt(snap?.novosEmprestimos ?? novosEmprestimos)}` },
                       { l: "Retiradas de Caixa", v: `R$ ${fmt(RETIRADA)}` },
-                      { l: "Despesas", v: `R$ ${fmt(totalDespesas)}` },
-                      { l: "Rendimentos", v: `R$ ${fmt(totalRendimentos)}` },
+                      { l: "Despesas", v: `R$ ${fmt(snap?.totalDespesas ?? totalDespesas)}` },
+                      { l: "Rendimentos", v: `R$ ${fmt(snap?.totalRendimentos ?? totalRendimentos)}` },
                     ].map((r, i, arr) => (
                       <div key={r.l} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "9px 14px", borderBottom: i < arr.length - 1 ? "1px solid #f1f5f9" : "none" }}>
                         <span style={{ fontSize: 12, color: "#64748b" }}>{r.l}</span>
@@ -339,7 +341,7 @@ export function RelatorioFinanceiro({
                   <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e2e8f0", overflow: "hidden" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "9px 14px" }}>
                       <span style={{ fontSize: 12, color: "#64748b" }}>Total Cobrado</span>
-                      <span style={{ fontSize: 12, fontWeight: 700, color: "#16a34a" }}>R$ {fmt(cobrancaDiaria)}</span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: "#16a34a" }}>R$ {fmt(snap?.cobrancaDiaria ?? cobrancaDiaria)}</span>
                     </div>
                   </div>
                 </div>
@@ -349,7 +351,7 @@ export function RelatorioFinanceiro({
                   <div style={{ fontSize: 11, fontWeight: 700, color: "#475569", marginBottom: 6, paddingLeft: 2 }}>📦 Saldo Final</div>
                   <div style={{ background: "#f0fdf4", border: "1px solid #86efac", borderRadius: 12, padding: "12px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <span style={{ fontSize: 13, fontWeight: 700, color: "#15803d" }}>Caixa Final</span>
-                    <span style={{ fontSize: 16, fontWeight: 800, color: "#15803d" }}>R$ {fmt(saldo)}</span>
+                    <span style={{ fontSize: 16, fontWeight: 800, color: "#15803d" }}>R$ {fmt(snap?.saldo ?? saldo)}</span>
                   </div>
                 </div>
 
