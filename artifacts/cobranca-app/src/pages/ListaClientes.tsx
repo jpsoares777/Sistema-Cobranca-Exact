@@ -31,8 +31,28 @@ const P = {
   headerBot: "#4A6F8E",
 };
 
-function computeStatus(parcelasPagas: number, totalParcelas: number): string {
+function computeStatus(
+  parcelasPagas: number,
+  totalParcelas: number,
+  creditoStartTimestamp?: number,
+  frequencia?: string
+): string {
   if (!parcelasPagas || parcelasPagas === 0) return "novo";
+
+  if (creditoStartTimestamp) {
+    const daysSinceStart = (Date.now() - creditoStartTimestamp) / (1000 * 60 * 60 * 24);
+    let periodDays = 1;
+    if (frequencia === "semanal") periodDays = 7;
+    else if (frequencia === "quinzenal") periodDays = 15;
+    else if (frequencia === "mensal") periodDays = 30;
+    const esperados = Math.min(Math.floor(daysSinceStart / periodDays), totalParcelas);
+    if (esperados === 0) return "novo";
+    if (parcelasPagas >= esperados) return "emdia";
+    if (parcelasPagas >= Math.ceil(esperados * 0.6)) return "atencao";
+    return "ruim";
+  }
+
+  // fallback para clientes sem creditoStartTimestamp (dados antigos)
   const ratio = parcelasPagas / Math.max(totalParcelas, 1);
   if (ratio >= 0.6) return "emdia";
   if (ratio >= 0.25) return "atencao";
@@ -165,7 +185,7 @@ function TelaLista({ busca, setBusca, vrf, setVrf, onSelectCliente, onAddAgendam
           {vrfLista.map((c) => {
             const valorCobrado = cobradosValores.find(x => x.id === c.id)?.valor ?? c.parcela;
             const saldoApos = Math.max(0, c.saldo);
-            const sc = statusBorderColor(computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1));
+            const sc = statusBorderColor(computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia));
             const clienteAtualizado = { ...c, saldo: saldoApos, pagamentos: pagamentosRegistro[c.id] ?? [] };
             const expandido = clienteDetalhe?.id === c.id;
 
@@ -184,7 +204,7 @@ function TelaLista({ busca, setBusca, vrf, setVrf, onSelectCliente, onAddAgendam
                       <img src="/bloqueio.png" alt="Quitado" style={{ width: 34, height: 34, objectFit: "contain" }} />
                     </div>
                   ) : (
-                    <PersonBadge status={computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1)} badge="plus" />
+                    <PersonBadge status={computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia)} badge="plus" />
                   )}
                 </div>
                 {/* Info */}
@@ -209,10 +229,10 @@ function TelaLista({ busca, setBusca, vrf, setVrf, onSelectCliente, onAddAgendam
                 {/* Dot */}
                 <div style={{
                   width: 8, height: 8, borderRadius: "50%",
-                  backgroundColor: computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1) === "novo" ? "#FFFFFF" : sc,
+                  backgroundColor: computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia) === "novo" ? "#FFFFFF" : sc,
                   flexShrink: 0,
-                  border: computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1) === "novo" ? "1.5px solid #9CA3AF" : "none",
-                  boxShadow: computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1) === "novo" ? "none" : `0 0 0 3px ${sc}25`,
+                  border: computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia) === "novo" ? "1.5px solid #9CA3AF" : "none",
+                  boxShadow: computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia) === "novo" ? "none" : `0 0 0 3px ${sc}25`,
                 }} />
               </>
             );
@@ -313,15 +333,15 @@ function TelaLista({ busca, setBusca, vrf, setVrf, onSelectCliente, onAddAgendam
       </div>
       <div style={{ flex: 1, overflowY: "auto", paddingBottom: 70, paddingTop: 6, paddingLeft: 10, paddingRight: 10 }}>
         {filtrados.map((cliente, index) => {
-          const sc = statusBorderColor(computeStatus(cliente.parcelasPagas ?? 0, cliente.totalParcelas ?? 1));
+          const sc = statusBorderColor(computeStatus(cliente.parcelasPagas ?? 0, cliente.totalParcelas ?? 1, cliente.creditoStartTimestamp, cliente.frequencia));
           const expandido = clienteDetalhe?.id === cliente.id;
           const rowContent = (
             <>
               <div onClick={e => { e.stopPropagation(); setClienteDetalhe(expandido ? null : cliente); }} style={{ cursor: "pointer" }}>
-                <PersonBadge status={computeStatus(cliente.parcelasPagas ?? 0, cliente.totalParcelas ?? 1)} badge="plus" />
+                <PersonBadge status={computeStatus(cliente.parcelasPagas ?? 0, cliente.totalParcelas ?? 1, cliente.creditoStartTimestamp, cliente.frequencia)} badge="plus" />
               </div>
               <div onClick={e => { e.stopPropagation(); onAusentar(cliente); }} style={{ cursor: "pointer" }}>
-                <PersonBadge status={computeStatus(cliente.parcelasPagas ?? 0, cliente.totalParcelas ?? 1)} badge="alert" />
+                <PersonBadge status={computeStatus(cliente.parcelasPagas ?? 0, cliente.totalParcelas ?? 1, cliente.creditoStartTimestamp, cliente.frequencia)} badge="alert" />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ marginBottom: 3 }}>
@@ -340,10 +360,10 @@ function TelaLista({ busca, setBusca, vrf, setVrf, onSelectCliente, onAddAgendam
               </div>
               <div style={{
                 width: 8, height: 8, borderRadius: "50%",
-                backgroundColor: computeStatus(cliente.parcelasPagas ?? 0, cliente.totalParcelas ?? 1) === "novo" ? "#FFFFFF" : statusBorderColor(computeStatus(cliente.parcelasPagas ?? 0, cliente.totalParcelas ?? 1)),
+                backgroundColor: computeStatus(cliente.parcelasPagas ?? 0, cliente.totalParcelas ?? 1, cliente.creditoStartTimestamp, cliente.frequencia) === "novo" ? "#FFFFFF" : statusBorderColor(computeStatus(cliente.parcelasPagas ?? 0, cliente.totalParcelas ?? 1, cliente.creditoStartTimestamp, cliente.frequencia)),
                 flexShrink: 0,
-                border: computeStatus(cliente.parcelasPagas ?? 0, cliente.totalParcelas ?? 1) === "novo" ? "1.5px solid #9CA3AF" : "none",
-                boxShadow: computeStatus(cliente.parcelasPagas ?? 0, cliente.totalParcelas ?? 1) === "novo" ? "none" : `0 0 0 3px ${sc}25`,
+                border: computeStatus(cliente.parcelasPagas ?? 0, cliente.totalParcelas ?? 1, cliente.creditoStartTimestamp, cliente.frequencia) === "novo" ? "1.5px solid #9CA3AF" : "none",
+                boxShadow: computeStatus(cliente.parcelasPagas ?? 0, cliente.totalParcelas ?? 1, cliente.creditoStartTimestamp, cliente.frequencia) === "novo" ? "none" : `0 0 0 3px ${sc}25`,
               }} />
             </>
           );
@@ -1167,16 +1187,16 @@ function EmprestimosOutrasDatas({ onAddAgendamento, onSelectCliente, novosClient
       {/* Lista — idêntica ao TelaLista modo normal */}
       <div style={{ flex: 1, overflowY: "auto", paddingBottom: 70, paddingTop: 6, paddingLeft: 10, paddingRight: 10 }}>
         {filtrados.map((c, idx) => {
-          const sc = statusBorderColor(computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1));
+          const sc = statusBorderColor(computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia));
           const expandido = clienteDetalhe?.id === c.id;
           const clienteView: ClienteItem = { ...c, parcela: c.parcelaOutra, saldo: c.saldoOutra };
 
           const rowContent = (
             <>
               <div onClick={e => { e.stopPropagation(); setClienteDetalhe(expandido ? null : clienteView); }} style={{ cursor: "pointer" }}>
-                <PersonBadge status={computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1)} badge="plus" />
+                <PersonBadge status={computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia)} badge="plus" />
               </div>
-              <PersonBadge status={computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1)} badge="alert" />
+              <PersonBadge status={computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia)} badge="alert" />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ marginBottom: 3 }}>
                   <span style={{ fontSize: 12.5, fontWeight: 700, color: P.textPrimary, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", letterSpacing: 0.1, lineHeight: 1.3, display: "block" }}>
@@ -1194,10 +1214,10 @@ function EmprestimosOutrasDatas({ onAddAgendamento, onSelectCliente, novosClient
               </div>
               <div style={{
                 width: 8, height: 8, borderRadius: "50%",
-                backgroundColor: computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1) === "novo" ? "#FFFFFF" : statusBorderColor(computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1)),
+                backgroundColor: computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia) === "novo" ? "#FFFFFF" : statusBorderColor(computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia)),
                 flexShrink: 0,
-                border: computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1) === "novo" ? "1.5px solid #9CA3AF" : "none",
-                boxShadow: computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1) === "novo" ? "none" : `0 0 0 3px ${sc}25`,
+                border: computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia) === "novo" ? "1.5px solid #9CA3AF" : "none",
+                boxShadow: computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia) === "novo" ? "none" : `0 0 0 3px ${sc}25`,
               }} />
             </>
           );
@@ -1293,7 +1313,7 @@ function ClientesAusentes({ ausentes, onReativar, onAddAgendamento, onSelectClie
           </div>
         )}
         {lista.map((c, idx) => {
-          const sc = statusBorderColor(computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1));
+          const sc = statusBorderColor(computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia));
           const isOpen = clienteDetalhe?.id === c.id;
           return (
             <div key={c.id} style={{
@@ -1309,7 +1329,7 @@ function ClientesAusentes({ ausentes, onReativar, onAddAgendamento, onSelectClie
                 onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
               >
                 <div onClick={e => { e.stopPropagation(); setClienteDetalhe(isOpen ? null : c); }} style={{ cursor: "pointer" }} title="Ver detalhes">
-                  <PersonBadge status={computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1)} badge="plus" />
+                  <PersonBadge status={computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia)} badge="plus" />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ marginBottom: 3 }}>
@@ -1328,10 +1348,10 @@ function ClientesAusentes({ ausentes, onReativar, onAddAgendamento, onSelectClie
                 </div>
                 <div style={{
                   width: 8, height: 8, borderRadius: "50%",
-                  backgroundColor: computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1) === "novo" ? "#FFFFFF" : statusBorderColor(computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1)),
+                  backgroundColor: computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia) === "novo" ? "#FFFFFF" : statusBorderColor(computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia)),
                   flexShrink: 0,
-                  border: computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1) === "novo" ? "1.5px solid #9CA3AF" : "none",
-                  boxShadow: computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1) === "novo" ? "none" : `0 0 0 3px ${sc}25`,
+                  border: computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia) === "novo" ? "1.5px solid #9CA3AF" : "none",
+                  boxShadow: computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia) === "novo" ? "none" : `0 0 0 3px ${sc}25`,
                 }} />
               </div>
               {/* Painel de detalhe (mesmo que a lista principal) */}
@@ -1641,7 +1661,7 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
           const novoSaldo = novaParcela * novoTotal;
           const renovacaoTs = Date.now();
           setClientes(prev => prev.map(c => c.id === idOriginal
-            ? { ...c, parcela: novaParcela, totalParcelas: novoTotal, parcelasPagas: 0, saldo: novoSaldo, creditoStartTimestamp: renovacaoTs }
+            ? { ...c, parcela: novaParcela, totalParcelas: novoTotal, parcelasPagas: 0, saldo: novoSaldo, creditoStartTimestamp: renovacaoTs, frequencia: emp.frequencia ?? c.frequencia }
             : c
           ));
           setQuitadosClientes(prev => prev.filter(q => q.id !== idOriginal));
