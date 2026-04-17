@@ -237,6 +237,12 @@
   padding: 0;
 }
 
+.pg-lista__rows {
+  max-height: 260px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .pg-lista__header {
   display: flex;
   align-items: center;

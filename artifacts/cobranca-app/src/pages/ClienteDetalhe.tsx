@@ -169,34 +169,36 @@ function ListaPagamentos({ pagamentos }: { pagamentos: Pagamento[] }) {
         <div className="pg-lista__col pg-lista__col--metodo">Método</div>
       </div>
 
-      {pagamentos.map((p) => {
-        const semPagamento = p.metodo === "Sem pagamento";
-        const abono = p.metodo === "Abono";
-        return (
-          <div key={p.id} className={`pg-lista__row ${semPagamento ? "pg-lista__row--nao-pago" : ""} ${abono ? "pg-lista__row--abono" : ""}`}>
-            <div className="pg-lista__col pg-lista__col--data">
-              <span className="pg-data">{p.data}</span>
-            </div>
-            <div className="pg-lista__col pg-lista__col--parcela">
-              <span className="pg-parcela">#{p.parcela}</span>
-            </div>
-            <div className="pg-lista__col pg-lista__col--valor">
-              {semPagamento
-                ? <span className="pg-valor pg-valor--nao-pago">—</span>
-                : <span className={`pg-valor ${abono ? "pg-valor--abono" : ""}`}>R$ {p.valor.toFixed(2)}</span>
-              }
-            </div>
-            <div className="pg-lista__col pg-lista__col--metodo">
-              <span className="pg-metodo-wrap">
-                <MetodoIcon metodo={p.metodo} />
-                <span className={`pg-metodo-label pg-metodo-label--${METODO_CLASSE[p.metodo]}`}>
-                  {METODO_LABEL[p.metodo]}
+      <div className="pg-lista__rows">
+        {pagamentos.map((p) => {
+          const semPagamento = p.metodo === "Sem pagamento";
+          const abono = p.metodo === "Abono";
+          return (
+            <div key={p.id} className={`pg-lista__row ${semPagamento ? "pg-lista__row--nao-pago" : ""} ${abono ? "pg-lista__row--abono" : ""}`}>
+              <div className="pg-lista__col pg-lista__col--data">
+                <span className="pg-data">{p.data}</span>
+              </div>
+              <div className="pg-lista__col pg-lista__col--parcela">
+                <span className="pg-parcela">#{p.parcela}</span>
+              </div>
+              <div className="pg-lista__col pg-lista__col--valor">
+                {semPagamento
+                  ? <span className="pg-valor pg-valor--nao-pago">—</span>
+                  : <span className={`pg-valor ${abono ? "pg-valor--abono" : ""}`}>R$ {p.valor.toFixed(2)}</span>
+                }
+              </div>
+              <div className="pg-lista__col pg-lista__col--metodo">
+                <span className="pg-metodo-wrap">
+                  <MetodoIcon metodo={p.metodo} />
+                  <span className={`pg-metodo-label pg-metodo-label--${METODO_CLASSE[p.metodo]}`}>
+                    {METODO_LABEL[p.metodo]}
+                  </span>
                 </span>
-              </span>
+              </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
 
       <div className="pg-lista__footer">
         <span className="pg-footer__label">Total pago</span>
