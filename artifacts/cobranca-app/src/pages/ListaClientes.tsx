@@ -47,7 +47,13 @@ function computeStatus(
     else if (freq.startsWith("quinzen")) periodDays = 15;
     else if (freq.startsWith("mensal")) periodDays = 30;
     const esperados = Math.min(Math.floor(daysSinceStart / periodDays), totalParcelas);
-    if (esperados === 0) return "novo";
+    // Se ainda não passou tempo suficiente para esperar parcelas, usa a proporção paga
+    if (esperados === 0) {
+      const ratio = parcelasPagas / Math.max(totalParcelas, 1);
+      if (ratio >= 0.6) return "emdia";
+      if (ratio >= 0.25) return "atencao";
+      return "emdia"; // cliente novo que já está pagando → verde
+    }
     const atrasadas = esperados - parcelasPagas;
     if (atrasadas <= 0) return "emdia";
     if (atrasadas === 1) return "atencao";
