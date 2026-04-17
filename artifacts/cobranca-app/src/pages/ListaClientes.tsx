@@ -153,6 +153,7 @@ function TelaLista({ busca, setBusca, vrf, setVrf, onSelectCliente, onAddAgendam
   clientesBase?: typeof clientesData;
 }) {
   const [clienteDetalhe, setClienteDetalhe] = useState<ClienteItem | null>(null);
+  const [openCounts, setOpenCounts] = useState<Record<number, number>>({});
   const [vrfRemovidos, setVrfRemovidos] = useState<number[]>([]);
   const [clienteParaRemover, setClienteParaRemover] = useState<ClienteItem | null>(null);
   const ausentesIds = ausentes ?? [];
@@ -341,7 +342,7 @@ function TelaLista({ busca, setBusca, vrf, setVrf, onSelectCliente, onAddAgendam
           const expandido = clienteDetalhe?.id === cliente.id;
           const rowContent = (
             <>
-              <div onClick={e => { e.stopPropagation(); setClienteDetalhe(expandido ? null : cliente); }} style={{ cursor: "pointer" }}>
+              <div onClick={e => { e.stopPropagation(); if (expandido) { setClienteDetalhe(null); } else { setOpenCounts(prev => ({ ...prev, [cliente.id]: (prev[cliente.id] ?? 0) + 1 })); setClienteDetalhe(cliente); } }} style={{ cursor: "pointer" }}>
                 <PersonBadge status={computeStatus(cliente.parcelasPagas ?? 0, cliente.totalParcelas ?? 1, cliente.creditoStartTimestamp, cliente.frequencia, pagamentosRegistro[cliente.id] ?? [])} badge="plus" />
               </div>
               <div onClick={e => { e.stopPropagation(); onAusentar(cliente); }} style={{ cursor: "pointer" }}>
@@ -398,7 +399,7 @@ function TelaLista({ busca, setBusca, vrf, setVrf, onSelectCliente, onAddAgendam
                     transition: "max-height 0.25s ease",
                   }}
                 >
-                  <ClienteDetalhe key={`${cliente.id}-${expandido}`} cliente={{ ...cliente, pagamentos: pagamentosRegistro[cliente.id] ?? [] }} onClose={() => setClienteDetalhe(null)} onAddAgendamento={onAddAgendamento} />
+                  <ClienteDetalhe key={`${cliente.id}-${openCounts[cliente.id] ?? 0}`} cliente={{ ...cliente, pagamentos: pagamentosRegistro[cliente.id] ?? [] }} onClose={() => setClienteDetalhe(null)} onAddAgendamento={onAddAgendamento} />
                 </div>
               </div>
             </Fragment>
