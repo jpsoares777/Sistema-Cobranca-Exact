@@ -1616,7 +1616,7 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
   };
 
   if (clienteSelecionado) {
-    return <ParcelaCliente cliente={clienteSelecionado} onBack={() => setClienteSelecionado(null)} onSaved={(valor, metodo) => {
+    return <ParcelaCliente cliente={{ ...clienteSelecionado, pagamentos: historicoPagamentos[clienteSelecionado.id] ?? [] }} onBack={() => setClienteSelecionado(null)} onSaved={(valor, metodo) => {
       const id = clienteSelecionado!.id;
       setCobrados(prev => prev.includes(id) ? prev : [id, ...prev]);
       setCobradosValores(prev => { const existing = prev.find(x => x.id === id); return existing ? prev.map(x => x.id === id ? { id, valor: x.valor + valor } : x) : [{ id, valor }, ...prev]; });

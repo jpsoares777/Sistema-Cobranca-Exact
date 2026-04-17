@@ -17,17 +17,13 @@ type Cliente = {
   telefone: string;
   frequencia?: string;
   creditoStartTimestamp?: number;
+  pagamentos?: { id: number; data: string; parcela: number; valor: number; metodo: string }[];
 };
 
-function calcAtrasadas(parcelasPagas: number, totalParcelas: number, creditoStartTimestamp?: number, frequencia?: string): number {
-  if (!creditoStartTimestamp) return 0;
-  const daysSinceStart = (Date.now() - creditoStartTimestamp) / (1000 * 60 * 60 * 24);
-  let periodDays = 1;
-  if (frequencia === "semanal") periodDays = 7;
-  else if (frequencia === "quinzenal") periodDays = 15;
-  else if (frequencia === "mensal") periodDays = 30;
-  const esperados = Math.min(Math.floor(daysSinceStart / periodDays), totalParcelas);
-  return Math.max(0, esperados - parcelasPagas);
+function calcAtrasadas(pagamentos?: { metodo: string; data: string }[]): number {
+  if (!pagamentos?.length) return 0;
+  const hoje = new Date().toISOString().slice(0, 10);
+  return pagamentos.filter(p => p.metodo === "Sem pagamento" && p.data < hoje).length;
 }
 
 function MiniLabel({ children }: { children: React.ReactNode }) {
@@ -72,7 +68,7 @@ export function ParcelaCliente({ cliente, onBack, onSaved }: { cliente: Cliente;
 
   const totalCredito = cliente.parcela * cliente.totalParcelas;
   const penalidade = 0;
-  const atrasadas = calcAtrasadas(cliente.parcelasPagas, cliente.totalParcelas, cliente.creditoStartTimestamp, cliente.frequencia);
+  const atrasadas = calcAtrasadas(cliente.pagamentos);
   const novoSaldo =
     paymentType === "parcela" || paymentType === "abono" ? Math.max(0, saldoAtual - valorParcela)
     : saldoAtual;
