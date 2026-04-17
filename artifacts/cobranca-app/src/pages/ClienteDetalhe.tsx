@@ -13,6 +13,18 @@ export interface Pagamento {
   metodo: MetodoPagamento;
 }
 
+export interface CreditoRecord {
+  dataInicio: string;
+  dataCancelamento: string;
+  valor: number;
+  parcelas: number;
+  pagas: number;
+  naoPagas: number;
+  juros: number;
+  duracao: number;
+  status: "Quitado" | "Cancelado";
+}
+
 export interface ClienteItem {
   id: number;
   nome: string;
@@ -32,6 +44,8 @@ export interface ClienteItem {
   cidade?: string;
   uf?: string;
   creditoStartTimestamp?: number;
+  taxaJuros?: number;
+  historicoCreditos?: CreditoRecord[];
 }
 
 function StatusBadge({ status, onClick, ativo }: { status: StatusType; onClick?: () => void; ativo?: boolean }) {
@@ -368,41 +382,49 @@ function AgendarView({ onAddAgendamento, nomeCliente }: { onAddAgendamento: (a: 
   );
 }
 
-function RegistroCreditos({ cliente }: { cliente: ClienteItem }) {
-  const valorOriginal = cliente.parcela * cliente.totalParcelas;
-  const creditos = [
-    {
-      id: 1, dataInicio: "11/03/2026", dataCancelamento: "—",
-      valor: valorOriginal, parcelas: cliente.totalParcelas,
-      pagas: cliente.parcelasPagas,
-      juros: 10, status: "Ativo",
-    },
-    {
-      id: 2, dataInicio: "06/09/2025", dataCancelamento: "25/11/2025",
-      valor: Math.round(valorOriginal * 0.8), parcelas: cliente.totalParcelas - 2,
-      pagas: cliente.totalParcelas - 2,
-      juros: 10, status: "Quitado", duracao: 14,
-    },
-    {
-      id: 3, dataInicio: "13/03/2025", dataCancelamento: "28/05/2025",
-      valor: Math.round(valorOriginal * 0.6), parcelas: cliente.totalParcelas - 4,
-      pagas: cliente.totalParcelas - 4,
-      juros: 10, status: "Quitado", duracao: 12,
-    },
-  ];
+function fmtTs(ts: number): string {
+  const d = new Date(ts);
+  return `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${d.getFullYear()}`;
+}
 
+function RegistroCreditos({ cliente }: { cliente: ClienteItem }) {
+  const historico: CreditoRecord[] = cliente.historicoCreditos ?? [];
+
+  // Crédito ativo: derivado dos dados atuais do cliente
+  const pagAtivos = (cliente.pagamentos ?? []).filter(p =>
+    !cliente.creditoStartTimestamp || (p.id !== undefined && p.id >= cliente.creditoStartTimestamp)
+  );
+  const naoPagasAtivo = pagAtivos.filter(p => p.metodo === "Sem pagamento").length;
+  const duracaoAtivo = cliente.creditoStartTimestamp
+    ? Math.round((Date.now() - cliente.creditoStartTimestamp) / (1000 * 60 * 60 * 24))
+    : 0;
+
+  type CreditoAll = (CreditoRecord & { status: string });
+  const creditoAtivo: CreditoAll = {
+    dataInicio: cliente.creditoStartTimestamp ? fmtTs(cliente.creditoStartTimestamp) : "—",
+    dataCancelamento: "—",
+    valor: cliente.parcela * cliente.totalParcelas,
+    parcelas: cliente.totalParcelas,
+    pagas: cliente.parcelasPagas,
+    naoPagas: naoPagasAtivo,
+    juros: cliente.taxaJuros ?? 0,
+    duracao: duracaoAtivo,
+    status: "Ativo",
+  };
+
+  const todos: CreditoAll[] = [...historico, creditoAtivo];
   const [aberto, setAberto] = useState<number | null>(null);
 
   return (
     <div style={{ padding: "10px 12px 10px" }}>
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
-        {creditos.filter(cr => cr.status === "Quitado").map((cr, i) => {
+        {todos.map((cr, i) => {
           const isAtivo = cr.status === "Ativo";
-          const expanded = aberto === cr.id;
+          const expanded = aberto === i;
           return (
             <div
-              key={cr.id}
-              onClick={() => setAberto(expanded ? null : cr.id)}
+              key={i}
+              onClick={() => setAberto(expanded ? null : i)}
               style={{
                 width: 44, height: 44, borderRadius: 8, cursor: "pointer",
                 backgroundColor: isAtivo ? "#EFF6FF" : "#F1F5F9",
@@ -425,9 +447,7 @@ function RegistroCreditos({ cliente }: { cliente: ClienteItem }) {
       </div>
 
       {aberto !== null && (() => {
-        const cr = creditos.find(c => c.id === aberto)!;
-        const i = creditos.indexOf(cr);
-        const nNaoPagas = cr.parcelas - cr.pagas;
+        const cr = todos[aberto];
         const isAtivo = cr.status === "Ativo";
         return (
           <div style={{
@@ -441,7 +461,7 @@ function RegistroCreditos({ cliente }: { cliente: ClienteItem }) {
               borderBottom: `1px solid ${isAtivo ? "#bfdbfe" : "#E2E8F0"}`,
             }}>
               <span style={{ fontSize: 11, fontWeight: 700, color: isAtivo ? "#1d4ed8" : "#475569" }}>
-                Crédito #{String(i + 1).padStart(2, "0")}
+                Crédito #{String(aberto + 1).padStart(2, "0")}
               </span>
               <span style={{
                 fontSize: 10, fontWeight: 700, padding: "1px 7px", borderRadius: 20,
@@ -455,7 +475,7 @@ function RegistroCreditos({ cliente }: { cliente: ClienteItem }) {
                 { l: "Início", v: cr.dataInicio },
                 { l: "Cancelamento", v: cr.dataCancelamento },
                 { l: "Pagas", v: `${cr.pagas}x` },
-                { l: "Não Pagas", v: `${nNaoPagas}x` },
+                { l: "Não Pagas", v: `${cr.naoPagas}x` },
                 { l: "Total Parcelas", v: `${cr.parcelas}x` },
                 { l: "Duração", v: cr.duracao ? `${cr.duracao} dias` : "—" },
               ].map(({ l, v }) => (
@@ -470,7 +490,9 @@ function RegistroCreditos({ cliente }: { cliente: ClienteItem }) {
       })()}
 
       <div style={{ textAlign: "center", paddingTop: 6 }}>
-        <span style={{ fontSize: 10.5, color: "#9CA3AF" }}>{creditos.length} créditos registrados</span>
+        <span style={{ fontSize: 10.5, color: "#9CA3AF" }}>
+          {todos.length} crédito{todos.length !== 1 ? "s" : ""} registrado{todos.length !== 1 ? "s" : ""}
+        </span>
       </div>
     </div>
   );
@@ -524,27 +546,17 @@ export function ClienteDetalheRenovacao({ cliente, onClose, onAddAgendamento }: 
 }
 
 export function ClienteDetalhe({ cliente, onClose, onAddAgendamento }: { cliente: ClienteItem; onClose: () => void; onAddAgendamento: (a: Agendamento) => void }) {
-  const [aba, setAba] = useState<AbaAtiva>("detalhes");
+  const [aba, setAba] = useState<"detalhes" | "registro" | "fotos" | "agendar">("detalhes");
 
   const pendentes = cliente.totalParcelas - cliente.parcelasPagas;
-
-  const todosPagamentos: Pagamento[] = cliente.pagamentos ?? [];
-  const cutoff = cliente.creditoStartTimestamp ?? 0;
-  const pagamentosCredito = cutoff
-    ? todosPagamentos.filter(p => p.id >= cutoff)
-    : todosPagamentos;
-  const pagamentosOrdenados = [...pagamentosCredito].sort((a, b) => a.id - b.id);
-  const pagamentos: Pagamento[] = pagamentosOrdenados
-    .map((p, i) => ({ ...p, parcela: i + 1 }))
-    .reverse();
 
   return (
     <div className="cd-card" style={{ borderRadius: 0, boxShadow: "none", border: "none", maxWidth: "none" }}>
       <div className="cd-header">
         <div className="cd-status-bar">
-          <div className={`cd-status-item cd-status-item--btn ${aba === "pagamentos" ? "cd-status-item--ativo" : ""}`} onClick={() => setAba(aba === "pagamentos" ? "detalhes" : "pagamentos")}>
-            <StatusBadge status="pago" ativo={aba === "pagamentos"} />
-            <span className="cd-status-label">pagamentos</span>
+          <div className={`cd-status-item cd-status-item--btn ${aba === "registro" ? "cd-status-item--ativo" : ""}`} onClick={() => setAba(aba === "registro" ? "detalhes" : "registro")}>
+            <StatusBadge status="pago" ativo={aba === "registro"} />
+            <span className="cd-status-label">registro</span>
           </div>
           <div className={`cd-status-item cd-status-item--btn ${aba === "fotos" ? "cd-status-item--ativo" : ""}`} onClick={() => setAba(aba === "fotos" ? "detalhes" : "fotos")}>
             <StatusBadge status="pago" ativo={aba === "fotos"} />
@@ -559,18 +571,18 @@ export function ClienteDetalhe({ cliente, onClose, onAddAgendamento }: { cliente
       {aba === "detalhes" && (
         <div className="cd-body">
           <InfoRow label="Nº De Registro" value={`#${cliente.id}`} />
-          <InfoRow label="Data Do Crédito" value="30/03/2026" highlight />
-          <InfoRow label="CPF" value="—" />
-          <InfoRow label="Valor" value={`R$ ${cliente.saldo.toFixed(2)}`} highlight />
+          <InfoRow label="Data Do Crédito" value={cliente.creditoStartTimestamp ? fmtTs(cliente.creditoStartTimestamp) : "—"} highlight />
+          <InfoRow label="CPF" value={cliente.cpf ?? "—"} />
+          <InfoRow label="Valor" value={`R$ ${(cliente.parcela * cliente.totalParcelas).toFixed(2)}`} highlight />
           <InfoRow label="Parcelas Pendentes" value={`${pendentes} de ${cliente.totalParcelas}`} />
-          <InfoRow label="Atrasadas" value="0" />
+          <InfoRow label="Juros" value={`${cliente.taxaJuros ?? 0}%`} />
           <InfoRow label="Visitas" value={String(cliente.parcelasPagas)} />
           <InfoRow label="Telefone" value={cliente.telefone} isPhone />
-          <InfoRow label="Frequência" value="DIÁRIO" highlight />
+          <InfoRow label="Frequência" value={(cliente.frequencia ?? "Diário").toUpperCase()} highlight />
           <InfoRow label="Endereço" value={cliente.endereco} isAddress />
         </div>
       )}
-      {aba === "pagamentos" && <ListaPagamentos pagamentos={pagamentos} />}
+      {aba === "registro" && <RegistroCreditos cliente={cliente} />}
       {aba === "fotos" && <GaleriaFotos />}
       {aba === "agendar" && <AgendarView onAddAgendamento={onAddAgendamento} nomeCliente={cliente.nome} />}
     </div>

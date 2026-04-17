@@ -6,7 +6,7 @@ import { CadastroCliente } from "./CadastroCliente";
 import { LancamentoFinanceiro } from "./LancamentoFinanceiro";
 import { RelatorioFinanceiro } from "./RelatorioFinanceiro";
 import { EmprestimosDoDia, Emprestimo, emprestimentosIniciais } from "./EmprestimosDoDia";
-import { ClienteDetalhe, ClienteDetalheRenovacao, ClienteItem, Agendamento, Pagamento, MetodoPagamento } from "./ClienteDetalhe";
+import { ClienteDetalhe, ClienteDetalheRenovacao, ClienteItem, Agendamento, Pagamento, MetodoPagamento, CreditoRecord } from "./ClienteDetalhe";
 
 const clientesData: { id: number; nome: string; parcela: number; saldo: number; status: string; endereco: string; parcelasPagas: number; totalParcelas: number; telefone: string }[] = [];
 
@@ -1518,6 +1518,13 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
   });
   const addAgendamento = (a: Agendamento) => setAgendamentos(prev => [...prev, a]);
   const [clienteParaRenovar, setClienteParaRenovar] = useState<ClienteItem | null>(null);
+  const [historicoCreditos, setHistoricoCreditos] = useState<Record<number, CreditoRecord[]>>(() => {
+    const db = loadDB();
+    return (db?.historicoCreditos as Record<number, CreditoRecord[]>) ?? {};
+  });
+  const enrichCliente = (c: ClienteItem): ClienteItem => ({ ...c, historicoCreditos: historicoCreditos[c.id] ?? [] });
+  const clientesEnriquecidos = clientes.map(enrichCliente);
+  const clientesOrdenadosEnriquecidos = clientesOrdenados.map(enrichCliente);
   const [despesas, setDespesas] = useState<LancamentoItem[]>(() => {
     const db = loadDB();
     return (db?.despesas as LancamentoItem[])?.length ? (db!.despesas as LancamentoItem[]) : despesasIniciais;
@@ -1552,10 +1559,11 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
       despesas,
       rendimentos,
       clientes,
+      historicoCreditos,
     });
   }, [cobrados, ausentes, cobradosValores, registroPagamentos, historicoPagamentos, quitadosClientes,
       ordemClientesIds, cobradosExtras, emprestimentos, novosClientesIds, renovacoesIds,
-      clientesAdicionaisHoje, novosClientesOutras, agendamentos, despesas, rendimentos, clientes]);
+      clientesAdicionaisHoje, novosClientesOutras, agendamentos, despesas, rendimentos, clientes, historicoCreditos]);
 
   const handleCaixaFechado = () => {
     const emprestimentosComoClientes = emprestimentos
@@ -1577,6 +1585,8 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
         bairro: e.bairro,
         cidade: e.cidade,
         uf: e.uf,
+        taxaJuros: e.taxaJuros,
+        creditoStartTimestamp: Date.now(),
       }));
     const clientesAdicionaisComoClientes = clientesAdicionaisHoje
       .filter(c => !clientes.some(e => e.id === c.id) && !emprestimentosComoClientes.some(e => e.id === c.id));
@@ -1664,8 +1674,37 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
           const novoTotal = emp.quantidadeParcelas;
           const novoSaldo = novaParcela * novoTotal;
           const renovacaoTs = Date.now();
+
+          // Finaliza crédito antigo
+          const pagsCiclo = (historicoPagamentos[idOriginal] ?? []).filter(p =>
+            !clienteParaRenovar!.creditoStartTimestamp || p.id >= clienteParaRenovar!.creditoStartTimestamp!
+          );
+          const pagasAntes = pagsCiclo.filter(p => p.metodo !== "Sem pagamento").length;
+          const naoPagasAntes = pagsCiclo.filter(p => p.metodo === "Sem pagamento").length;
+          const fmtD = (ts: number) => { const d = new Date(ts); return `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${d.getFullYear()}`; };
+          const duracaoAntes = clienteParaRenovar!.creditoStartTimestamp
+            ? Math.round((renovacaoTs - clienteParaRenovar!.creditoStartTimestamp!) / (1000 * 60 * 60 * 24))
+            : 0;
+          const creditoFinalizado: CreditoRecord = {
+            dataInicio: clienteParaRenovar!.creditoStartTimestamp ? fmtD(clienteParaRenovar!.creditoStartTimestamp!) : fmtD(renovacaoTs),
+            dataCancelamento: fmtD(renovacaoTs),
+            valor: clienteParaRenovar!.parcela * clienteParaRenovar!.totalParcelas,
+            parcelas: clienteParaRenovar!.totalParcelas,
+            pagas: pagasAntes,
+            naoPagas: naoPagasAntes,
+            juros: clienteParaRenovar!.taxaJuros ?? 0,
+            duracao: duracaoAntes,
+            status: "Quitado",
+          };
+          setHistoricoCreditos(prev => ({
+            ...prev,
+            [idOriginal]: [...(prev[idOriginal] ?? []), creditoFinalizado],
+          }));
+          // Limpa histórico de pagamentos do ciclo antigo
+          setHistoricoPagamentos(prev => ({ ...prev, [idOriginal]: [] }));
+
           setClientes(prev => prev.map(c => c.id === idOriginal
-            ? { ...c, parcela: novaParcela, totalParcelas: novoTotal, parcelasPagas: 0, saldo: novoSaldo, creditoStartTimestamp: renovacaoTs, frequencia: emp.frequencia ?? c.frequencia }
+            ? { ...c, parcela: novaParcela, totalParcelas: novoTotal, parcelasPagas: 0, saldo: novoSaldo, creditoStartTimestamp: renovacaoTs, frequencia: emp.frequencia ?? c.frequencia, taxaJuros: emp.taxaJuros }
             : c
           ));
           setQuitadosClientes(prev => prev.filter(q => q.id !== idOriginal));
@@ -1897,7 +1936,7 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
 
       {/* CONTEÚDO */}
       {verAusentes
-        ? <ClientesAusentes ausentes={ausentes} onReativar={(id) => setAusentes(prev => prev.filter(x => x !== id))} onAddAgendamento={addAgendamento} onSelectCliente={setClienteSelecionado} clientesBase={clientes} pagamentosRegistro={historicoPagamentos} />
+        ? <ClientesAusentes ausentes={ausentes} onReativar={(id) => setAusentes(prev => prev.filter(x => x !== id))} onAddAgendamento={addAgendamento} onSelectCliente={setClienteSelecionado} clientesBase={clientesEnriquecidos} pagamentosRegistro={historicoPagamentos} />
         : verOutrasDatas
         ? <EmprestimosOutrasDatas onAddAgendamento={addAgendamento} onSelectCliente={setClienteSelecionado} novosClientes={novosClientesOutras} pagamentosRegistro={historicoPagamentos} />
         : verSincronizar
@@ -1968,7 +2007,7 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
           />
         : verRenovacao
         ? <RenovacaoClientes onBack={() => setVerRenovacao(false)} onAddAgendamento={addAgendamento} onRenovar={setClienteParaRenovar} clientesQuitados={[]} todosClientes={[...clientesOrdenados, ...clientesAdicionaisHoje].filter((c, i, arr) => arr.findIndex(x => x.id === c.id) === i && c.saldo === 0)} />
-        : activeNav === 0 ? <TelaLista busca={busca} setBusca={setBusca} vrf={vrf} setVrf={setVrf} onSelectCliente={setClienteSelecionado} onAddAgendamento={addAgendamento} ausentes={ausentes} onAusentar={setClienteParaAusentar} cobrados={cobrados} onRemoverCobrado={(id) => { setCobrados(prev => prev.filter(x => x !== id)); setCobradosExtras(prev => prev.filter(x => x.id !== id)); setCobradosValores(prev => prev.filter(x => x.id !== id)); setRegistroPagamentos(prev => { const next = { ...prev }; delete next[id]; return next; }); setHistoricoPagamentos(prev => { const next = { ...prev }; if (next[id]?.length) next[id] = next[id].slice(1); return next; }); setQuitadosClientes(prev => prev.filter(x => x.id !== id)); setRenovacoesIds(prev => { const s = new Set(prev); s.delete(id); return s; }); setClientes(prev => prev.map(c => { if (c.id !== id) return c; const valorPago = cobradosValores.find(x => x.id === id)?.valor ?? c.parcela; const parcelasReverter = Math.round(valorPago / (c.parcela || 1)); const pp = Math.max(0, c.parcelasPagas - parcelasReverter); const saldoRestaurado = c.parcela * (c.totalParcelas - pp); return { ...c, parcelasPagas: pp, saldo: saldoRestaurado }; })); }} clientesAdicionais={clientesAdicionaisHoje} cobradosExtras={cobradosExtras} cobradosValores={cobradosValores} pagamentosRegistro={historicoPagamentos} clientesBase={clientesOrdenados} />
+        : activeNav === 0 ? <TelaLista busca={busca} setBusca={setBusca} vrf={vrf} setVrf={setVrf} onSelectCliente={setClienteSelecionado} onAddAgendamento={addAgendamento} ausentes={ausentes} onAusentar={setClienteParaAusentar} cobrados={cobrados} onRemoverCobrado={(id) => { setCobrados(prev => prev.filter(x => x !== id)); setCobradosExtras(prev => prev.filter(x => x.id !== id)); setCobradosValores(prev => prev.filter(x => x.id !== id)); setRegistroPagamentos(prev => { const next = { ...prev }; delete next[id]; return next; }); setHistoricoPagamentos(prev => { const next = { ...prev }; if (next[id]?.length) next[id] = next[id].slice(1); return next; }); setQuitadosClientes(prev => prev.filter(x => x.id !== id)); setRenovacoesIds(prev => { const s = new Set(prev); s.delete(id); return s; }); setClientes(prev => prev.map(c => { if (c.id !== id) return c; const valorPago = cobradosValores.find(x => x.id === id)?.valor ?? c.parcela; const parcelasReverter = Math.round(valorPago / (c.parcela || 1)); const pp = Math.max(0, c.parcelasPagas - parcelasReverter); const saldoRestaurado = c.parcela * (c.totalParcelas - pp); return { ...c, parcelasPagas: pp, saldo: saldoRestaurado }; })); }} clientesAdicionais={clientesAdicionaisHoje.map(enrichCliente)} cobradosExtras={cobradosExtras} cobradosValores={cobradosValores} pagamentosRegistro={historicoPagamentos} clientesBase={clientesOrdenadosEnriquecidos} />
         : activeNav === 1 ? <CadastroCliente onBack={() => setActiveNav(0)} onSalvar={(emp) => {
             setEmprestimentos(prev => [emp, ...prev]);
             setNovosClientesIds(prev => new Set([...prev, emp.id]));

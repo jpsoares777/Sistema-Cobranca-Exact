@@ -20,6 +20,7 @@ export interface AppDB {
   rendimentos: unknown[];
   clientes: unknown[];
   caixaInicial: number;
+  historicoCreditos: Record<number, unknown[]>;
 }
 
 export function loadDB(): AppDB | null {
