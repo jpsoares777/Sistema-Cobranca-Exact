@@ -398,7 +398,7 @@ function TelaLista({ busca, setBusca, vrf, setVrf, onSelectCliente, onAddAgendam
                     transition: "max-height 0.25s ease",
                   }}
                 >
-                  <ClienteDetalhe cliente={{ ...cliente, pagamentos: pagamentosRegistro[cliente.id] ?? [] }} onClose={() => setClienteDetalhe(null)} onAddAgendamento={onAddAgendamento} />
+                  <ClienteDetalhe key={`${cliente.id}-${expandido}`} cliente={{ ...cliente, pagamentos: pagamentosRegistro[cliente.id] ?? [] }} onClose={() => setClienteDetalhe(null)} onAddAgendamento={onAddAgendamento} />
                 </div>
               </div>
             </Fragment>
