@@ -41,10 +41,11 @@ function computeStatus(
 
   if (creditoStartTimestamp) {
     const daysSinceStart = (Date.now() - creditoStartTimestamp) / (1000 * 60 * 60 * 24);
+    const freq = (frequencia ?? "").toLowerCase();
     let periodDays = 1;
-    if (frequencia === "semanal") periodDays = 7;
-    else if (frequencia === "quinzenal") periodDays = 15;
-    else if (frequencia === "mensal") periodDays = 30;
+    if (freq.startsWith("seman")) periodDays = 7;
+    else if (freq.startsWith("quinzen")) periodDays = 15;
+    else if (freq.startsWith("mensal")) periodDays = 30;
     const esperados = Math.min(Math.floor(daysSinceStart / periodDays), totalParcelas);
     if (esperados === 0) return "novo";
     if (parcelasPagas >= esperados) return "emdia";
