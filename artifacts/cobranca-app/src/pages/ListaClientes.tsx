@@ -1950,16 +1950,37 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
                 const emp = emprestimentos.find(e => e.id === id);
                 const clienteAlvoId = emp?.clienteId ?? id;
                 setEmprestimentos(prev => prev.filter(e => e.id !== id));
-                setNovosClientesIds(prev => { const s = new Set(prev); s.delete(clienteAlvoId); return s; });
-                setRenovacoesIds(prev => { const s = new Set(prev); s.delete(clienteAlvoId); return s; });
-                setClientesAdicionaisHoje(prev => prev.filter(c => c.id !== clienteAlvoId));
-                setNovosClientesOutras(prev => prev.filter(c => c.id !== clienteAlvoId));
-                setClientes(prev => prev.filter(c => c.id !== clienteAlvoId));
-                setOrdemClientesIds(prev => prev.filter(oid => oid !== clienteAlvoId));
-                setCobrados(prev => prev.filter(cid => cid !== clienteAlvoId));
-                setCobradosValores(prev => prev.filter(x => x.id !== clienteAlvoId));
-                setCobradosExtras(prev => prev.filter(c => c.id !== clienteAlvoId));
-                setHistoricoPagamentos(prev => { const next = { ...prev }; delete next[clienteAlvoId]; return next; });
+
+                if (emp?.renovacao && emp.clienteId) {
+                  // Renovação: reverte o cliente para estado quitado (saldo=0)
+                  // e remove o último crédito registrado no histórico
+                  setRenovacoesIds(prev => { const s = new Set(prev); s.delete(clienteAlvoId); return s; });
+                  setHistoricoCreditos(prev => {
+                    const lista = prev[clienteAlvoId] ?? [];
+                    return { ...prev, [clienteAlvoId]: lista.slice(0, -1) };
+                  });
+                  setClientes(prev => prev.map(c => {
+                    if (c.id !== clienteAlvoId) return c;
+                    const ultimoCredito = (historicoCreditos[clienteAlvoId] ?? []).at(-1);
+                    const totalOriginal = ultimoCredito?.parcelas ?? c.totalParcelas;
+                    return { ...c, parcelasPagas: totalOriginal, saldo: 0, creditoStartTimestamp: undefined };
+                  }));
+                  setCobrados(prev => prev.filter(cid => cid !== clienteAlvoId));
+                  setCobradosValores(prev => prev.filter(x => x.id !== clienteAlvoId));
+                  setCobradosExtras(prev => prev.filter(c => c.id !== clienteAlvoId));
+                  setQuitadosClientes(prev => prev.filter(q => q.id !== clienteAlvoId));
+                } else {
+                  // Novo cliente: remove completamente do sistema
+                  setNovosClientesIds(prev => { const s = new Set(prev); s.delete(clienteAlvoId); return s; });
+                  setClientesAdicionaisHoje(prev => prev.filter(c => c.id !== clienteAlvoId));
+                  setNovosClientesOutras(prev => prev.filter(c => c.id !== clienteAlvoId));
+                  setClientes(prev => prev.filter(c => c.id !== clienteAlvoId));
+                  setOrdemClientesIds(prev => prev.filter(oid => oid !== clienteAlvoId));
+                  setCobrados(prev => prev.filter(cid => cid !== clienteAlvoId));
+                  setCobradosValores(prev => prev.filter(x => x.id !== clienteAlvoId));
+                  setCobradosExtras(prev => prev.filter(c => c.id !== clienteAlvoId));
+                  setHistoricoPagamentos(prev => { const next = { ...prev }; delete next[clienteAlvoId]; return next; });
+                }
               }
             }}
             onBack={() => setVerEmprestimentos(false)}
