@@ -32,44 +32,31 @@ const P = {
 };
 
 function computeStatus(
-  parcelasPagas: number,
-  totalParcelas: number,
-  creditoStartTimestamp?: number,
-  frequencia?: string,
+  _parcelasPagas: number,
+  _totalParcelas: number,
+  _creditoStartTimestamp?: number,
+  _frequencia?: string,
   pagamentos?: Array<{ metodo: string }>
 ): string {
-  // Cinza: crédito novo sem nenhum pagamento
-  if (!parcelasPagas || parcelasPagas === 0) return "novo";
+  const hist = pagamentos ?? [];
 
-  // Contar quantos "Sem pagamento" existem no histórico completo
-  const semPagamentoTotal = (pagamentos ?? []).filter(p => p.metodo === "Sem pagamento").length;
+  // Contagem direta do histórico de pagamentos
+  const semCount = hist.filter(p => p.metodo === "Sem pagamento").length;
+  const pagoCount = hist.filter(p => p.metodo !== "Sem pagamento").length;
 
-  // Calcular parcelas atrasadas com base no tempo decorrido
-  let atrasadas = 0;
-  if (creditoStartTimestamp) {
-    const daysSinceStart = (Date.now() - creditoStartTimestamp) / (1000 * 60 * 60 * 24);
-    const freq = (frequencia ?? "").toLowerCase();
-    let periodDays = 1;
-    if (freq.startsWith("seman")) periodDays = 7;
-    else if (freq.startsWith("quinzen")) periodDays = 15;
-    else if (freq.startsWith("mensal")) periodDays = 30;
-    const esperados = Math.min(Math.floor(daysSinceStart / periodDays), totalParcelas);
-    atrasadas = Math.max(0, esperados - parcelasPagas);
-  } else {
-    // fallback para clientes sem data de início: usa "Sem pagamento" do histórico
-    atrasadas = semPagamentoTotal;
-  }
+  // Vermelho: 10 ou mais "Sem pagamento" no histórico
+  if (semCount >= 10) return "ruim";
 
-  // Vermelho: 10 ou mais dias de atraso
-  if (atrasadas >= 10) return "ruim";
+  // Laranja: 5 ou mais "Sem pagamento" no histórico
+  if (semCount >= 5) return "atencao";
 
-  // Laranja: 5 ou mais dias de atraso
-  if (atrasadas >= 5) return "atencao";
+  // Cinza: sem histórico algum (crédito novo)
+  if (pagoCount === 0 && semCount === 0) return "novo";
 
-  // Verde: 6+ parcelas pagas EM DIA, sem nenhum "Sem pagamento" em todo o crédito
-  if (parcelasPagas >= 6 && semPagamentoTotal === 0 && atrasadas === 0) return "emdia";
+  // Verde: 6 ou mais pagamentos reais E nenhum "Sem pagamento" em todo o crédito
+  if (pagoCount >= 6 && semCount === 0) return "emdia";
 
-  // Cinza: ainda construindo histórico (poucos pagamentos ou já teve algum atraso)
+  // Cinza: ainda construindo histórico (menos de 6 pagamentos ou tem algum atraso)
   return "novo";
 }
 
