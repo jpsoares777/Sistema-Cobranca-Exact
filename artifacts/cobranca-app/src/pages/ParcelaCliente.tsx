@@ -20,10 +20,11 @@ type Cliente = {
   pagamentos?: { id: number; data: string; parcela: number; valor: number; metodo: string }[];
 };
 
-function calcAtrasadas(pagamentos?: { metodo: string; data: string }[]): number {
+function calcAtrasadas(pagamentos?: { id: number; metodo: string; data: string }[], creditoStartTimestamp?: number): number {
   if (!pagamentos?.length) return 0;
   const hoje = new Date().toISOString().slice(0, 10);
-  return pagamentos.filter(p => p.metodo === "Sem pagamento" && p.data < hoje).length;
+  const cutoff = creditoStartTimestamp ?? 0;
+  return pagamentos.filter(p => p.id >= cutoff && p.metodo === "Sem pagamento" && p.data < hoje).length;
 }
 
 function MiniLabel({ children }: { children: React.ReactNode }) {
@@ -68,7 +69,7 @@ export function ParcelaCliente({ cliente, onBack, onSaved }: { cliente: Cliente;
 
   const totalCredito = cliente.parcela * cliente.totalParcelas;
   const penalidade = 0;
-  const atrasadas = calcAtrasadas(cliente.pagamentos);
+  const atrasadas = calcAtrasadas(cliente.pagamentos, cliente.creditoStartTimestamp);
   const novoSaldo =
     paymentType === "parcela" || paymentType === "abono" ? Math.max(0, saldoAtual - valorParcela)
     : saldoAtual;
