@@ -35,10 +35,17 @@ function computeStatus(
   parcelasPagas: number,
   totalParcelas: number,
   creditoStartTimestamp?: number,
-  frequencia?: string
+  frequencia?: string,
+  pagamentos?: Array<{ metodo: string }>
 ): string {
+  // Cinza: crédito novo sem nenhum pagamento
   if (!parcelasPagas || parcelasPagas === 0) return "novo";
 
+  // Contar quantos "Sem pagamento" existem no histórico completo
+  const semPagamentoTotal = (pagamentos ?? []).filter(p => p.metodo === "Sem pagamento").length;
+
+  // Calcular parcelas atrasadas com base no tempo decorrido
+  let atrasadas = 0;
   if (creditoStartTimestamp) {
     const daysSinceStart = (Date.now() - creditoStartTimestamp) / (1000 * 60 * 60 * 24);
     const freq = (frequencia ?? "").toLowerCase();
@@ -47,24 +54,23 @@ function computeStatus(
     else if (freq.startsWith("quinzen")) periodDays = 15;
     else if (freq.startsWith("mensal")) periodDays = 30;
     const esperados = Math.min(Math.floor(daysSinceStart / periodDays), totalParcelas);
-    // Se ainda não passou tempo suficiente para esperar parcelas, usa a proporção paga
-    if (esperados === 0) {
-      const ratio = parcelasPagas / Math.max(totalParcelas, 1);
-      if (ratio >= 0.6) return "emdia";
-      if (ratio >= 0.25) return "atencao";
-      return "emdia"; // cliente novo que já está pagando → verde
-    }
-    const atrasadas = esperados - parcelasPagas;
-    if (atrasadas <= 0) return "emdia";
-    if (atrasadas <= 5) return "atencao";
-    return "ruim";
+    atrasadas = Math.max(0, esperados - parcelasPagas);
+  } else {
+    // fallback para clientes sem data de início: usa "Sem pagamento" do histórico
+    atrasadas = semPagamentoTotal;
   }
 
-  // fallback para clientes sem creditoStartTimestamp (dados antigos)
-  const ratio = parcelasPagas / Math.max(totalParcelas, 1);
-  if (ratio >= 0.6) return "emdia";
-  if (ratio >= 0.25) return "atencao";
-  return "ruim";
+  // Vermelho: 10 ou mais dias de atraso
+  if (atrasadas >= 10) return "ruim";
+
+  // Laranja: 5 ou mais dias de atraso
+  if (atrasadas >= 5) return "atencao";
+
+  // Verde: 6+ parcelas pagas EM DIA, sem nenhum "Sem pagamento" em todo o crédito
+  if (parcelasPagas >= 6 && semPagamentoTotal === 0 && atrasadas === 0) return "emdia";
+
+  // Cinza: ainda construindo histórico (poucos pagamentos ou já teve algum atraso)
+  return "novo";
 }
 
 function statusColor(s: string) {
@@ -193,7 +199,7 @@ function TelaLista({ busca, setBusca, vrf, setVrf, onSelectCliente, onAddAgendam
           {vrfLista.map((c) => {
             const valorCobrado = cobradosValores.find(x => x.id === c.id)?.valor ?? c.parcela;
             const saldoApos = Math.max(0, c.saldo);
-            const sc = statusBorderColor(computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia));
+            const sc = statusBorderColor(computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia, pagamentosRegistro[c.id] ?? []));
             const clienteAtualizado = { ...c, saldo: saldoApos, pagamentos: pagamentosRegistro[c.id] ?? [] };
             const expandido = clienteDetalhe?.id === c.id;
 
@@ -212,7 +218,7 @@ function TelaLista({ busca, setBusca, vrf, setVrf, onSelectCliente, onAddAgendam
                       <img src="/bloqueio.png" alt="Quitado" style={{ width: 34, height: 34, objectFit: "contain" }} />
                     </div>
                   ) : (
-                    <PersonBadge status={computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia)} badge="plus" />
+                    <PersonBadge status={computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia, pagamentosRegistro[c.id] ?? [])} badge="plus" />
                   )}
                 </div>
                 {/* Info */}
@@ -237,10 +243,10 @@ function TelaLista({ busca, setBusca, vrf, setVrf, onSelectCliente, onAddAgendam
                 {/* Dot */}
                 <div style={{
                   width: 8, height: 8, borderRadius: "50%",
-                  backgroundColor: computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia) === "novo" ? "#FFFFFF" : sc,
+                  backgroundColor: computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia, pagamentosRegistro[c.id] ?? []) === "novo" ? "#FFFFFF" : sc,
                   flexShrink: 0,
-                  border: computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia) === "novo" ? "1.5px solid #9CA3AF" : "none",
-                  boxShadow: computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia) === "novo" ? "none" : `0 0 0 3px ${sc}25`,
+                  border: computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia, pagamentosRegistro[c.id] ?? []) === "novo" ? "1.5px solid #9CA3AF" : "none",
+                  boxShadow: computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia, pagamentosRegistro[c.id] ?? []) === "novo" ? "none" : `0 0 0 3px ${sc}25`,
                 }} />
               </>
             );
@@ -341,15 +347,15 @@ function TelaLista({ busca, setBusca, vrf, setVrf, onSelectCliente, onAddAgendam
       </div>
       <div style={{ flex: 1, overflowY: "auto", paddingBottom: 70, paddingTop: 6, paddingLeft: 10, paddingRight: 10 }}>
         {filtrados.map((cliente, index) => {
-          const sc = statusBorderColor(computeStatus(cliente.parcelasPagas ?? 0, cliente.totalParcelas ?? 1, cliente.creditoStartTimestamp, cliente.frequencia));
+          const sc = statusBorderColor(computeStatus(cliente.parcelasPagas ?? 0, cliente.totalParcelas ?? 1, cliente.creditoStartTimestamp, cliente.frequencia, pagamentosRegistro[cliente.id] ?? []));
           const expandido = clienteDetalhe?.id === cliente.id;
           const rowContent = (
             <>
               <div onClick={e => { e.stopPropagation(); setClienteDetalhe(expandido ? null : cliente); }} style={{ cursor: "pointer" }}>
-                <PersonBadge status={computeStatus(cliente.parcelasPagas ?? 0, cliente.totalParcelas ?? 1, cliente.creditoStartTimestamp, cliente.frequencia)} badge="plus" />
+                <PersonBadge status={computeStatus(cliente.parcelasPagas ?? 0, cliente.totalParcelas ?? 1, cliente.creditoStartTimestamp, cliente.frequencia, pagamentosRegistro[cliente.id] ?? [])} badge="plus" />
               </div>
               <div onClick={e => { e.stopPropagation(); onAusentar(cliente); }} style={{ cursor: "pointer" }}>
-                <PersonBadge status={computeStatus(cliente.parcelasPagas ?? 0, cliente.totalParcelas ?? 1, cliente.creditoStartTimestamp, cliente.frequencia)} badge="alert" />
+                <PersonBadge status={computeStatus(cliente.parcelasPagas ?? 0, cliente.totalParcelas ?? 1, cliente.creditoStartTimestamp, cliente.frequencia, pagamentosRegistro[cliente.id] ?? [])} badge="alert" />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ marginBottom: 3 }}>
@@ -368,10 +374,10 @@ function TelaLista({ busca, setBusca, vrf, setVrf, onSelectCliente, onAddAgendam
               </div>
               <div style={{
                 width: 8, height: 8, borderRadius: "50%",
-                backgroundColor: computeStatus(cliente.parcelasPagas ?? 0, cliente.totalParcelas ?? 1, cliente.creditoStartTimestamp, cliente.frequencia) === "novo" ? "#FFFFFF" : statusBorderColor(computeStatus(cliente.parcelasPagas ?? 0, cliente.totalParcelas ?? 1, cliente.creditoStartTimestamp, cliente.frequencia)),
+                backgroundColor: computeStatus(cliente.parcelasPagas ?? 0, cliente.totalParcelas ?? 1, cliente.creditoStartTimestamp, cliente.frequencia, pagamentosRegistro[cliente.id] ?? []) === "novo" ? "#FFFFFF" : statusBorderColor(computeStatus(cliente.parcelasPagas ?? 0, cliente.totalParcelas ?? 1, cliente.creditoStartTimestamp, cliente.frequencia, pagamentosRegistro[cliente.id] ?? [])),
                 flexShrink: 0,
-                border: computeStatus(cliente.parcelasPagas ?? 0, cliente.totalParcelas ?? 1, cliente.creditoStartTimestamp, cliente.frequencia) === "novo" ? "1.5px solid #9CA3AF" : "none",
-                boxShadow: computeStatus(cliente.parcelasPagas ?? 0, cliente.totalParcelas ?? 1, cliente.creditoStartTimestamp, cliente.frequencia) === "novo" ? "none" : `0 0 0 3px ${sc}25`,
+                border: computeStatus(cliente.parcelasPagas ?? 0, cliente.totalParcelas ?? 1, cliente.creditoStartTimestamp, cliente.frequencia, pagamentosRegistro[cliente.id] ?? []) === "novo" ? "1.5px solid #9CA3AF" : "none",
+                boxShadow: computeStatus(cliente.parcelasPagas ?? 0, cliente.totalParcelas ?? 1, cliente.creditoStartTimestamp, cliente.frequencia, pagamentosRegistro[cliente.id] ?? []) === "novo" ? "none" : `0 0 0 3px ${sc}25`,
               }} />
             </>
           );
@@ -1155,7 +1161,7 @@ const outrasDatasData = clientesData.map((c, i) => ({
   saldoOutra: parseFloat((c.saldo * 1.1).toFixed(2)),
 }));
 
-function EmprestimosOutrasDatas({ onAddAgendamento, onSelectCliente, novosClientes = [] }: { onAddAgendamento: (a: Agendamento) => void; onSelectCliente: (c: ClienteItem) => void; novosClientes?: ClienteItem[] }) {
+function EmprestimosOutrasDatas({ onAddAgendamento, onSelectCliente, novosClientes = [], pagamentosRegistro = {} }: { onAddAgendamento: (a: Agendamento) => void; onSelectCliente: (c: ClienteItem) => void; novosClientes?: ClienteItem[]; pagamentosRegistro?: Record<number, Pagamento[]> }) {
   const [busca, setBusca] = useState("");
   const [clienteDetalhe, setClienteDetalhe] = useState<ClienteItem | null>(null);
   const todosOutras = [
@@ -1195,16 +1201,16 @@ function EmprestimosOutrasDatas({ onAddAgendamento, onSelectCliente, novosClient
       {/* Lista — idêntica ao TelaLista modo normal */}
       <div style={{ flex: 1, overflowY: "auto", paddingBottom: 70, paddingTop: 6, paddingLeft: 10, paddingRight: 10 }}>
         {filtrados.map((c, idx) => {
-          const sc = statusBorderColor(computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia));
+          const sc = statusBorderColor(computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia, pagamentosRegistro[c.id] ?? []));
           const expandido = clienteDetalhe?.id === c.id;
           const clienteView: ClienteItem = { ...c, parcela: c.parcelaOutra, saldo: c.saldoOutra };
 
           const rowContent = (
             <>
               <div onClick={e => { e.stopPropagation(); setClienteDetalhe(expandido ? null : clienteView); }} style={{ cursor: "pointer" }}>
-                <PersonBadge status={computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia)} badge="plus" />
+                <PersonBadge status={computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia, pagamentosRegistro[c.id] ?? [])} badge="plus" />
               </div>
-              <PersonBadge status={computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia)} badge="alert" />
+              <PersonBadge status={computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia, pagamentosRegistro[c.id] ?? [])} badge="alert" />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ marginBottom: 3 }}>
                   <span style={{ fontSize: 12.5, fontWeight: 700, color: P.textPrimary, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", letterSpacing: 0.1, lineHeight: 1.3, display: "block" }}>
@@ -1222,10 +1228,10 @@ function EmprestimosOutrasDatas({ onAddAgendamento, onSelectCliente, novosClient
               </div>
               <div style={{
                 width: 8, height: 8, borderRadius: "50%",
-                backgroundColor: computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia) === "novo" ? "#FFFFFF" : statusBorderColor(computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia)),
+                backgroundColor: computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia, pagamentosRegistro[c.id] ?? []) === "novo" ? "#FFFFFF" : statusBorderColor(computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia, pagamentosRegistro[c.id] ?? [])),
                 flexShrink: 0,
-                border: computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia) === "novo" ? "1.5px solid #9CA3AF" : "none",
-                boxShadow: computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia) === "novo" ? "none" : `0 0 0 3px ${sc}25`,
+                border: computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia, pagamentosRegistro[c.id] ?? []) === "novo" ? "1.5px solid #9CA3AF" : "none",
+                boxShadow: computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia, pagamentosRegistro[c.id] ?? []) === "novo" ? "none" : `0 0 0 3px ${sc}25`,
               }} />
             </>
           );
@@ -1281,7 +1287,7 @@ const flatItems: FlatItem[] = [
   { id: 12, label: "Sair",                        color: "#C62828", icon: <img src="/icons/icone-sair.png" width={24} height={24} style={{ objectFit: "contain" }} />, isSair: true },
 ];
 
-function ClientesAusentes({ ausentes, onReativar, onAddAgendamento, onSelectCliente, clientesBase = clientesData }: { ausentes: number[]; onReativar: (id: number) => void; onAddAgendamento: (a: Agendamento) => void; onSelectCliente: (c: ClienteItem) => void; clientesBase?: typeof clientesData }) {
+function ClientesAusentes({ ausentes, onReativar, onAddAgendamento, onSelectCliente, clientesBase = clientesData, pagamentosRegistro = {} }: { ausentes: number[]; onReativar: (id: number) => void; onAddAgendamento: (a: Agendamento) => void; onSelectCliente: (c: ClienteItem) => void; clientesBase?: typeof clientesData; pagamentosRegistro?: Record<number, Pagamento[]> }) {
   const [busca, setBusca] = useState("");
   const [clienteDetalhe, setClienteDetalhe] = useState<ClienteItem | null>(null);
   const lista = clientesBase.filter(c => ausentes.includes(c.id) && c.nome.toLowerCase().includes(busca.toLowerCase()));
@@ -1321,7 +1327,7 @@ function ClientesAusentes({ ausentes, onReativar, onAddAgendamento, onSelectClie
           </div>
         )}
         {lista.map((c, idx) => {
-          const sc = statusBorderColor(computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia));
+          const sc = statusBorderColor(computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia, pagamentosRegistro[c.id] ?? []));
           const isOpen = clienteDetalhe?.id === c.id;
           return (
             <div key={c.id} style={{
@@ -1337,7 +1343,7 @@ function ClientesAusentes({ ausentes, onReativar, onAddAgendamento, onSelectClie
                 onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
               >
                 <div onClick={e => { e.stopPropagation(); setClienteDetalhe(isOpen ? null : c); }} style={{ cursor: "pointer" }} title="Ver detalhes">
-                  <PersonBadge status={computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia)} badge="plus" />
+                  <PersonBadge status={computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia, pagamentosRegistro[c.id] ?? [])} badge="plus" />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ marginBottom: 3 }}>
@@ -1356,10 +1362,10 @@ function ClientesAusentes({ ausentes, onReativar, onAddAgendamento, onSelectClie
                 </div>
                 <div style={{
                   width: 8, height: 8, borderRadius: "50%",
-                  backgroundColor: computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia) === "novo" ? "#FFFFFF" : statusBorderColor(computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia)),
+                  backgroundColor: computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia, pagamentosRegistro[c.id] ?? []) === "novo" ? "#FFFFFF" : statusBorderColor(computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia, pagamentosRegistro[c.id] ?? [])),
                   flexShrink: 0,
-                  border: computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia) === "novo" ? "1.5px solid #9CA3AF" : "none",
-                  boxShadow: computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia) === "novo" ? "none" : `0 0 0 3px ${sc}25`,
+                  border: computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia, pagamentosRegistro[c.id] ?? []) === "novo" ? "1.5px solid #9CA3AF" : "none",
+                  boxShadow: computeStatus(c.parcelasPagas ?? 0, c.totalParcelas ?? 1, c.creditoStartTimestamp, c.frequencia, pagamentosRegistro[c.id] ?? []) === "novo" ? "none" : `0 0 0 3px ${sc}25`,
                 }} />
               </div>
               {/* Painel de detalhe (mesmo que a lista principal) */}
@@ -1901,9 +1907,9 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
 
       {/* CONTEÚDO */}
       {verAusentes
-        ? <ClientesAusentes ausentes={ausentes} onReativar={(id) => setAusentes(prev => prev.filter(x => x !== id))} onAddAgendamento={addAgendamento} onSelectCliente={setClienteSelecionado} clientesBase={clientes} />
+        ? <ClientesAusentes ausentes={ausentes} onReativar={(id) => setAusentes(prev => prev.filter(x => x !== id))} onAddAgendamento={addAgendamento} onSelectCliente={setClienteSelecionado} clientesBase={clientes} pagamentosRegistro={historicoPagamentos} />
         : verOutrasDatas
-        ? <EmprestimosOutrasDatas onAddAgendamento={addAgendamento} onSelectCliente={setClienteSelecionado} novosClientes={novosClientesOutras} />
+        ? <EmprestimosOutrasDatas onAddAgendamento={addAgendamento} onSelectCliente={setClienteSelecionado} novosClientes={novosClientesOutras} pagamentosRegistro={historicoPagamentos} />
         : verSincronizar
         ? <SincronizarClientes onBack={() => setVerSincronizar(false)} salvo={salvoSinc} ordemInicial={ordemClientesIds} onOrdemChange={setOrdemClientesIds} />
         : verEmprestimentos
