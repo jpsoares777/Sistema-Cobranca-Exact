@@ -585,7 +585,7 @@ export function ClienteDetalhe({ cliente, onClose, onAddAgendamento }: { cliente
           <InfoRow label="Nº De Registro" value={`#${cliente.id}`} />
           <InfoRow label="Data Do Crédito" value="30/03/2026" highlight />
           <InfoRow label="CPF" value="—" />
-          <InfoRow label="Valor" value={`R$ ${cliente.saldo.toFixed(2)}`} highlight />
+          <InfoRow label="Valor" value={`R$ ${(cliente.parcela * cliente.totalParcelas).toFixed(2)}`} highlight />
           <InfoRow label="Parcelas Pendentes" value={`${pendentes} de ${cliente.totalParcelas}`} />
           <InfoRow label="Atrasadas" value={String(atrasadas)} />
           <InfoRow label="Visitas" value={String(visitas)} />
