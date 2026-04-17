@@ -1979,6 +1979,7 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
             ausentesCount={ausentes.length}
             novosCount={novosClientesIds.size}
             renovacoesCount={renovacoesIds.size}
+            renovacoesValor={emprestimentos.filter(e => (e as any).renovacao).reduce((s, e) => s + (e.valorEmprestado ?? 0), 0)}
             cobrancaDiaria={cobradosValores.reduce((s, x) => s + x.valor, 0)}
             cobrancaEsperada={clientes.filter(c => c.saldo > 0).reduce((s, c) => s + c.parcela, 0) + clientesAdicionaisHoje.filter(c => c.saldo > 0).reduce((s, c) => s + c.parcela, 0)}
             novosEmprestimos={emprestimentos.reduce((s, e) => s + (e.valorEmprestado ?? 0), 0)}

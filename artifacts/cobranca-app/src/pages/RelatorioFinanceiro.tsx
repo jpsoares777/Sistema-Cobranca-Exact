@@ -47,6 +47,7 @@ export function RelatorioFinanceiro({
   cobrancaDiaria = 0,
   cobrancaEsperada = 0,
   novosEmprestimos = 0,
+  renovacoesValor = 0,
   onSemPagamentos,
 }: {
   onBack: () => void;
@@ -65,13 +66,14 @@ export function RelatorioFinanceiro({
   cobrancaDiaria?: number;
   cobrancaEsperada?: number;
   novosEmprestimos?: number;
+  renovacoesValor?: number;
   onSemPagamentos?: () => void;
 }) {
   const [modalFechamento, setModalFechamento] = useState(false);
   const [caixaFechado, setCaixaFechado] = useState(false);
   const [modalSemPag, setModalSemPag] = useState(false);
   const [modalRelatorio, setModalRelatorio] = useState(false);
-  const [snap, setSnap] = useState<{ caixaInicial: number; cobrancaDiaria: number; novosEmprestimos: number; totalDespesas: number; totalRendimentos: number; novosCount: number; saldo: number } | null>(null);
+  const [snap, setSnap] = useState<{ caixaInicial: number; cobrancaDiaria: number; novosEmprestimos: number; totalDespesas: number; totalRendimentos: number; novosCount: number; saldo: number; renovacoesCount: number } | null>(null);
 
   const saldo = caixaInicial + cobrancaDiaria + totalRendimentos - novosEmprestimos - RETIRADA - totalDespesas;
   const todosCorados = clientesParaCobranca === 0 || cobradosCount >= clientesParaCobranca;
@@ -114,7 +116,7 @@ export function RelatorioFinanceiro({
   };
 
   const handleFecharCaixa = () => {
-    setSnap({ caixaInicial, cobrancaDiaria, novosEmprestimos, totalDespesas, totalRendimentos, novosCount, saldo });
+    setSnap({ caixaInicial, cobrancaDiaria, novosEmprestimos, totalDespesas, totalRendimentos, novosCount, saldo, renovacoesCount });
     onCaixaInicialChange?.(saldo);
     onCaixaFechado?.();
     setCaixaFechado(true);
@@ -321,7 +323,7 @@ export function RelatorioFinanceiro({
                     {[
                       { l: "Caixa Inicial", v: `R$ ${fmt(snap?.caixaInicial ?? caixaInicial)}` },
                       { l: "Novos Clientes", v: String(snap?.novosCount ?? novosCount) },
-                      { l: "Renovação de Clientes", v: "R$ 0,00" },
+                      { l: "Renovação de Clientes", v: String(snap?.renovacoesCount ?? renovacoesCount) },
                       { l: "Total de Empréstimos", v: `R$ ${fmt(snap?.novosEmprestimos ?? novosEmprestimos)}` },
                       { l: "Retiradas de Caixa", v: `R$ ${fmt(RETIRADA)}` },
                       { l: "Despesas", v: `R$ ${fmt(snap?.totalDespesas ?? totalDespesas)}` },
