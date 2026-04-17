@@ -560,6 +560,7 @@ export function ClienteDetalhe({ cliente, onClose, onAddAgendamento }: { cliente
     .map((p, i) => ({ ...p, parcela: i + 1 }))
     .reverse();
   const atrasadas = pagamentosCredito.filter(p => p.metodo === "Sem pagamento").length;
+  const visitas = pagamentosCredito.length;
 
   return (
     <div className="cd-card" style={{ borderRadius: 0, boxShadow: "none", border: "none", maxWidth: "none" }}>
@@ -587,7 +588,7 @@ export function ClienteDetalhe({ cliente, onClose, onAddAgendamento }: { cliente
           <InfoRow label="Valor" value={`R$ ${cliente.saldo.toFixed(2)}`} highlight />
           <InfoRow label="Parcelas Pendentes" value={`${pendentes} de ${cliente.totalParcelas}`} />
           <InfoRow label="Atrasadas" value={String(atrasadas)} />
-          <InfoRow label="Visitas" value={String(cliente.parcelasPagas)} />
+          <InfoRow label="Visitas" value={String(visitas)} />
           <InfoRow label="Telefone" value={cliente.telefone} isPhone />
           <InfoRow label="Frequência" value="DIÁRIO" highlight />
           <InfoRow label="Endereço" value={cliente.endereco} isAddress />
