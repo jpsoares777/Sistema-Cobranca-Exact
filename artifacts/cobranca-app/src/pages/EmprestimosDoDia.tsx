@@ -1,4 +1,4 @@
-import { TrendingUp, Users, AlertCircle } from "lucide-react";
+import { TrendingUp, Users, AlertCircle, Trash2 } from "lucide-react";
 
 export interface Emprestimo {
   id: number;
@@ -100,6 +100,9 @@ export function EmprestimosDoDia({ lista = [], onDelete, onBack }: Props) {
                   {emp.frequencia ?? (emp.diario ? "Diário" : "Mensal")}
                 </span>
                 <span style={{ fontSize: 9, color: "#9ca3af", flexShrink: 0 }}>{formatTime(emp.criadoEm)}</span>
+                <button onClick={() => onDelete(emp.id)} style={{ background: "none", border: "none", cursor: "pointer", padding: "3px 4px", borderRadius: 6, color: "#d1d5db", display: "flex", alignItems: "center", flexShrink: 0 }}>
+                  <Trash2 size={13} />
+                </button>
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)" }}>
                 {[
