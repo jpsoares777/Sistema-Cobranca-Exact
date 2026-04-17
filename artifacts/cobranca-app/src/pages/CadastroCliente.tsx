@@ -184,9 +184,7 @@ export function CadastroCliente({ onBack, onSalvar, initialData }: {
         } catch {}
       }
     }
-    if (fotosParaSalvar.length > 0) {
-      saveFotoCliente(clienteId, fotosParaSalvar);
-    }
+    saveFotoCliente(clienteId, fotosParaSalvar);
 
     if (onSalvar) {
       onSalvar({
