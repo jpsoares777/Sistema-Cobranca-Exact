@@ -48,8 +48,9 @@ function computeStatus(
     else if (freq.startsWith("mensal")) periodDays = 30;
     const esperados = Math.min(Math.floor(daysSinceStart / periodDays), totalParcelas);
     if (esperados === 0) return "novo";
-    if (parcelasPagas >= esperados) return "emdia";
-    if (parcelasPagas >= Math.ceil(esperados * 0.6)) return "atencao";
+    const atrasadas = esperados - parcelasPagas;
+    if (atrasadas <= 0) return "emdia";
+    if (atrasadas === 1) return "atencao";
     return "ruim";
   }
 
