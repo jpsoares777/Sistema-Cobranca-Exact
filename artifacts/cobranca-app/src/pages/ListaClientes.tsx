@@ -341,7 +341,7 @@ function TelaLista({ busca, setBusca, vrf, setVrf, onSelectCliente, onAddAgendam
           const expandido = clienteDetalhe?.id === cliente.id;
           const rowContent = (
             <>
-              <div onClick={e => { e.stopPropagation(); onSelectCliente(cliente); }} style={{ cursor: "pointer" }}>
+              <div onClick={e => { e.stopPropagation(); setClienteDetalhe(expandido ? null : cliente); }} style={{ cursor: "pointer" }}>
                 <PersonBadge status={computeStatus(cliente.parcelasPagas ?? 0, cliente.totalParcelas ?? 1, cliente.creditoStartTimestamp, cliente.frequencia, pagamentosRegistro[cliente.id] ?? [])} badge="plus" />
               </div>
               <div onClick={e => { e.stopPropagation(); onAusentar(cliente); }} style={{ cursor: "pointer" }}>
