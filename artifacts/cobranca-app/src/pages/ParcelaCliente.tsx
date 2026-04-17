@@ -24,7 +24,7 @@ function calcAtrasadas(pagamentos?: { id: number; metodo: string; data: string }
   if (!pagamentos?.length) return 0;
   const hoje = new Date().toISOString().slice(0, 10);
   const cutoff = creditoStartTimestamp ?? 0;
-  return pagamentos.filter(p => p.id >= cutoff && p.metodo === "Sem pagamento" && p.data < hoje).length;
+  return pagamentos.filter(p => p.id >= cutoff && p.metodo === "Sem pagamento" && p.data <= hoje).length;
 }
 
 function MiniLabel({ children }: { children: React.ReactNode }) {
