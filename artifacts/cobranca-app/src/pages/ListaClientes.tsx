@@ -34,26 +34,29 @@ const P = {
 function computeStatus(
   _parcelasPagas: number,
   _totalParcelas: number,
-  _creditoStartTimestamp?: number,
+  creditoStartTimestamp?: number,
   _frequencia?: string,
-  pagamentos?: Array<{ metodo: string }>
+  pagamentos?: Array<{ metodo: string; id?: number }>
 ): string {
-  const hist = pagamentos ?? [];
+  // Filtrar apenas pagamentos do ciclo de crédito atual (após renovação)
+  const hist = creditoStartTimestamp
+    ? (pagamentos ?? []).filter(p => p.id !== undefined ? p.id >= creditoStartTimestamp : true)
+    : (pagamentos ?? []);
 
-  // Contagem direta do histórico de pagamentos
+  // Contagem direta do histórico de pagamentos do ciclo atual
   const semCount = hist.filter(p => p.metodo === "Sem pagamento").length;
   const pagoCount = hist.filter(p => p.metodo !== "Sem pagamento").length;
 
-  // Vermelho: 10 ou mais "Sem pagamento" no histórico
+  // Vermelho: 10 ou mais "Sem pagamento" no ciclo atual
   if (semCount >= 10) return "ruim";
 
-  // Laranja: 5 ou mais "Sem pagamento" no histórico
+  // Laranja: 5 ou mais "Sem pagamento" no ciclo atual
   if (semCount >= 5) return "atencao";
 
-  // Cinza: sem histórico algum (crédito novo)
+  // Cinza: sem histórico no ciclo atual (crédito novo ou recém renovado)
   if (pagoCount === 0 && semCount === 0) return "novo";
 
-  // Verde: 6 ou mais pagamentos reais E nenhum "Sem pagamento" em todo o crédito
+  // Verde: 6 ou mais pagamentos reais E nenhum "Sem pagamento" no ciclo atual
   if (pagoCount >= 6 && semCount === 0) return "emdia";
 
   // Cinza: ainda construindo histórico (menos de 6 pagamentos ou tem algum atraso)
