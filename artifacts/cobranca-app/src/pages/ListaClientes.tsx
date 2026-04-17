@@ -55,7 +55,7 @@ function computeStatus(
       return "emdia"; // cliente novo que já está pagando → verde
     }
     const atrasadas = esperados - parcelasPagas;
-    if (atrasadas <= 2) return "emdia";
+    if (atrasadas <= 0) return "emdia";
     if (atrasadas <= 5) return "atencao";
     return "ruim";
   }
