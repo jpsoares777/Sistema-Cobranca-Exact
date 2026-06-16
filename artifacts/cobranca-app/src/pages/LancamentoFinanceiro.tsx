@@ -9,7 +9,11 @@ const conceitosDespesa = [
   "Ajuste de Caixa", "Alimentação", "Adiantamento Salarial",
   "Manutenção de Transporte", "Aluguel", "Energia", "Água",
   "Troca de Óleo", "Celular", "Comissões", "Diferença de Caixa",
-  "Desconto de Multa", "Combustível",
+  "Desconto de Multa", "Combustível", "Mensalidade do Sistema",
+  "Multas", "Outros", "Pagamento de Supervisor", "Outra Cobrança",
+  "Recargas", "Retirada de Caixa", "Salário", "Diárias de Viagem",
+  "Internet", "Comissão de Cobrador", "Bonificação de Funcionário",
+  "Material de Limpeza", "Manutenção de Veículos", "Rastreamento Veicular",
 ];
 
 const ChevronDown = () => (
