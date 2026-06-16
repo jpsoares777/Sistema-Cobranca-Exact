@@ -885,7 +885,7 @@ function RelatorioDespesas({ onVoltar, despesas = [], onDelete }: { onVoltar: ()
                   <span onClick={() => setAberto(expandido ? null : d.id)} style={{ flex: 1, textAlign: "center", color: "#757575", fontSize: 12, cursor: "pointer" }}>{d.data}</span>
                   <span onClick={() => setAberto(expandido ? null : d.id)} style={{ flex: 1, textAlign: "right", color: "#C62828", fontWeight: 500, cursor: "pointer" }}>R$ {d.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
                   <button onClick={() => { if (confirm("Excluir esta despesa?")) { onDelete?.(d.id); if (aberto === d.id) setAberto(null); } }}
-                    style={{ width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", background: "#FFEBEE", border: "1px solid #FFCDD2", borderRadius: 5, cursor: "pointer", color: "#C62828", flexShrink: 0 }}>
+                    style={{ width: 28, height: 26, display: "flex", alignItems: "center", justifyContent: "center", background: "#FFEBEE", border: "1px solid #FFCDD2", borderRadius: 5, cursor: "pointer", color: "#C62828", flexShrink: 0 }}>
                     <Trash2 size={13} />
                   </button>
                 </div>
@@ -948,7 +948,7 @@ function RelatorioRendimentos({ onVoltar, rendimentos = [], onDelete }: { onVolt
                   <span onClick={() => setAberto(expandido ? null : r.id)} style={{ flex: 1, textAlign: "center", color: "#757575", fontSize: 12, cursor: "pointer" }}>{r.data}</span>
                   <span onClick={() => setAberto(expandido ? null : r.id)} style={{ flex: 1, textAlign: "right", color: "#2E7D32", fontWeight: 500, cursor: "pointer" }}>R$ {r.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
                   <button onClick={() => { if (confirm("Excluir este rendimento?")) { onDelete?.(r.id); if (aberto === r.id) setAberto(null); } }}
-                    style={{ width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", background: "#F1F8E9", border: "1px solid #C8E6C9", borderRadius: 5, cursor: "pointer", color: "#2E7D32", flexShrink: 0 }}>
+                    style={{ width: 28, height: 26, display: "flex", alignItems: "center", justifyContent: "center", background: "#F1F8E9", border: "1px solid #C8E6C9", borderRadius: 5, cursor: "pointer", color: "#2E7D32", flexShrink: 0 }}>
                     <Trash2 size={13} />
                   </button>
                 </div>
