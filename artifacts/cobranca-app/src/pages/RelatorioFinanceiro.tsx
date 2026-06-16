@@ -15,7 +15,6 @@ type Section = {
 
 const fmt = (v: number) => v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-const RETIRADA = 0;
 
 function ToggleSwitch({ on }: { on: boolean }) {
   const [active, setActive] = useState(on);
@@ -48,6 +47,7 @@ export function RelatorioFinanceiro({
   cobrancaEsperada = 0,
   novosEmprestimos = 0,
   renovacoesValor = 0,
+  retiradaCaixa = 0,
   onSemPagamentos,
 }: {
   onBack: () => void;
@@ -67,15 +67,16 @@ export function RelatorioFinanceiro({
   cobrancaEsperada?: number;
   novosEmprestimos?: number;
   renovacoesValor?: number;
+  retiradaCaixa?: number;
   onSemPagamentos?: () => void;
 }) {
   const [modalFechamento, setModalFechamento] = useState(false);
   const [caixaFechado, setCaixaFechado] = useState(false);
   const [modalSemPag, setModalSemPag] = useState(false);
   const [modalRelatorio, setModalRelatorio] = useState(false);
-  const [snap, setSnap] = useState<{ caixaInicial: number; cobrancaDiaria: number; novosEmprestimos: number; totalDespesas: number; totalRendimentos: number; novosCount: number; saldo: number; renovacoesCount: number } | null>(null);
+  const [snap, setSnap] = useState<{ caixaInicial: number; cobrancaDiaria: number; novosEmprestimos: number; totalDespesas: number; totalRendimentos: number; novosCount: number; saldo: number; renovacoesCount: number; retiradaCaixa: number } | null>(null);
 
-  const saldo = caixaInicial + cobrancaDiaria + totalRendimentos - novosEmprestimos - RETIRADA - totalDespesas;
+  const saldo = caixaInicial + cobrancaDiaria + totalRendimentos - novosEmprestimos - retiradaCaixa - totalDespesas;
   const todosCorados = clientesParaCobranca === 0 || cobradosCount >= clientesParaCobranca;
 
   const hoje = new Date();
@@ -116,7 +117,7 @@ export function RelatorioFinanceiro({
   };
 
   const handleFecharCaixa = () => {
-    setSnap({ caixaInicial, cobrancaDiaria, novosEmprestimos, totalDespesas, totalRendimentos, novosCount, saldo, renovacoesCount });
+    setSnap({ caixaInicial, cobrancaDiaria, novosEmprestimos, totalDespesas, totalRendimentos, novosCount, saldo, renovacoesCount, retiradaCaixa });
     onCaixaInicialChange?.(saldo);
     onCaixaFechado?.();
     setCaixaFechado(true);
@@ -154,7 +155,7 @@ export function RelatorioFinanceiro({
       rows: [
         { type: "row", label: "Caixa Inicial",      value: `R$ ${fmt(caixaInicial)}`, editable: true },
         { type: "row", label: "Total de Empréstimos", value: `R$ ${fmt(novosEmprestimos)}` },
-        { type: "row", label: "Retirada de Caixa",  value: `R$ ${fmt(RETIRADA)}` },
+        { type: "row", label: "Retirada de Caixa",  value: `R$ ${fmt(retiradaCaixa)}`, valueColor: retiradaCaixa > 0 ? "text-red-500" : undefined },
         { type: "row", label: "Despesas",            value: `R$ ${fmt(totalDespesas)}`, valueColor: "text-red-500" },
         { type: "row", label: "Rendimento",          value: `R$ ${fmt(totalRendimentos)}`, valueColor: "text-emerald-600" },
         { type: "row", label: "Saldo de Caixa",      value: `R$ ${fmt(saldo)}`, bold: true, highlight: true },
@@ -325,7 +326,7 @@ export function RelatorioFinanceiro({
                       { l: "Novos Clientes", v: String(snap?.novosCount ?? novosCount) },
                       { l: "Renovação de Clientes", v: String(snap?.renovacoesCount ?? renovacoesCount) },
                       { l: "Total de Empréstimos", v: `R$ ${fmt(snap?.novosEmprestimos ?? novosEmprestimos)}` },
-                      { l: "Retiradas de Caixa", v: `R$ ${fmt(RETIRADA)}` },
+                      { l: "Retiradas de Caixa", v: `R$ ${fmt(snap?.retiradaCaixa ?? retiradaCaixa)}` },
                       { l: "Despesas", v: `R$ ${fmt(snap?.totalDespesas ?? totalDespesas)}` },
                       { l: "Rendimentos", v: `R$ ${fmt(snap?.totalRendimentos ?? totalRendimentos)}` },
                     ].map((r, i, arr) => (
