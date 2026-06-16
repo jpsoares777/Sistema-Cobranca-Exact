@@ -849,7 +849,7 @@ type LancamentoItem = { id: number; data: string; categoria: string; valor: numb
 
 const despesasIniciais: LancamentoItem[] = [];
 
-function RelatorioDespesas({ onVoltar, despesas = [] }: { onVoltar: () => void; despesas?: LancamentoItem[] }) {
+function RelatorioDespesas({ onVoltar, despesas = [], onDelete }: { onVoltar: () => void; despesas?: LancamentoItem[]; onDelete?: (id: number) => void }) {
   const totalDespesas = despesas.reduce((s, d) => s + d.valor, 0);
   const [aberto, setAberto] = useState<number | null>(null);
   return (
@@ -874,16 +874,20 @@ function RelatorioDespesas({ onVoltar, despesas = [] }: { onVoltar: () => void; 
             <span style={{ flex: 2 }}>Categoria</span>
             <span style={{ flex: 1, textAlign: "center" }}>Data</span>
             <span style={{ flex: 1, textAlign: "right" }}>Valor</span>
+            <span style={{ width: 28 }} />
           </div>
           {despesas.map((d, i) => {
             const expandido = aberto === d.id;
             return (
               <div key={d.id}>
-                <div onClick={() => setAberto(expandido ? null : d.id)}
-                  style={{ display: "flex", alignItems: "center", padding: "5px 12px", fontSize: 12, cursor: "pointer", backgroundColor: expandido ? "#FFF8F8" : "white" }}>
-                  <span style={{ flex: 2, color: "#212121" }}>{d.categoria}</span>
-                  <span style={{ flex: 1, textAlign: "center", color: "#757575", fontSize: 12 }}>{d.data}</span>
-                  <span style={{ flex: 1, textAlign: "right", color: "#C62828", fontWeight: 500 }}>R$ {d.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
+                <div style={{ display: "flex", alignItems: "center", padding: "5px 12px", fontSize: 12, backgroundColor: expandido ? "#FFF8F8" : "white" }}>
+                  <span onClick={() => setAberto(expandido ? null : d.id)} style={{ flex: 2, color: "#212121", cursor: "pointer" }}>{d.categoria}</span>
+                  <span onClick={() => setAberto(expandido ? null : d.id)} style={{ flex: 1, textAlign: "center", color: "#757575", fontSize: 12, cursor: "pointer" }}>{d.data}</span>
+                  <span onClick={() => setAberto(expandido ? null : d.id)} style={{ flex: 1, textAlign: "right", color: "#C62828", fontWeight: 500, cursor: "pointer" }}>R$ {d.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
+                  <button onClick={() => { if (confirm("Excluir esta despesa?")) { onDelete?.(d.id); if (aberto === d.id) setAberto(null); } }}
+                    style={{ width: 28, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", color: "#e53935", padding: "4px 2px", flexShrink: 0 }}>
+                    <Trash2 size={13} />
+                  </button>
                 </div>
                 {expandido && (
                   <div style={{ padding: "6px 12px 10px 12px", backgroundColor: "#FFF8F8", borderTop: "1px dashed #FFCDD2" }}>
@@ -908,7 +912,7 @@ function RelatorioDespesas({ onVoltar, despesas = [] }: { onVoltar: () => void; 
 
 const rendimentosIniciais: LancamentoItem[] = [];
 
-function RelatorioRendimentos({ onVoltar, rendimentos = [] }: { onVoltar: () => void; rendimentos?: LancamentoItem[] }) {
+function RelatorioRendimentos({ onVoltar, rendimentos = [], onDelete }: { onVoltar: () => void; rendimentos?: LancamentoItem[]; onDelete?: (id: number) => void }) {
   const totalRendimentos = rendimentos.reduce((s, r) => s + r.valor, 0);
   const [aberto, setAberto] = useState<number | null>(null);
   return (
@@ -933,16 +937,20 @@ function RelatorioRendimentos({ onVoltar, rendimentos = [] }: { onVoltar: () => 
             <span style={{ flex: 2 }}>Categoria</span>
             <span style={{ flex: 1, textAlign: "center" }}>Data</span>
             <span style={{ flex: 1, textAlign: "right" }}>Valor</span>
+            <span style={{ width: 28 }} />
           </div>
           {rendimentos.map((r, i) => {
             const expandido = aberto === r.id;
             return (
               <div key={r.id}>
-                <div onClick={() => setAberto(expandido ? null : r.id)}
-                  style={{ display: "flex", alignItems: "center", padding: "5px 12px", fontSize: 12, cursor: "pointer", backgroundColor: expandido ? "#F1F8E9" : "white" }}>
-                  <span style={{ flex: 2, color: "#212121" }}>{r.categoria}</span>
-                  <span style={{ flex: 1, textAlign: "center", color: "#757575", fontSize: 12 }}>{r.data}</span>
-                  <span style={{ flex: 1, textAlign: "right", color: "#2E7D32", fontWeight: 500 }}>R$ {r.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
+                <div style={{ display: "flex", alignItems: "center", padding: "5px 12px", fontSize: 12, backgroundColor: expandido ? "#F1F8E9" : "white" }}>
+                  <span onClick={() => setAberto(expandido ? null : r.id)} style={{ flex: 2, color: "#212121", cursor: "pointer" }}>{r.categoria}</span>
+                  <span onClick={() => setAberto(expandido ? null : r.id)} style={{ flex: 1, textAlign: "center", color: "#757575", fontSize: 12, cursor: "pointer" }}>{r.data}</span>
+                  <span onClick={() => setAberto(expandido ? null : r.id)} style={{ flex: 1, textAlign: "right", color: "#2E7D32", fontWeight: 500, cursor: "pointer" }}>R$ {r.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
+                  <button onClick={() => { if (confirm("Excluir este rendimento?")) { onDelete?.(r.id); if (aberto === r.id) setAberto(null); } }}
+                    style={{ width: 28, display: "flex", alignItems: "center", justifyContent: "center", background: "none", border: "none", cursor: "pointer", color: "#2E7D32", padding: "4px 2px", flexShrink: 0 }}>
+                    <Trash2 size={13} />
+                  </button>
                 </div>
                 {expandido && (
                   <div style={{ padding: "6px 12px 10px 12px", backgroundColor: "#F1F8E9", borderTop: "1px dashed #C8E6C9" }}>
@@ -1373,20 +1381,20 @@ function ClientesAusentes({ ausentes, onReativar, onAddAgendamento, onSelectClie
   );
 }
 
-function ModalMenu({ onClose, onRelatorio, onEmprestimos, onRenovacao, onSincronizar, onOutrasDatas, onAusentes, onSair, despesas, rendimentos }: { onClose: () => void; onRelatorio: () => void; onEmprestimos: () => void; onRenovacao: () => void; onSincronizar: () => void; onOutrasDatas: () => void; onAusentes: () => void; onSair: () => void; despesas: LancamentoItem[]; rendimentos: LancamentoItem[] }) {
+function ModalMenu({ onClose, onRelatorio, onEmprestimos, onRenovacao, onSincronizar, onOutrasDatas, onAusentes, onSair, despesas, rendimentos, onDeleteDespesa, onDeleteRendimento }: { onClose: () => void; onRelatorio: () => void; onEmprestimos: () => void; onRenovacao: () => void; onSincronizar: () => void; onOutrasDatas: () => void; onAusentes: () => void; onSair: () => void; despesas: LancamentoItem[]; rendimentos: LancamentoItem[]; onDeleteDespesa: (id: number) => void; onDeleteRendimento: (id: number) => void }) {
   const [page, setPage] = useState<"menu" | "despesas" | "rendimentos">("menu");
 
   if (page === "despesas") {
     return (
       <div style={{ position: "absolute", inset: 0, zIndex: 50, backgroundColor: "#f5f5f5", overflowY: "auto" }}>
-        <RelatorioDespesas onVoltar={() => setPage("menu")} despesas={despesas} />
+        <RelatorioDespesas onVoltar={() => setPage("menu")} despesas={despesas} onDelete={onDeleteDespesa} />
       </div>
     );
   }
   if (page === "rendimentos") {
     return (
       <div style={{ position: "absolute", inset: 0, zIndex: 50, backgroundColor: "#f5f5f5", overflowY: "auto" }}>
-        <RelatorioRendimentos onVoltar={() => setPage("menu")} rendimentos={rendimentos} />
+        <RelatorioRendimentos onVoltar={() => setPage("menu")} rendimentos={rendimentos} onDelete={onDeleteRendimento} />
       </div>
     );
   }
@@ -2107,7 +2115,7 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
       </div>}
 
       {/* MODAIS */}
-      {modal === "menu" && <ModalMenu onClose={() => setModal(null)} onRelatorio={() => { setVerRelatorio(true); setModal(null); }} onEmprestimos={() => { setVerEmprestimentos(true); setModal(null); }} onRenovacao={() => { setVerRenovacao(true); setModal(null); }} onSincronizar={() => { setVerSincronizar(true); setModal(null); }} onOutrasDatas={() => { setVerOutrasDatas(true); setModal(null); }} onAusentes={() => { setVerAusentes(true); setModal(null); }} onSair={() => { setModal(null); onSair?.(); }} despesas={despesas} rendimentos={rendimentos} />}
+      {modal === "menu" && <ModalMenu onClose={() => setModal(null)} onRelatorio={() => { setVerRelatorio(true); setModal(null); }} onEmprestimos={() => { setVerEmprestimentos(true); setModal(null); }} onRenovacao={() => { setVerRenovacao(true); setModal(null); }} onSincronizar={() => { setVerSincronizar(true); setModal(null); }} onOutrasDatas={() => { setVerOutrasDatas(true); setModal(null); }} onAusentes={() => { setVerAusentes(true); setModal(null); }} onSair={() => { setModal(null); onSair?.(); }} despesas={despesas} rendimentos={rendimentos} onDeleteDespesa={(id) => setDespesas(prev => prev.filter(d => d.id !== id))} onDeleteRendimento={(id) => setRendimentos(prev => prev.filter(r => r.id !== id))} />}
 
       {/* Modal confirmação ausentar */}
       {clienteParaAusentar && (
