@@ -6,8 +6,10 @@ const conceitosRendimento = [
   "Aporte ao Caixa", "Recuperação de Crédito", "Outros Rendimentos",
 ];
 const conceitosDespesa = [
-  "Alimentação", "Moradia", "Transporte", "Saúde",
-  "Educação", "Lazer", "Contas fixas", "Impostos", "Outros gastos",
+  "Ajuste de Caixa", "Alimentação", "Adiantamento Salarial",
+  "Manutenção de Transporte", "Aluguel", "Energia", "Água",
+  "Troca de Óleo", "Celular", "Comissões", "Diferença de Caixa",
+  "Desconto de Multa", "Combustível",
 ];
 
 const ChevronDown = () => (
