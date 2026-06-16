@@ -2000,7 +2000,7 @@ export function ListaClientes({ onSair }: { onSair?: () => void }) {
             onCaixaFechado={handleCaixaFechado}
             caixaInicial={caixaInicial}
             onCaixaInicialChange={(v) => { setCaixaInicial(v); saveDB({ caixaInicial: v }); }}
-            totalDespesas={despesas.reduce((s, d) => s + d.valor, 0)}
+            totalDespesas={despesas.filter(d => d.categoria !== "Retirada de Caixa").reduce((s, d) => s + d.valor, 0)}
             totalRendimentos={rendimentos.reduce((s, r) => s + r.valor, 0)}
             totalClientes={clientes.filter(c => c.saldo > 0).length + novosClientesIds.size + renovacoesIds.size}
             clientesParaCobranca={clientes.filter(c => c.saldo > 0).length}
