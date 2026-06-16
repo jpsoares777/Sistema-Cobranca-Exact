@@ -3,8 +3,7 @@ import { useState } from "react";
 type TipoLancamento = "despesa" | "rendimento";
 
 const conceitosRendimento = [
-  "Salário", "Freelance", "Aluguel recebido", "Dividendos",
-  "Vendas", "Comissões", "Outros rendimentos",
+  "Aporte ao Caixa", "Recuperação de Crédito", "Outros Rendimentos",
 ];
 const conceitosDespesa = [
   "Alimentação", "Moradia", "Transporte", "Saúde",
