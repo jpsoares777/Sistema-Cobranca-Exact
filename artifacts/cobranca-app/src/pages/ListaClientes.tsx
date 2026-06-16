@@ -1,6 +1,6 @@
 import { useState, useEffect, Fragment, type ReactNode } from "react";
 import { loadDB, saveDB, getTodayStr } from "../lib/storage";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Trash2 } from "lucide-react";
 import { ParcelaCliente } from "./ParcelaCliente";
 import { CadastroCliente } from "./CadastroCliente";
 import { LancamentoFinanceiro } from "./LancamentoFinanceiro";
