@@ -100,8 +100,8 @@ export function EmprestimosDoDia({ lista = [], onDelete, onBack }: Props) {
                   {emp.frequencia ?? (emp.diario ? "Diário" : "Mensal")}
                 </span>
                 <span style={{ fontSize: 9, color: "#9ca3af", flexShrink: 0 }}>{formatTime(emp.criadoEm)}</span>
-                <button onClick={() => onDelete(emp.id)} style={{ background: "#fee2e2", border: "1px solid #fca5a5", cursor: "pointer", padding: "6px 10px", borderRadius: 8, color: "#dc2626", display: "flex", alignItems: "center", gap: 4, flexShrink: 0, fontWeight: 600, fontSize: 11 }}>
-                  <Trash2 size={14} />
+                <button onClick={() => onDelete(emp.id)} style={{ background: "#fee2e2", border: "1px solid #fca5a5", cursor: "pointer", padding: "3px 7px", borderRadius: 6, color: "#dc2626", display: "flex", alignItems: "center", gap: 3, flexShrink: 0, fontWeight: 600, fontSize: 10 }}>
+                  <Trash2 size={11} />
                   Excluir
                 </button>
               </div>
